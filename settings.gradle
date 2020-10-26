@@ -1,2 +1,16 @@
+Properties properties = new Properties()
+if (new File(gradle.getGradleUserHomeDir(), "gradle.properties").exists()) {
+    properties.load(new File(gradle.getGradleUserHomeDir(), "gradle.properties").newDataInputStream())
+}
+
 rootProject.name = "KeypleAndroidDemo"
-include ':validator-app'
+
+
+if (properties.getProperty('coppernicUseDevConf') == 'true') {
+    include ':validator-app', ':coppernic-plugin', ':android-nfc-plugin'
+    project(':coppernic-plugin').projectDir = new File(settingsDir, '../../workspace/keyple-android-plugin-coppernic/keyple-plugins/coppernic-ask')
+    project(':android-nfc-plugin').projectDir = new File(settingsDir, '../../workspace_yamapps/keyple-java/android/keyple-plugin/android-nfc')
+}
+else{
+    include ':validator-app'
+}

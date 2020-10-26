@@ -1,33 +1,33 @@
+/********************************************************************************
+ * Copyright (c) 2020 Calypso Networks Association https://www.calypsonet-asso.org/
+ *
+ * See the NOTICE file(s) distributed with this work for additional information regarding copyright
+ * ownership.
+ *
+ * This program and the accompanying materials are made available under the terms of the Eclipse
+ * Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
 package org.eclipse.keyple.famoco.validator.di
 
 import android.app.Activity
 import android.content.Context
-import fr.coppernic.sdk.power.PowerManager
-import fr.coppernic.sdk.power.api.PowerListener
-import fr.coppernic.sdk.power.api.peripheral.Peripheral
-import fr.coppernic.sdk.power.impl.cone.ConePeripheral
-import fr.coppernic.sdk.utils.core.CpcResult
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.eclipse.keyple.coppernic.ask.plugin.AndroidCoppernicAskContactReader
-import org.eclipse.keyple.coppernic.ask.plugin.AndroidCoppernicAskContactlessReader
-import org.eclipse.keyple.coppernic.ask.plugin.AndroidCoppernicAskContactlessReaderImpl
-import org.eclipse.keyple.coppernic.ask.plugin.AndroidCoppernicAskPluginFactory
+import org.eclipse.keyple.coppernic.ask.plugin.Cone2ContactReader
+import org.eclipse.keyple.coppernic.ask.plugin.Cone2ContactlessReader
+import org.eclipse.keyple.coppernic.ask.plugin.Cone2PluginFactory
+import org.eclipse.keyple.coppernic.ask.plugin.ParagonSupportedContactProtocols
+import org.eclipse.keyple.coppernic.ask.plugin.ParagonSupportedContactlessProtocols
 import org.eclipse.keyple.core.plugin.reader.AbstractLocalReader
-import org.eclipse.keyple.core.service.PluginFactory
 import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.SmartCardService
 import org.eclipse.keyple.core.service.exception.KeypleException
-import org.eclipse.keyple.core.service.exception.KeyplePluginInstantiationException
-import org.eclipse.keyple.core.service.util.ContactlessCardCommonProtocols
-import org.eclipse.keyple.core.service.util.ContactsCardCommonProtocols
 import org.eclipse.keyple.famoco.validator.reader.IReaderRepository
 import org.eclipse.keyple.famoco.validator.reader.PoReaderProtocol
-import org.eclipse.keyple.famoco.validator.util.suspendCoroutineWithTimeout
-import javax.inject.Inject
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
 
 /**
  *
@@ -37,55 +37,30 @@ import kotlin.coroutines.resume
  */
 
 class CoppernicReaderRepositoryImpl @Inject constructor(private val applicationContext: Context) :
-    IReaderRepository, PowerListener {
+    IReaderRepository {
 
     override var poReader: Reader? = null
     override var samReaders: MutableMap<String, Reader> = mutableMapOf()
-    var peripheral: ConePeripheral? = null
-
-    var powerListenerContinuation: Continuation<Boolean>? = null
-
-    override fun onPowerUp(res: CpcResult.RESULT?, peripheral: Peripheral?) {
-        this.peripheral = peripheral as ConePeripheral
-        powerListenerContinuation?.resume(true)
-    }
-
-    override fun onPowerDown(res: CpcResult.RESULT?, peripheral: Peripheral?) {
-    }
 
     @Throws(KeypleException::class)
-    override fun registerPlugin() {
+    override fun registerPlugin(activity: Activity) {
         runBlocking {
-            val result: Boolean? =
-                suspendCoroutineWithTimeout(
-                    POWER_UP_TIMEOUT
-                ) { continuation ->
-                    powerListenerContinuation = continuation
-
-                    PowerManager.get().registerListener(this@CoppernicReaderRepositoryImpl)
-                    ConePeripheral.RFID_ASK_UCM108_GPIO.on(applicationContext)
-                }
-
-            if (result != null && result) {
-                val pluginFactory: AndroidCoppernicAskPluginFactory?
-                pluginFactory = withContext(Dispatchers.IO) {
-                    AndroidCoppernicAskPluginFactory.init(applicationContext)
-                }
-                SmartCardService.getInstance().registerPlugin(pluginFactory)
-            } else {
-                throw KeyplePluginInstantiationException("An error occured during Copernic AskReader power up.")
+            val pluginFactory: Cone2PluginFactory?
+            pluginFactory = withContext(Dispatchers.IO) {
+                Cone2PluginFactory.init(applicationContext)
             }
+            SmartCardService.getInstance().registerPlugin(pluginFactory)
         }
     }
 
     @Throws(KeypleException::class)
     override suspend fun initPoReader(): Reader? {
         val askPlugin =
-            SmartCardService.getInstance().getPlugin(AndroidCoppernicAskPluginFactory.pluginName)
-        val poReader = askPlugin?.getReader(AndroidCoppernicAskContactlessReader.READER_NAME)
+            SmartCardService.getInstance().getPlugin(Cone2PluginFactory.pluginName)
+        val poReader = askPlugin?.getReader(Cone2ContactlessReader.READER_NAME)
         poReader?.let {
 
-            (it as AbstractLocalReader).activateProtocol(
+            it.activateProtocol(
                 getContactlessIsoProtocol()!!.readerProtocolName,
                 getContactlessIsoProtocol()!!.applicationProtocolName
             )
@@ -99,7 +74,7 @@ class CoppernicReaderRepositoryImpl @Inject constructor(private val applicationC
     @Throws(KeypleException::class)
     override suspend fun initSamReaders(): Map<String, Reader> {
         val askPlugin =
-            SmartCardService.getInstance().getPlugin(AndroidCoppernicAskPluginFactory.pluginName)
+            SmartCardService.getInstance().getPlugin(Cone2PluginFactory.pluginName)
         samReaders = askPlugin?.readers?.filter {
             !it.value.isContactless
         }?.toMutableMap() ?: mutableMapOf()
@@ -129,42 +104,35 @@ class CoppernicReaderRepositoryImpl @Inject constructor(private val applicationC
         }
     }
 
-    override fun enableNfcReaderMode(activity: Activity) {
-        //Do nothing
-    }
-
-    override fun disableNfcReaderMode(activity: Activity) {
-        //Do nothing
-    }
-
     override fun getContactlessIsoProtocol(): PoReaderProtocol? {
         return PoReaderProtocol(
-            ContactlessCardCommonProtocols.ISO_14443_4.name,
-            ContactlessCardCommonProtocols.ISO_14443_4.name
+            ParagonSupportedContactlessProtocols.ISO_14443.name,
+            ParagonSupportedContactlessProtocols.ISO_14443.name
         )
     }
 
     override fun getContactlessMifareProtocol(): PoReaderProtocol? {
-        return null
+        return PoReaderProtocol(
+            ParagonSupportedContactlessProtocols.MIFARE.name,
+            ParagonSupportedContactlessProtocols.MIFARE.name
+        )
     }
 
-    override fun getSamReaderProtocol(): String = ContactsCardCommonProtocols.ISO_7816_3.name
+    override fun getSamReaderProtocol(): String = ParagonSupportedContactProtocols.INNOVATRON_HIGH_SPEED_PROTOCOL.name
 
-    override fun onDestroy() {
-        ConePeripheral.RFID_ASK_UCM108_GPIO.off(applicationContext)
-        poReader?.let {
-            (poReader as AndroidCoppernicAskContactlessReaderImpl).clearInstance()
+    override fun clear() {
+        poReader?.deactivateProtocol(getContactlessIsoProtocol()!!.readerProtocolName)
+
+        samReaders.forEach {
+            (it.value as AbstractLocalReader).deactivateProtocol(
+                getSamReaderProtocol()
+            )
         }
-
-        // Releases PowerManager
-        PowerManager.get().unregisterAll()
-        PowerManager.get().releaseResources()
     }
 
     companion object {
-        private const val POWER_UP_TIMEOUT: Long = 3000
-        const val SAM_READER_SLOT_1 = "1"
+        private const val SAM_READER_SLOT_1 = "1"
         const val SAM_READER_1_NAME =
-            "${AndroidCoppernicAskContactReader.READER_NAME}_${SAM_READER_SLOT_1}"
+            "${Cone2ContactReader.READER_NAME}_$SAM_READER_SLOT_1"
     }
 }

@@ -12,6 +12,7 @@
 package org.eclipse.keyple.famoco.validator.data
 
 import android.app.Activity
+import javax.inject.Inject
 import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.SmartCardService
 import org.eclipse.keyple.core.service.event.ObservableReader
@@ -24,7 +25,6 @@ import org.eclipse.keyple.famoco.validator.reader.IReaderRepository
 import org.eclipse.keyple.famoco.validator.ticketing.TicketingSession
 import org.eclipse.keyple.famoco.validator.ticketing.TicketingSessionManager
 import timber.log.Timber
-import javax.inject.Inject
 
 @AppScoped
 class CardReaderApi @Inject constructor(private var readerRepository: IReaderRepository) {
@@ -37,13 +37,13 @@ class CardReaderApi @Inject constructor(private var readerRepository: IReaderRep
         IllegalStateException::class,
         KeyplePluginNotFoundException::class
     )
-    suspend fun init(observer: ObservableReader.ReaderObserver?) {
+    suspend fun init(observer: ObservableReader.ReaderObserver?, activity: Activity) {
 
         /*
          * Register plugin
          */
         try {
-            readerRepository.registerPlugin()
+            readerRepository.registerPlugin(activity)
         } catch (e: KeypleException) {
             Timber.e(e)
             throw IllegalStateException(e.message)
@@ -90,9 +90,7 @@ class CardReaderApi @Inject constructor(private var readerRepository: IReaderRep
         }
     }
 
-    fun startNfcDetection(activity: Activity) {
-        readerRepository.enableNfcReaderMode(activity)
-
+    fun startNfcDetection() {
         /*
         * Provide the Reader with the selection operation to be processed when a PO is
         * inserted.
@@ -102,12 +100,10 @@ class CardReaderApi @Inject constructor(private var readerRepository: IReaderRep
         (readerRepository.poReader as ObservableReader).startCardDetection(ObservableReader.PollingMode.REPEATING)
     }
 
-    fun stopNfcDetection(activity: Activity) {
+    fun stopNfcDetection() {
         try {
             // notify reader that se detection has been switched off
             (readerRepository.poReader as ObservableReader).stopCardDetection()
-            // Disable Reader Mode for NFC Adapter
-            readerRepository.disableNfcReaderMode(activity)
         } catch (e: KeyplePluginNotFoundException) {
             Timber.e(e, "NFC Plugin not found")
         }
@@ -118,14 +114,15 @@ class CardReaderApi @Inject constructor(private var readerRepository: IReaderRep
     }
 
     fun onDestroy(observer: ObservableReader.ReaderObserver?) {
+        readerRepository.clear()
         if (observer != null && readerRepository.poReader != null) {
             (readerRepository.poReader as ObservableReader).removeObserver(observer)
         }
+
         SmartCardService.getInstance().plugins.forEach {
             SmartCardService.getInstance().unregisterPlugin(it.key)
         }
-        SmartCardService.getInstance().plugins.clear()
-        readerRepository.onDestroy()
+
         ticketingSession = null
     }
 

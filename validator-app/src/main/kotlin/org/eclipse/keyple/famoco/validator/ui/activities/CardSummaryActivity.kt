@@ -1,15 +1,3 @@
-/*
- * Copyright (c) 2020 Calypso Networks Association https://www.calypsonet-asso.org/
- *
- * See the NOTICE file(s) distributed with this work for additional information
- * regarding copyright ownership.
- *
- * This program and the accompanying materials are made available under the terms of the
- * Eclipse Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0
- *
- * SPDX-License-Identifier: EPL-2.0
- */
-
 /********************************************************************************
  * Copyright (c) 2020 Calypso Networks Association https://www.calypsonet-asso.org/
  *
@@ -27,9 +15,6 @@ import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.View
 import dagger.android.support.DaggerAppCompatActivity
-import org.eclipse.keyple.famoco.validator.R
-import org.eclipse.keyple.famoco.validator.data.model.Status
-import org.eclipse.keyple.famoco.validator.data.model.Status.Companion.getStatus
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -41,6 +26,9 @@ import kotlinx.android.synthetic.main.activity_card_summary.bigText
 import kotlinx.android.synthetic.main.activity_card_summary.mainView
 import kotlinx.android.synthetic.main.activity_card_summary.mediumText
 import kotlinx.android.synthetic.main.activity_card_summary.smallDesc
+import org.eclipse.keyple.famoco.validator.R
+import org.eclipse.keyple.famoco.validator.data.model.Status
+import org.eclipse.keyple.famoco.validator.data.model.Status.Companion.getStatus
 
 class CardSummaryActivity : DaggerAppCompatActivity() {
 
@@ -72,7 +60,7 @@ class CardSummaryActivity : DaggerAppCompatActivity() {
                     smallDesc.text = String.format(
                         getString(R.string.valid_season_ticket_small_desc),
                         date,
-                       intent.getStringExtra(CONTRACT)
+                        intent.getStringExtra(CONTRACT)
                             ?.trim { it <= ' ' }
                     )
                 }

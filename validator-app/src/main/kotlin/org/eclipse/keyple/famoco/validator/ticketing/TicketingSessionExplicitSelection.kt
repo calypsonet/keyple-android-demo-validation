@@ -11,6 +11,10 @@
  ********************************************************************************/
 package org.eclipse.keyple.famoco.validator.ticketing
 
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.Arrays
+import java.util.Date
 import org.eclipse.keyple.calypso.command.po.exception.CalypsoPoCommandException
 import org.eclipse.keyple.calypso.command.sam.exception.CalypsoSamCommandException
 import org.eclipse.keyple.calypso.transaction.PoSelectionRequest
@@ -25,12 +29,9 @@ import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.exception.KeypleReaderException
 import org.eclipse.keyple.famoco.validator.reader.IReaderRepository
 import timber.log.Timber
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.*
 
-class TicketingSessionExplicitSelection(readerRepository: IReaderRepository)
-    : AbstractTicketingSession(readerRepository), ITicketingSession {
+class TicketingSessionExplicitSelection(readerRepository: IReaderRepository) :
+    AbstractTicketingSession(readerRepository), ITicketingSession {
 
     override val poReader: Reader?
         get() = readerRepository.poReader

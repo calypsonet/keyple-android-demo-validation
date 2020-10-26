@@ -12,9 +12,14 @@
 package org.eclipse.keyple.famoco.validator.ticketing
 
 import org.eclipse.keyple.calypso.command.sam.SamRevision
-import org.eclipse.keyple.calypso.transaction.*
+import org.eclipse.keyple.calypso.transaction.CalypsoPo
+import org.eclipse.keyple.calypso.transaction.CalypsoSam
+import org.eclipse.keyple.calypso.transaction.ElementaryFile
+import org.eclipse.keyple.calypso.transaction.PoSecuritySettings
 import org.eclipse.keyple.calypso.transaction.PoSecuritySettings.PoSecuritySettingsBuilder
 import org.eclipse.keyple.calypso.transaction.PoTransaction.SessionSetting.AccessLevel
+import org.eclipse.keyple.calypso.transaction.SamSelectionRequest
+import org.eclipse.keyple.calypso.transaction.SamSelector
 import org.eclipse.keyple.core.card.selection.CardResource
 import org.eclipse.keyple.core.card.selection.CardSelection
 import org.eclipse.keyple.core.card.selection.MultiSelectionProcessing

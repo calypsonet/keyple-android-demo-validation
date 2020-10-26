@@ -1,15 +1,14 @@
-/*
+/********************************************************************************
  * Copyright (c) 2020 Calypso Networks Association https://www.calypsonet-asso.org/
  *
- * See the NOTICE file(s) distributed with this work for additional information
- * regarding copyright ownership.
+ * See the NOTICE file(s) distributed with this work for additional information regarding copyright
+ * ownership.
  *
- * This program and the accompanying materials are made available under the terms of the
- * Eclipse Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0
+ * This program and the accompanying materials are made available under the terms of the Eclipse
+ * Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
- */
-
+ ********************************************************************************/
 package org.eclipse.keyple.famoco.validator.ui.activities
 
 import android.content.Intent
@@ -36,14 +35,14 @@ class SettingsActivity : AppCompatActivity() {
         toolbarLogo.setImageResource(R.drawable.ic_logo_blue)
 
         timeBtn.setOnClickListener {
-            startActivityForResult(Intent (Settings.ACTION_DATE_SETTINGS), 0);
+            startActivityForResult(Intent(Settings.ACTION_DATE_SETTINGS), 0)
         }
 
         startBtn.setOnClickListener {
             KeypleSettings.location = locationEdit.text.toString()
             KeypleSettings.batteryPowered = batteryPoweredBox.isChecked
-            if(!KeypleSettings.location.isNullOrBlank()){
-                if(KeypleSettings.batteryPowered) {
+            if (!KeypleSettings.location.isNullOrBlank()) {
+                if (KeypleSettings.batteryPowered) {
                     startActivity(Intent(this, HomeActivity::class.java))
                 } else {
                     startActivity(Intent(this, CardReaderActivity::class.java))
@@ -53,7 +52,7 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
-        if(BuildConfig.DEBUG){
+        if (BuildConfig.DEBUG) {
             locationEdit.text = Editable.Factory.getInstance().newEditable("Paris")
         }
     }

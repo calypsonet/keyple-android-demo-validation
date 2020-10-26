@@ -1,20 +1,36 @@
+/********************************************************************************
+ * Copyright (c) 2020 Calypso Networks Association https://www.calypsonet-asso.org/
+ *
+ * See the NOTICE file(s) distributed with this work for additional information regarding copyright
+ * ownership.
+ *
+ * This program and the accompanying materials are made available under the terms of the Eclipse
+ * Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
 package org.eclipse.keyple.famoco.validator.di
 
 import android.app.Activity
+import javax.inject.Inject
 import org.eclipse.keyple.core.plugin.reader.AbstractLocalReader
 import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.SmartCardService
 import org.eclipse.keyple.core.service.event.ObservableReader
 import org.eclipse.keyple.core.service.exception.KeypleException
-import org.eclipse.keyple.core.service.util.ContactsCardCommonProtocols
+import org.eclipse.keyple.core.service.util.ContactCardCommonProtocols
+import org.eclipse.keyple.core.service.util.ContactlessCardCommonProtocols
 import org.eclipse.keyple.famoco.se.plugin.AndroidFamocoPlugin
 import org.eclipse.keyple.famoco.se.plugin.AndroidFamocoPluginFactory
 import org.eclipse.keyple.famoco.se.plugin.AndroidFamocoReader
 import org.eclipse.keyple.famoco.validator.reader.IReaderRepository
 import org.eclipse.keyple.famoco.validator.reader.PoReaderProtocol
-import org.eclipse.keyple.plugin.android.nfc.*
+import org.eclipse.keyple.plugin.android.nfc.AndroidNfcPlugin
+import org.eclipse.keyple.plugin.android.nfc.AndroidNfcPluginFactory
+import org.eclipse.keyple.plugin.android.nfc.AndroidNfcProtocolSettings
+import org.eclipse.keyple.plugin.android.nfc.AndroidNfcReader
+import org.eclipse.keyple.plugin.android.nfc.AndroidNfcSupportedProtocols
 import timber.log.Timber
-import javax.inject.Inject
 
 /**
  *
@@ -30,8 +46,8 @@ class FamocoReaderRepositoryImpl @Inject constructor() :
     override var samReaders: MutableMap<String, Reader> = mutableMapOf()
 
     @Throws(KeypleException::class)
-    override fun registerPlugin() {
-        SmartCardService.getInstance().registerPlugin(AndroidNfcPluginFactory())
+    override fun registerPlugin(activity: Activity) {
+        SmartCardService.getInstance().registerPlugin(AndroidNfcPluginFactory(activity))
         try {
             SmartCardService.getInstance().registerPlugin(AndroidFamocoPluginFactory())
         } catch (e: UnsatisfiedLinkError) {
@@ -42,7 +58,7 @@ class FamocoReaderRepositoryImpl @Inject constructor() :
     @Throws(KeypleException::class)
     override suspend fun initPoReader(): Reader? {
         val readerPlugin = SmartCardService.getInstance().getPlugin(AndroidNfcPlugin.PLUGIN_NAME)
-        poReader = readerPlugin.readers.values.first()
+        poReader = readerPlugin.readers[AndroidNfcReader.READER_NAME]
 
         poReader?.let {
             val androidNfcReader = it as AndroidNfcReader
@@ -92,36 +108,36 @@ class FamocoReaderRepositoryImpl @Inject constructor() :
         return samReaders
     }
 
-    override fun enableNfcReaderMode(activity: Activity) {
-        (poReader as AndroidNfcReader).enableNFCReaderMode(activity)
-    }
-
-    override fun disableNfcReaderMode(activity: Activity) {
-        (poReader as AndroidNfcReader).disableNFCReaderMode(activity)
-    }
-
     override fun getSamReader(): Reader? {
         return samReaders[AndroidFamocoReader.READER_NAME]
     }
 
     override fun getContactlessIsoProtocol(): PoReaderProtocol? {
         return PoReaderProtocol(
-            AndroidNfcSupportedProtocols.ISO_14443_4.name,
-            AndroidNfcProtocolSettings.getSetting(AndroidNfcSupportedProtocols.ISO_14443_4.name)
+            ContactlessCardCommonProtocols.ISO_14443_4.name,
+            AndroidNfcProtocolSettings.getSetting(ContactlessCardCommonProtocols.ISO_14443_4.name)
         )
     }
 
     override fun getContactlessMifareProtocol(): PoReaderProtocol? {
-        return PoReaderProtocol(AndroidNfcSupportedProtocols.MIFARE_CLASSIC.name,
+        return PoReaderProtocol(
+            AndroidNfcSupportedProtocols.MIFARE_CLASSIC.name,
             AndroidNfcProtocolSettings.getSetting(AndroidNfcSupportedProtocols.MIFARE_CLASSIC.name)
         )
     }
 
     override fun getSamReaderProtocol(): String {
-        return ContactsCardCommonProtocols.ISO_7816_3.name
+        return ContactCardCommonProtocols.ISO_7816_3.name
     }
 
-    override fun onDestroy() {
-        //Do nothing
+    override fun clear() {
+        poReader?.let {
+            // with this protocol settings we activate the nfc for ISO1443_4 protocol
+            it.deactivateProtocol(getContactlessIsoProtocol()!!.readerProtocolName)
+            it.deactivateProtocol(getContactlessMifareProtocol()!!.readerProtocolName)
+        }
+
+        val samReader = samReaders[AndroidFamocoReader.READER_NAME]
+        samReader?.deactivateProtocol(getSamReaderProtocol())
     }
 }

@@ -1,15 +1,3 @@
-/*
- * Copyright (c) 2020 Calypso Networks Association https://www.calypsonet-asso.org/
- *
- * See the NOTICE file(s) distributed with this work for additional information
- * regarding copyright ownership.
- *
- * This program and the accompanying materials are made available under the terms of the
- * Eclipse Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0
- *
- * SPDX-License-Identifier: EPL-2.0
- */
-
 /********************************************************************************
  * Copyright (c) 2020 Calypso Networks Association https://www.calypsonet-asso.org/
  *
@@ -30,8 +18,12 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import com.airbnb.lottie.LottieDrawable
 import dagger.android.support.DaggerAppCompatActivity
-import java.util.TimerTask
 import java.util.Timer
+import java.util.TimerTask
+import javax.inject.Inject
+import kotlinx.android.synthetic.main.activity_card_reader.animation
+import kotlinx.android.synthetic.main.activity_card_reader.mainView
+import kotlinx.android.synthetic.main.activity_card_reader.presentCardTv
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -49,10 +41,6 @@ import org.eclipse.keyple.famoco.validator.ticketing.ITicketingSession
 import org.eclipse.keyple.famoco.validator.ticketing.TicketingSession
 import org.eclipse.keyple.famoco.validator.util.KeypleSettings
 import timber.log.Timber
-import javax.inject.Inject
-import kotlinx.android.synthetic.main.activity_card_reader.animation
-import kotlinx.android.synthetic.main.activity_card_reader.mainView
-import kotlinx.android.synthetic.main.activity_card_reader.presentCardTv
 
 @ActivityScoped
 class CardReaderActivity : DaggerAppCompatActivity() {
@@ -95,11 +83,11 @@ class CardReaderActivity : DaggerAppCompatActivity() {
                 withContext(Dispatchers.IO) {
                     try {
                         poReaderObserver = PoObserver()
-                        cardReaderApi.init(poReaderObserver)
+                        cardReaderApi.init(poReaderObserver, this@CardReaderActivity)
                         ticketingSession = cardReaderApi.getTicketingSession()!!
                         readersInitialized = true
                         handleAppEvents(AppState.WAIT_CARD, null)
-                        cardReaderApi.startNfcDetection(this@CardReaderActivity)
+                        cardReaderApi.startNfcDetection()
                     } catch (e: KeyplePluginInstantiationException) {
                         Timber.e(e)
                         withContext(Dispatchers.Main) {
@@ -122,7 +110,7 @@ class CardReaderActivity : DaggerAppCompatActivity() {
                 }
             }
         } else {
-            cardReaderApi.startNfcDetection(this)
+            cardReaderApi.startNfcDetection()
         }
         if (KeypleSettings.batteryPowered) {
             timer = Timer() // Need to reinit timer after cancel
@@ -135,10 +123,10 @@ class CardReaderActivity : DaggerAppCompatActivity() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         readersInitialized = false
         cardReaderApi.onDestroy(poReaderObserver)
         poReaderObserver = null
+        super.onDestroy()
     }
 
     fun updateReaderInfos() {
@@ -149,10 +137,6 @@ class CardReaderActivity : DaggerAppCompatActivity() {
         } else {
             "Android NFC - ${BuildConfig.FLAVOR}"
         }
-//        val samPlugin = cardReaderViewModel.samReaderAvailable()
-//
-//        reader_plugin.text = getString(R.string.reader_plugin, readerPlugin)
-//        sam_plugin.text = getString(R.string.sam_plugin, samPlugin)
     }
 
     override fun onPause() {
@@ -160,7 +144,7 @@ class CardReaderActivity : DaggerAppCompatActivity() {
         animation.cancelAnimation()
         timer.cancel()
         if (readersInitialized) {
-            cardReaderApi.stopNfcDetection(this)
+            cardReaderApi.stopNfcDetection()
             Timber.d("stopNfcDetection")
         }
     }

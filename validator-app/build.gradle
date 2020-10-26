@@ -104,12 +104,33 @@ dependencies {
     implementation "org.eclipse.keyple:keyple-java-core:$keyple_version"
     implementation "org.eclipse.keyple:keyple-java-calypso:$keyple_version"
 
-    omapiImplementation "org.eclipse.keyple:keyple-android-plugin-nfc:$keyple_version"
+    if (project.property('coppernicUseDevConf') == 'true') {
+        omapiImplementation project(":android-nfc-plugin")
+    }
+    else{
+        omapiImplementation "org.eclipse.keyple:keyple-android-plugin-nfc:$keyple_version"
+    }
     omapiImplementation "org.eclipse.keyple:keyple-android-plugin-omapi:$keyple_version"
-    famocoImplementation "org.eclipse.keyple:keyple-android-plugin-nfc:$keyple_version"
+
+    if (project.property('coppernicUseDevConf') == 'true') {
+        famocoImplementation project(":android-nfc-plugin")
+    }
+    else{
+        famocoImplementation "org.eclipse.keyple:keyple-android-plugin-nfc:$keyple_version"
+    }
     famocoImplementation "org.eclipse.keyple:keyple-android-plugin-famoco-se-communication:$keyple_version"
-    mockSamImplementation "org.eclipse.keyple:keyple-android-plugin-nfc:$keyple_version"
-    copernicImplementation "org.eclipse.keyple:keyple-android-plugin-coppernic-ask:$keyple_version"
+    if (project.property('coppernicUseDevConf') == 'true') {
+        mockSamImplementation project(":android-nfc-plugin")
+    }
+    else{
+        mockSamImplementation "org.eclipse.keyple:keyple-android-plugin-nfc:$keyple_version"
+    }
+    if (project.property('coppernicUseDevConf') == 'true') {
+        copernicImplementation project(":coppernic-plugin")
+    }
+    else{
+        copernicImplementation "org.eclipse.keyple:keyple-android-plugin-coppernic-ask:$keyple_version"
+    }
 
     // Android Architecture components dependencies
     implementation "androidx.lifecycle:lifecycle-runtime:$lifecycle_version"
