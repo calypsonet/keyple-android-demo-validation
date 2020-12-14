@@ -11,26 +11,22 @@
  ********************************************************************************/
 package org.eclipse.keyple.famoco.validator.ticketing
 
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.Arrays
-import java.util.Date
 import org.eclipse.keyple.calypso.command.po.exception.CalypsoPoCommandException
 import org.eclipse.keyple.calypso.command.sam.exception.CalypsoSamCommandException
 import org.eclipse.keyple.calypso.transaction.CalypsoPo
-import org.eclipse.keyple.calypso.transaction.PoSelectionRequest
+import org.eclipse.keyple.calypso.transaction.PoSelection
 import org.eclipse.keyple.calypso.transaction.PoSelector
 import org.eclipse.keyple.calypso.transaction.PoTransaction
 import org.eclipse.keyple.calypso.transaction.exception.CalypsoPoTransactionException
 import org.eclipse.keyple.core.card.command.AbstractApduCommandBuilder
 import org.eclipse.keyple.core.card.message.CardSelectionResponse
-import org.eclipse.keyple.core.card.selection.AbstractCardSelectionRequest
+import org.eclipse.keyple.core.card.selection.AbstractCardSelection
 import org.eclipse.keyple.core.card.selection.AbstractSmartCard
 import org.eclipse.keyple.core.card.selection.CardResource
-import org.eclipse.keyple.core.card.selection.CardSelection
+import org.eclipse.keyple.core.card.selection.CardSelectionsResult
+import org.eclipse.keyple.core.card.selection.CardSelectionsService
 import org.eclipse.keyple.core.card.selection.CardSelector
 import org.eclipse.keyple.core.card.selection.MultiSelectionProcessing
-import org.eclipse.keyple.core.card.selection.SelectionsResult
 import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.event.AbstractDefaultSelectionsResponse
 import org.eclipse.keyple.core.service.event.ObservableReader
@@ -38,6 +34,10 @@ import org.eclipse.keyple.core.service.exception.KeypleReaderException
 import org.eclipse.keyple.core.util.ByteArrayUtil
 import org.eclipse.keyple.famoco.validator.reader.IReaderRepository
 import timber.log.Timber
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.Arrays
+import java.util.Date
 
 class TicketingSession(readerRepository: IReaderRepository) :
     AbstractTicketingSession(readerRepository), ITicketingSession {
@@ -70,10 +70,10 @@ class TicketingSession(readerRepository: IReaderRepository) :
         /*
          * Prepare a PO selection
          */
-        cardSelection = CardSelection(MultiSelectionProcessing.FIRST_MATCH)
+        cardSelection = CardSelectionsService(MultiSelectionProcessing.FIRST_MATCH)
 
         /* Select Calypso */
-        val poSelectionRequest = PoSelectionRequest(
+        val poSelectionRequest = PoSelection(
             PoSelector.builder()
                 .cardProtocol(readerRepository.getContactlessIsoProtocol()!!.applicationProtocolName)
                 .aidSelector(CardSelector.AidSelector.builder().aidToSelect(CalypsoInfo.AID).build())
@@ -161,14 +161,14 @@ class TicketingSession(readerRepository: IReaderRepository) :
          * Provide the Reader with the selection operation to be processed when a PO is inserted.
          */
         (poReader as ObservableReader).setDefaultSelectionRequest(
-            cardSelection.selectionOperation, ObservableReader.NotificationMode.ALWAYS
+            cardSelection.defaultSelectionsRequest, ObservableReader.NotificationMode.ALWAYS
         )
     }
 
-    fun processDefaultSelection(selectionResponse: AbstractDefaultSelectionsResponse?): SelectionsResult {
+    fun processDefaultSelection(selectionResponse: AbstractDefaultSelectionsResponse?): CardSelectionsResult {
         Timber.i("selectionResponse = $selectionResponse")
-        val selectionsResult: SelectionsResult =
-            cardSelection.processDefaultSelection(selectionResponse)
+        val selectionsResult: CardSelectionsResult =
+            cardSelection.processDefaultSelectionsResponse(selectionResponse)
         if (selectionsResult.hasActiveSelection()) {
             when (selectionsResult.smartCards.keys.first()) {
                 calypsoPoIndex -> {
@@ -460,7 +460,7 @@ class TicketingSession(readerRepository: IReaderRepository) :
      * Create a new class extending AbstractSeSelectionRequest
      */
     inner class GenericSeSelectionRequest(seSelector: CardSelector) :
-        AbstractCardSelectionRequest<AbstractApduCommandBuilder>(seSelector) {
+        AbstractCardSelection<AbstractApduCommandBuilder>(seSelector) {
         override fun parse(seResponse: CardSelectionResponse): AbstractSmartCard {
             class GenericMatchingSe(
                 selectionResponse: CardSelectionResponse?

@@ -18,12 +18,12 @@ import org.eclipse.keyple.calypso.transaction.ElementaryFile
 import org.eclipse.keyple.calypso.transaction.PoSecuritySettings
 import org.eclipse.keyple.calypso.transaction.PoSecuritySettings.PoSecuritySettingsBuilder
 import org.eclipse.keyple.calypso.transaction.PoTransaction.SessionSetting.AccessLevel
-import org.eclipse.keyple.calypso.transaction.SamSelectionRequest
+import org.eclipse.keyple.calypso.transaction.SamSelection
 import org.eclipse.keyple.calypso.transaction.SamSelector
 import org.eclipse.keyple.core.card.selection.CardResource
-import org.eclipse.keyple.core.card.selection.CardSelection
+import org.eclipse.keyple.core.card.selection.CardSelectionsResult
+import org.eclipse.keyple.core.card.selection.CardSelectionsService
 import org.eclipse.keyple.core.card.selection.MultiSelectionProcessing
-import org.eclipse.keyple.core.card.selection.SelectionsResult
 import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.event.ObservableReader
 import org.eclipse.keyple.core.service.exception.KeypleReaderException
@@ -35,7 +35,7 @@ abstract class AbstractTicketingSession protected constructor(
 ) {
 
     protected lateinit var calypsoPo: CalypsoPo
-    protected lateinit var cardSelection: CardSelection
+    protected lateinit var cardSelection: CardSelectionsService
     var poTypeName: String? = null
         protected set
     var cardContent: CardContent = CardContent()
@@ -56,7 +56,7 @@ abstract class AbstractTicketingSession protected constructor(
         return sb.toString()
     }
 
-    fun processSelectionsResult(selectionsResult: SelectionsResult) {
+    fun processSelectionsResult(selectionsResult: CardSelectionsResult) {
         val selectionIndex = selectionsResult.smartCards.keys.first()
 
         if (selectionIndex == calypsoPoIndex) {
@@ -106,18 +106,18 @@ abstract class AbstractTicketingSession protected constructor(
          * check the availability of the SAM doing a ATR based selection, open its physical and
          * logical channels and keep it open
          */
-        val samSelection = CardSelection(MultiSelectionProcessing.FIRST_MATCH)
+        val samSelection = CardSelectionsService(MultiSelectionProcessing.FIRST_MATCH)
 
         val samSelector = SamSelector.builder()
             .cardProtocol(readerRepository.getSamReaderProtocol())
             .samRevision(SamRevision.C1)
             .build()
 
-        samSelection.prepareSelection(SamSelectionRequest(samSelector))
+        samSelection.prepareSelection(SamSelection(samSelector))
 
         return try {
             if (samReader.isCardPresent) {
-                val selectionResult = samSelection.processExplicitSelection(samReader)
+                val selectionResult = samSelection.processExplicitSelections(samReader)
                 if (selectionResult.hasActiveSelection()) {
                     val calypsoSam = selectionResult.activeSmartCard as CalypsoSam
                     CardResource(samReader, calypsoSam)

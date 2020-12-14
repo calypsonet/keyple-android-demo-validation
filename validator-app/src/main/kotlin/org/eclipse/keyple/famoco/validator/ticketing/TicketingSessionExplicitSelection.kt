@@ -17,14 +17,14 @@ import java.util.Arrays
 import java.util.Date
 import org.eclipse.keyple.calypso.command.po.exception.CalypsoPoCommandException
 import org.eclipse.keyple.calypso.command.sam.exception.CalypsoSamCommandException
-import org.eclipse.keyple.calypso.transaction.PoSelectionRequest
+import org.eclipse.keyple.calypso.transaction.PoSelection
 import org.eclipse.keyple.calypso.transaction.PoSelector
 import org.eclipse.keyple.calypso.transaction.PoTransaction
 import org.eclipse.keyple.calypso.transaction.exception.CalypsoPoTransactionException
 import org.eclipse.keyple.core.card.selection.CardResource
-import org.eclipse.keyple.core.card.selection.CardSelection
+import org.eclipse.keyple.core.card.selection.CardSelectionsResult
+import org.eclipse.keyple.core.card.selection.CardSelectionsService
 import org.eclipse.keyple.core.card.selection.CardSelector
-import org.eclipse.keyple.core.card.selection.SelectionsResult
 import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.exception.KeypleReaderException
 import org.eclipse.keyple.famoco.validator.reader.IReaderRepository
@@ -45,14 +45,14 @@ class TicketingSessionExplicitSelection(readerRepository: IReaderRepository) :
      * prepare the default selection
      */
     @Throws(KeypleReaderException::class)
-    fun processExplicitSelection(): SelectionsResult {
+    fun processExplicitSelection(): CardSelectionsResult {
         /*
          * Prepare a PO selection
          */
-        cardSelection = CardSelection()
+        cardSelection = CardSelectionsService()
 
         /* Select Calypso */
-        val poSelectionRequest = PoSelectionRequest(PoSelector.builder()
+        val poSelectionRequest = PoSelection(PoSelector.builder()
             .cardProtocol(readerRepository.getContactlessIsoProtocol()!!.applicationProtocolName)
             .aidSelector(CardSelector.AidSelector.builder().aidToSelect(CalypsoInfo.AID).build())
             .invalidatedPo(PoSelector.InvalidatedPo.REJECT).build())
@@ -67,7 +67,7 @@ class TicketingSessionExplicitSelection(readerRepository: IReaderRepository) :
          * Add the selection case to the current selection (we could have added other cases here)
          */
         calypsoPoIndex = cardSelection.prepareSelection(poSelectionRequest)
-        return cardSelection.processExplicitSelection(poReader)
+        return cardSelection.processExplicitSelections(poReader)
     }
 
     /**
