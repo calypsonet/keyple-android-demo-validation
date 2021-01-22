@@ -1,2 +1,2 @@
 rootProject.name = "KeypleAndroidDemo"
-include ':validator-app'
+include ':validator-app', ':keyple-parser'

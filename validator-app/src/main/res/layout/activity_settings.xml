@@ -67,16 +67,11 @@
             style="@style/mediumBoldWhite"
             android:layout_marginBottom="@dimen/settings_edit_margin_bottom" />
 
-        <EditText
-            android:id="@+id/locationEdit"
+        <Spinner
+            android:id="@+id/spinnerLocationList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:autofillHints="location"
-            android:hint="@string/location_hint"
-            android:inputType="text"
-            android:textColorHint="@color/white"
-            app:backgroundTint="@color/white"
-            style="@style/mediumRegularWhite" />
+            android:spinnerMode="dialog" />
     </LinearLayout>
 
 

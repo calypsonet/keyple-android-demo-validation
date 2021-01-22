@@ -27,11 +27,30 @@ package org.eclipse.keyple.famoco.validator.ticketing
  *
  */
 object CalypsoInfo {
-    /** AID 1TIC.ICA*  */
-    const val AID = "315449432e494341"
+    /*********************************
+     *              AIDs
+     *********************************/
+    /** AID 1TIC.ICA * */
+    const val AID_HISTORIC = "315449432e494341"
 
-    /** AID NORMALIZED IDF*  */
-//    const val AID = "A0000004040125090101"
+    /** AID Intercode * */
+    const val AID_HIS_STRUCTURE_13H = "315449432e49434132"
+    const val AID_HIS_STRUCTURE_5H = "315449432e49434131"
+
+    /** AID NORMALIZED IDF * */
+    const val AID_NORMALIZED_IDF = "A0000004040125090101"
+
+    /** AID BANKING * */
+    const val AID_BANKING = "325041592e5359532e4444463031"
+
+
+    /*********************************
+     *           Card types
+     *********************************/
+    const val PO_TYPE_NAME_CALYPSO = "Calypso"
+    const val PO_TYPE_NAME_NAVIGO = "Navigo"
+    const val PO_TYPE_NAME_BANKING = "Banking"
+    const val PO_TYPE_NAME_OTHER = "Unknown"
 
     /** Audit-C0  */ // public final static String AID = "315449432E4943414C54";
     // / ** 1TIC.ICA AID */
@@ -48,6 +67,11 @@ object CalypsoInfo {
     const val SFI_ContractList = 0x1E.toByte()
     const val SFI_Contracts = 0x09.toByte()
     const val SFI_Counter = 0x19.toByte()
+    const val SFI_Counter_0A = 0x0A.toByte()
+    const val SFI_Counter_0B = 0x0B.toByte()
+    const val SFI_Counter_0C = 0x0C.toByte()
+    const val SFI_Counter_0D = 0x0D.toByte()
+
     const val eventLog_dataFill =
         "00112233445566778899AABBCCDDEEFF00112233445566778899AABBCC"
 }

@@ -31,9 +31,6 @@ import org.eclipse.keyple.plugin.android.nfc.AndroidNfcSupportedProtocols
 import timber.log.Timber
 
 /**
- *
- *  created on 21/09/2020
- *
  *  @author youssefamrani
  */
 
@@ -45,7 +42,8 @@ class MockSamReaderRepositoryImpl @Inject constructor(private val readerObservat
 
     @Throws(KeypleException::class)
     override fun registerPlugin(activity: Activity) {
-        SmartCardService.getInstance().registerPlugin(AndroidNfcPluginFactory(activity, readerObservationExceptionHandler))
+        SmartCardService.getInstance()
+            .registerPlugin(AndroidNfcPluginFactory(activity, readerObservationExceptionHandler))
     }
 
     @Throws(KeypleException::class)

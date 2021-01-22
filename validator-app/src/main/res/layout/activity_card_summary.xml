@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mainView"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:background="@color/colorAccent">
 
     <include
-        layout="@layout/logo_toolbar"
-        android:id="@+id/appBarLayout" />
+        android:id="@+id/appBarLayout"
+        layout="@layout/logo_toolbar" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guidelineTop"
@@ -22,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.80" />
+        app:layout_constraintGuide_begin="512dp" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guidelineLeftAnim"
@@ -63,37 +64,54 @@
 
     <TextView
         android:id="@+id/bigText"
+        style="@style/bigBoldWhite"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        style="@style/bigBoldWhite"
-        android:layout_marginTop="@dimen/summary_big_title_top_margin"
-        app:layout_constraintTop_toBottomOf="@id/animation"
+        android:layout_marginTop="@dimen/summary_desc_top_margin"
+        android:gravity="center"
+        app:layout_constraintBottom_toTopOf="@id/location_time"
         app:layout_constraintEnd_toEndOf="@id/guidelineRightTxt"
         app:layout_constraintStart_toStartOf="@id/guidelineLeftTxt"
+        app:layout_constraintTop_toBottomOf="@id/animation"
+        tools:text="Validation completed !" />
+
+    <TextView
+        android:id="@+id/location_time"
+        style="@style/mediumRegularWhite"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/summary_desc_top_margin"
+        android:gravity="center"
         app:layout_constraintBottom_toTopOf="@id/smallDesc"
-        android:gravity="center" />
+        app:layout_constraintEnd_toEndOf="@id/guidelineRightTxt"
+        app:layout_constraintStart_toStartOf="@id/guidelineLeftTxt"
+        app:layout_constraintTop_toBottomOf="@id/bigText"
+        tools:text="1\njour mois année" />
 
     <TextView
         android:id="@+id/smallDesc"
+        style="@style/mediumRegularWhite"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        style="@style/mediumRegularWhite"
         android:layout_marginTop="@dimen/summary_desc_top_margin"
-        app:layout_constraintTop_toBottomOf="@id/bigText"
+        android:gravity="center"
         app:layout_constraintBottom_toTopOf="@id/mediumText"
         app:layout_constraintEnd_toEndOf="@id/guidelineRightTxt"
         app:layout_constraintStart_toStartOf="@id/guidelineLeftTxt"
-        android:gravity="center" />
+        app:layout_constraintTop_toBottomOf="@id/location_time"
+        tools:text="You have a season pass valid until JJ Month YYYY"/>
 
     <TextView
         android:id="@+id/mediumText"
+        style="@style/bigBoldWhite"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        style="@style/bigBoldWhite"
         android:layout_marginTop="@dimen/summary_desc_top_margin"
-        app:layout_constraintTop_toBottomOf="@id/smallDesc"
+        android:gravity="center"
+        app:layout_constraintBottom_toTopOf="@+id/guidelineBottom"
         app:layout_constraintEnd_toEndOf="@id/guidelineRightTxt"
         app:layout_constraintStart_toStartOf="@id/guidelineLeftTxt"
-        android:gravity="center" />
+        app:layout_constraintTop_toBottomOf="@id/smallDesc"
+        tools:text="Have a nice trip !" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

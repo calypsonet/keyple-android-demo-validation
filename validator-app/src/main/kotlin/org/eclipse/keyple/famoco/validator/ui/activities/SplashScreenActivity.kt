@@ -22,7 +22,7 @@ import org.eclipse.keyple.famoco.validator.R
 import org.eclipse.keyple.famoco.validator.di.scopes.ActivityScoped
 
 @ActivityScoped
-class SplashScreenActivity : DaggerAppCompatActivity() {
+class SplashScreenActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Make sure this is before calling super.onCreate

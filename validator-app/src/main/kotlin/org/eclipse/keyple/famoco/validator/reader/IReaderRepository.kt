@@ -16,9 +16,6 @@ import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.exception.KeypleException
 
 /**
- *
- *  created on 21/09/2020
- *
  *  @author youssefamrani
  */
 

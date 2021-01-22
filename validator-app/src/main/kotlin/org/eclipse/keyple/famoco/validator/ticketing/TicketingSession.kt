@@ -11,6 +11,7 @@
  ********************************************************************************/
 package org.eclipse.keyple.famoco.validator.ticketing
 
+import android.content.Context
 import org.eclipse.keyple.calypso.command.po.exception.CalypsoPoCommandException
 import org.eclipse.keyple.calypso.command.sam.exception.CalypsoSamCommandException
 import org.eclipse.keyple.calypso.transaction.CalypsoPo
@@ -32,7 +33,17 @@ import org.eclipse.keyple.core.service.event.AbstractDefaultSelectionsResponse
 import org.eclipse.keyple.core.service.event.ObservableReader
 import org.eclipse.keyple.core.service.exception.KeypleReaderException
 import org.eclipse.keyple.core.util.ByteArrayUtil
+import org.eclipse.keyple.famoco.validator.models.CardReaderResponse
+import org.eclipse.keyple.famoco.validator.models.Location
 import org.eclipse.keyple.famoco.validator.reader.IReaderRepository
+import org.eclipse.keyple.famoco.validator.ticketing.CalypsoInfo.AID_BANKING
+import org.eclipse.keyple.famoco.validator.ticketing.CalypsoInfo.AID_HIS_STRUCTURE_5H
+import org.eclipse.keyple.famoco.validator.ticketing.CalypsoInfo.AID_NORMALIZED_IDF
+import org.eclipse.keyple.famoco.validator.ticketing.CalypsoInfo.PO_TYPE_NAME_BANKING
+import org.eclipse.keyple.famoco.validator.ticketing.CalypsoInfo.PO_TYPE_NAME_CALYPSO
+import org.eclipse.keyple.famoco.validator.ticketing.CalypsoInfo.PO_TYPE_NAME_NAVIGO
+import org.eclipse.keyple.famoco.validator.ticketing.CalypsoInfo.PO_TYPE_NAME_OTHER
+import org.eclipse.keyple.famoco.validator.ticketing.procedure.ValidationProcedure
 import timber.log.Timber
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -41,14 +52,9 @@ import java.util.Date
 
 class TicketingSession(readerRepository: IReaderRepository) :
     AbstractTicketingSession(readerRepository), ITicketingSession {
-    private var mifareClassicIndex = 0
 
-    //    private var mifareDesfireIndex = 0
     private var bankingCardIndex = 0
     private var navigoCardIndex = 0
-
-    override val poReader: Reader?
-        get() = readerRepository.poReader
 
     private var samReader: Reader? = null
 
@@ -72,90 +78,47 @@ class TicketingSession(readerRepository: IReaderRepository) :
          */
         cardSelection = CardSelectionsService(MultiSelectionProcessing.FIRST_MATCH)
 
-        /* Select Calypso */
+        /*
+         * Select Calypso
+         */
         val poSelectionRequest = PoSelection(
             PoSelector.builder()
                 .cardProtocol(readerRepository.getContactlessIsoProtocol()!!.applicationProtocolName)
-                .aidSelector(CardSelector.AidSelector.builder().aidToSelect(CalypsoInfo.AID).build())
+                .aidSelector(
+                    CardSelector.AidSelector.builder()
+                        .aidToSelect(AID_HIS_STRUCTURE_5H).build()
+                )
                 .invalidatedPo(PoSelector.InvalidatedPo.REJECT).build()
         )
 
-        // Prepare the reading of the Environment and Holder file.
-        poSelectionRequest.prepareReadRecordFile(
-            CalypsoInfo.SFI_EnvironmentAndHolder,
-            CalypsoInfo.RECORD_NUMBER_1.toInt()
-        )
-        poSelectionRequest.prepareReadRecordFile(
-            CalypsoInfo.SFI_Contracts,
-            CalypsoInfo.RECORD_NUMBER_1.toInt()
-        )
-        poSelectionRequest.prepareReadRecordFile(
-            CalypsoInfo.SFI_Counter,
-            CalypsoInfo.RECORD_NUMBER_1.toInt()
-        )
-        poSelectionRequest.prepareReadRecordFile(
-            CalypsoInfo.SFI_EventLog,
-            CalypsoInfo.RECORD_NUMBER_1.toInt()
-        )
-
-        /*
-         * Add the selection case to the current selection (we could have added other cases here)
-         */
         calypsoPoIndex = cardSelection.prepareSelection(poSelectionRequest)
 
-        /* Select Mifare Classic PO */
-        readerRepository.getContactlessMifareProtocol()?.let {
-            val mifareClassicSelectionRequest = GenericSeSelectionRequest(
-                CardSelector.builder()
-                    .cardProtocol(it.applicationProtocolName)
-                    .atrFilter(CardSelector.AtrFilter(".*")).build()
-            )
-
-            /*
-             * Add the selection case to the current selection
-             */
-            mifareClassicIndex = cardSelection.prepareSelection(mifareClassicSelectionRequest)
-        }
-
-        /* Select Mifare Desfire PO */
-//        val protocolMifareUltralight = AndroidNfcProtocolSettings.getSetting(AndroidNfcSupportedProtocols.MIFARE_ULTRA_LIGHT.name)
-//        val mifareDesfireSelectionRequest = GenericSeSelectionRequest(
-//            CardSelector.builder()
-//                .cardProtocol(AndroidNfcProtocolSettings.getSetting(protocolMifareUltralight))
-//                .atrFilter(SeSelector.AtrFilter(".*")).build()
-//        )
-//        mifareDesfireIndex = seSelection.prepareSelection(mifareDesfireSelectionRequest)
+        /*
+         * NAVIGO
+         */
+        val navigoCardSelectionRequest = GenericSeSelectionRequest(
+            PoSelector.builder()
+                .cardProtocol(readerRepository.getContactlessIsoProtocol()!!.applicationProtocolName)
+                .aidSelector(
+                    CardSelector.AidSelector.builder().aidToSelect(AID_NORMALIZED_IDF).build()
+                )
+                .invalidatedPo(PoSelector.InvalidatedPo.REJECT).build()
+        )
+        navigoCardIndex = cardSelection.prepareSelection(navigoCardSelectionRequest)
 
         /*
-         * Add the selection case to the current selection
+         * Banking
          */
         val bankingCardSelectionRequest = GenericSeSelectionRequest(
             PoSelector.builder()
                 .cardProtocol(readerRepository.getContactlessIsoProtocol()!!.applicationProtocolName)
                 .aidSelector(
-                    CardSelector.AidSelector.builder().aidToSelect("325041592e5359532e4444463031")
+                    CardSelector.AidSelector.builder().aidToSelect(AID_BANKING)
                         .build()
                 )
                 .invalidatedPo(PoSelector.InvalidatedPo.REJECT).build()
         )
-
-        /*
-         * Add the selection case to the current selection
-         */
         bankingCardIndex = cardSelection.prepareSelection(bankingCardSelectionRequest)
-        val naviogCardSelectionRequest = GenericSeSelectionRequest(
-            PoSelector.builder()
-                .cardProtocol(readerRepository.getContactlessIsoProtocol()!!.applicationProtocolName)
-                .aidSelector(
-                    CardSelector.AidSelector.builder().aidToSelect("A0000004040125090101").build()
-                )
-                .invalidatedPo(PoSelector.InvalidatedPo.REJECT).build()
-        )
-
-        /*
-         * Add the selection case to the current selection
-         */
-        navigoCardIndex = cardSelection.prepareSelection(naviogCardSelectionRequest)
 
         /*
          * Provide the Reader with the selection operation to be processed when a PO is inserted.
@@ -173,32 +136,27 @@ class TicketingSession(readerRepository: IReaderRepository) :
             when (selectionsResult.smartCards.keys.first()) {
                 calypsoPoIndex -> {
                     calypsoPo = selectionsResult.activeSmartCard as CalypsoPo
-                    poTypeName = "CALYPSO"
-                    efEnvironmentHolder =
-                        calypsoPo.getFileBySfi(CalypsoInfo.SFI_EnvironmentAndHolder)
-                    efEventLog = calypsoPo.getFileBySfi(CalypsoInfo.SFI_EventLog)
-                    efCounter = calypsoPo.getFileBySfi(CalypsoInfo.SFI_Counter)
-                    efContractParser = calypsoPo.getFileBySfi(CalypsoInfo.SFI_Contracts)
+                    poTypeName = PO_TYPE_NAME_CALYPSO
                 }
-                mifareClassicIndex -> {
-                    poTypeName = "MIFARE Classic"
-                }
-//                mifareDesfireIndex -> {
-//                    poTypeName = "MIFARE Desfire"
-//                }
-                bankingCardIndex -> {
-                    poTypeName = "EMV"
-                }
-                navigoCardIndex -> {
-                    poTypeName = "NAVIGO"
-                }
-                else -> {
-                    poTypeName = "OTHER"
-                }
+                bankingCardIndex -> poTypeName = PO_TYPE_NAME_BANKING
+                navigoCardIndex -> poTypeName = PO_TYPE_NAME_NAVIGO
+                else -> poTypeName = PO_TYPE_NAME_OTHER
             }
         }
         Timber.i("PO type = $poTypeName")
         return selectionsResult
+    }
+
+
+    fun launchValidationProcedure(context: Context, locations: List<Location>): CardReaderResponse {
+        return ValidationProcedure().launch(
+            context = context,
+            validationAmount = 1,
+            locations = locations,
+            calypsoPo = calypsoPo,
+            samReader = samReader,
+            ticketingSession = this
+        )
     }
 
     /**
@@ -378,7 +336,7 @@ class TicketingSession(readerRepository: IReaderRepository) :
             poTransaction.prepareDecreaseCounter(
                 CalypsoInfo.SFI_Counter,
                 CalypsoInfo.RECORD_NUMBER_1.toInt(),
-                1
+                ticketNumber
             )
 
             /*

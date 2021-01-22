@@ -16,13 +16,13 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 
 /**
- *
- *  created on 01/10/2020
- *
  *  @author youssefamrani
  */
 
-suspend inline fun <T> suspendCoroutineWithTimeout(timeout: Long, crossinline block: (Continuation<T>) -> Unit): T? {
+suspend inline fun <T> suspendCoroutineWithTimeout(
+    timeout: Long,
+    crossinline block: (Continuation<T>) -> Unit
+): T? {
     var finalValue: T? = null
     withTimeoutOrNull(timeout) {
         finalValue = suspendCancellableCoroutine(block = block)

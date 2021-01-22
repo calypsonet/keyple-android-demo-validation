@@ -31,13 +31,13 @@ import org.eclipse.keyple.famoco.validator.reader.IReaderRepository
 import org.eclipse.keyple.famoco.validator.reader.PoReaderProtocol
 
 /**
- *
- *  created on 21/09/2020
- *
  *  @author youssefamrani
  */
 
-class CoppernicReaderRepositoryImpl @Inject constructor(private val applicationContext: Context, private val readerObservationExceptionHandler: ReaderObservationExceptionHandler) :
+class CoppernicReaderRepositoryImpl @Inject constructor(
+    private val applicationContext: Context,
+    private val readerObservationExceptionHandler: ReaderObservationExceptionHandler
+) :
     IReaderRepository {
 
     override var poReader: Reader? = null
@@ -119,7 +119,8 @@ class CoppernicReaderRepositoryImpl @Inject constructor(private val applicationC
         )
     }
 
-    override fun getSamReaderProtocol(): String = ParagonSupportedContactProtocols.INNOVATRON_HIGH_SPEED_PROTOCOL.name
+    override fun getSamReaderProtocol(): String =
+        ParagonSupportedContactProtocols.INNOVATRON_HIGH_SPEED_PROTOCOL.name
 
     override fun clear() {
         poReader?.deactivateProtocol(getContactlessIsoProtocol()!!.readerProtocolName)
