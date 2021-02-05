@@ -17,10 +17,6 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import com.airbnb.lottie.LottieDrawable
-import dagger.android.support.DaggerAppCompatActivity
-import java.util.Timer
-import java.util.TimerTask
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_card_reader.animation
 import kotlinx.android.synthetic.main.activity_card_reader.mainView
 import kotlinx.android.synthetic.main.activity_card_reader.presentCardTv
@@ -34,16 +30,20 @@ import org.eclipse.keyple.core.service.exception.KeyplePluginInstantiationExcept
 import org.eclipse.keyple.famoco.validator.BuildConfig
 import org.eclipse.keyple.famoco.validator.R
 import org.eclipse.keyple.famoco.validator.data.CardReaderApi
-import org.eclipse.keyple.famoco.validator.data.model.CardReaderResponse
-import org.eclipse.keyple.famoco.validator.data.model.Status
 import org.eclipse.keyple.famoco.validator.di.scopes.ActivityScoped
-import org.eclipse.keyple.famoco.validator.ticketing.ITicketingSession
+import org.eclipse.keyple.famoco.validator.models.CardReaderResponse
+import org.eclipse.keyple.famoco.validator.models.KeypleSettings
+import org.eclipse.keyple.famoco.validator.models.Status
+import org.eclipse.keyple.famoco.validator.ticketing.CalypsoInfo
 import org.eclipse.keyple.famoco.validator.ticketing.TicketingSession
-import org.eclipse.keyple.famoco.validator.util.KeypleSettings
 import timber.log.Timber
+import java.util.Date
+import java.util.Timer
+import java.util.TimerTask
+import javax.inject.Inject
 
 @ActivityScoped
-class CardReaderActivity : DaggerAppCompatActivity() {
+class CardReaderActivity : BaseActivity() {
 
     @Inject
     lateinit var cardReaderApi: CardReaderApi
@@ -162,13 +162,14 @@ class CardReaderActivity : DaggerAppCompatActivity() {
                     animation.cancelAnimation()
                 }
                 val intent = Intent(this, CardSummaryActivity::class.java)
-                intent.putExtra(
-                    CardSummaryActivity.STATUS_KEY,
-                    cardReaderResponse.status.toString()
-                )
-                intent.putExtra(CardSummaryActivity.TICKETS_KEY, cardReaderResponse.ticketsNumber)
-                intent.putExtra(CardSummaryActivity.CONTRACT, cardReaderResponse.contract)
-                intent.putExtra(CardSummaryActivity.CARD_TYPE, cardReaderResponse.cardType)
+                val bundle = Bundle()
+                bundle.putParcelable(CardReaderResponse::class.simpleName, cardReaderResponse)
+                intent.putExtra("bundle", bundle)
+//                intent.putExtra(CardSummaryActivity.STATUS_KEY, cardReaderResponse.status.toString())
+//                intent.putExtra(CardSummaryActivity.TICKETS_KEY, cardReaderResponse.nbTicketsLeft)
+//                intent.putExtra(CardSummaryActivity.CONTRACT, cardReaderResponse.contract)
+//                intent.putExtra(CardSummaryActivity.CARD_TYPE, cardReaderResponse.cardType)
+
                 startActivity(intent)
             }
         } else {
@@ -199,18 +200,36 @@ class CardReaderActivity : DaggerAppCompatActivity() {
 
                 if (!seSelectionResult.hasActiveSelection()) {
                     Timber.e("PO Not selected")
-                    changeDisplay(CardReaderResponse(Status.INVALID_CARD, 0, "", ""))
+                    val error = String.format(
+                        getString(R.string.card_invalid_desc),
+                        "a case of PO Not selected"
+                    )
+                    changeDisplay(
+                        CardReaderResponse(
+                            status = Status.INVALID_CARD,
+                            contract = null,
+                            cardType = null,
+                            validation = null,
+                            errorMessage = error
+                        )
+                    )
                     return
                 }
 
                 Timber.i("PO Type = ${ticketingSession.poTypeName}")
-                if ("CALYPSO" != ticketingSession.poTypeName) {
+                if (CalypsoInfo.PO_TYPE_NAME_CALYPSO != ticketingSession.poTypeName) {
+                    val cardType = ticketingSession.poTypeName ?: "Unknown card"
+                    val error = String.format(
+                        getString(R.string.card_invalid_small_desc),
+                        cardType.trim { it <= ' ' }
+                    )
                     changeDisplay(
                         CardReaderResponse(
-                            Status.INVALID_CARD,
-                            0,
-                            "",
-                            ticketingSession.poTypeName ?: ""
+                            status = Status.INVALID_CARD,
+                            cardType = cardType,
+                            contract = null,
+                            validation = null,
+                            errorMessage = error
                         )
                     )
                     return
@@ -237,85 +256,27 @@ class CardReaderActivity : DaggerAppCompatActivity() {
                     ReaderEvent.EventType.CARD_INSERTED, ReaderEvent.EventType.CARD_MATCHED -> {
                         try {
                             if (ticketingSession.analyzePoProfile()) {
-                                val cardContent = ticketingSession.cardContent
-                                val contract = String(cardContent.contracts[1] ?: byteArrayOf(0))
-                                Timber.i("Contract =  $contract")
-                                if (contract.isEmpty() || contract.contains("NO CONTRACT") || !contract.contains(
-                                        "SEASON"
-                                    )
-                                ) {
-                                    // index des counters commence à un
-                                    cardContent.counters[1]?.let {
-                                        if (it > 0) {
-                                            if (ticketingSession.debitTickets(1) == ITicketingSession.STATUS_OK) {
-                                                Timber.i("Debit TICKETS_FOUND page.")
-                                                changeDisplay(
-                                                    CardReaderResponse(
-                                                        Status.TICKETS_FOUND,
-                                                        it - 1,
-                                                        "",
-                                                        ticketingSession.poTypeName ?: ""
-                                                    )
-                                                )
-                                            } else {
-                                                Timber.i("Debit ERROR page.")
-                                                changeDisplay(
-                                                    CardReaderResponse(
-                                                        Status.ERROR,
-                                                        0,
-                                                        "",
-                                                        ticketingSession.poTypeName ?: ""
-                                                    )
-                                                )
-                                            }
-                                        } else {
-                                            Timber.i("Load EMPTY_CARD page.")
-                                            changeDisplay(
-                                                CardReaderResponse(
-                                                    Status.EMPTY_CARD,
-                                                    0,
-                                                    "",
-                                                    ticketingSession.poTypeName ?: ""
-                                                )
-                                            )
-                                        }
-                                    }
-                                } else {
-                                    if (ticketingSession.loadTickets(0) == ITicketingSession.STATUS_OK) {
-                                        Timber.i("Season TICKETS_FOUND page.")
-                                        changeDisplay(
-                                            CardReaderResponse(
-                                                Status.TICKETS_FOUND,
-                                                0,
-                                                contract,
-                                                ticketingSession.poTypeName ?: ""
-                                            )
-                                        )
-                                    } else {
-                                        Timber.i("Season ticket ERROR page.")
-                                        changeDisplay(
-                                            CardReaderResponse(
-                                                Status.ERROR,
-                                                0,
-                                                "",
-                                                ticketingSession.poTypeName ?: ""
-                                            )
-                                        )
-                                    }
-                                }
+                                val validationResult =
+                                    ticketingSession.launchValidationProcedure(this@CardReaderActivity, locationFileManager.getLocations())
+                                changeDisplay(validationResult)
                             }
                         } catch (e: IllegalStateException) {
                             Timber.e(e)
                             Timber.e("Load ERROR page after exception = ${e.message}")
                             changeDisplay(
                                 CardReaderResponse(
-                                    Status.ERROR,
-                                    0,
-                                    "",
-                                    ticketingSession.poTypeName ?: ""
+                                    status = Status.ERROR,
+                                    nbTicketsLeft = 0,
+                                    contract = "",
+                                    cardType = ticketingSession.poTypeName ?: "",
+                                    validation = null,
+                                    errorMessage = e.message
                                 )
                             )
                         }
+                    }
+                    else -> {
+                        //Do nothing
                     }
                 }
             }
@@ -325,7 +286,7 @@ class CardReaderActivity : DaggerAppCompatActivity() {
         Timber.i("New state = $currentAppState")
     }
 
-    fun showProgress() {
+    private fun showProgress() {
         if (!progress.isShowing) {
             progress.show()
         }
@@ -373,22 +334,27 @@ class CardReaderActivity : DaggerAppCompatActivity() {
         timer.schedule(object : TimerTask() {
             override fun run() {
                 /** Change this value to see other status screens **/
-                val status: Status = Status.TICKETS_FOUND
+                val status: Status = Status.SUCCESS
+
                 when (status) {
-                    Status.TICKETS_FOUND -> changeDisplay(
+                    Status.SUCCESS -> changeDisplay(
                         CardReaderResponse(
-                            Status.TICKETS_FOUND,
-                            7,
-                            "Season Pass",
-                            ""
+                            status = status,
+                            nbTicketsLeft = 7,
+                            contract = "Season Pass",
+                            cardType = CalypsoInfo.PO_TYPE_NAME_CALYPSO,
+                            validation = null,
+                            eventDate = Date()
                         )
                     )
-                    Status.LOADING, Status.ERROR, Status.SUCCESS, Status.INVALID_CARD, Status.EMPTY_CARD -> changeDisplay(
+                    Status.LOADING, Status.ERROR, Status.INVALID_CARD, Status.EMPTY_CARD -> changeDisplay(
                         CardReaderResponse(
-                            status,
-                            0,
-                            "",
-                            ""
+                            status = status,
+                            nbTicketsLeft = 0,
+                            contract = "",
+                            cardType = "",
+                            validation = null,
+                            errorMessage = "An error has occured during validation"
                         )
                     )
                 }

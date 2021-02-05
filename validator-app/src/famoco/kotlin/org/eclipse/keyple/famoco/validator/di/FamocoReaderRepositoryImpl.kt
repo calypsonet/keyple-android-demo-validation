@@ -34,9 +34,6 @@ import org.eclipse.keyple.plugin.android.nfc.AndroidNfcSupportedProtocols
 import timber.log.Timber
 
 /**
- *
- *  created on 21/09/2020
- *
  *  @author youssefamrani
  */
 
@@ -48,7 +45,8 @@ class FamocoReaderRepositoryImpl @Inject constructor(private val readerObservati
 
     @Throws(KeypleException::class)
     override fun registerPlugin(activity: Activity) {
-        SmartCardService.getInstance().registerPlugin(AndroidNfcPluginFactory(activity, readerObservationExceptionHandler))
+        SmartCardService.getInstance()
+            .registerPlugin(AndroidNfcPluginFactory(activity, readerObservationExceptionHandler))
         try {
             SmartCardService.getInstance().registerPlugin(AndroidFamocoPluginFactory())
         } catch (e: UnsatisfiedLinkError) {
@@ -90,7 +88,8 @@ class FamocoReaderRepositoryImpl @Inject constructor(private val readerObservati
     @Throws(KeypleException::class)
     override suspend fun initSamReaders(): Map<String, Reader> {
         if (samReaders.isNullOrEmpty()) {
-            val samPlugin = SmartCardService.getInstance().getPlugin(AndroidFamocoPlugin.PLUGIN_NAME)
+            val samPlugin =
+                SmartCardService.getInstance().getPlugin(AndroidFamocoPlugin.PLUGIN_NAME)
 
             if (samPlugin != null) {
                 val samReader = samPlugin.getReader(AndroidFamocoReader.READER_NAME)

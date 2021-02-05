@@ -17,8 +17,7 @@
     <dimen name="toolbar_logo_padding">4dp</dimen>
 
     <dimen name="big_text_size">22sp</dimen>
-    <dimen name="medium_text_size">20sp</dimen>
-    <dimen name="small_text_size">17.3sp</dimen>
+    <dimen name="medium_text_size">18sp</dimen>
 
     <dimen name="settings_horizontal_padding">47dp</dimen>
     <dimen name="settings_edit_margin_bottom">10dp</dimen>
@@ -36,6 +35,5 @@
 
     <dimen name="reading_animation_size">150dp</dimen>
 
-    <dimen name="summary_big_title_top_margin">50dp</dimen>
-    <dimen name="summary_desc_top_margin">30dp</dimen>
+    <dimen name="summary_desc_top_margin">15dp</dimen>
 </resources>

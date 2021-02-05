@@ -19,9 +19,6 @@ import org.eclipse.keyple.famoco.validator.reader.IReaderRepository
 import timber.log.Timber
 
 /**
- *
- *  created on 18/09/2020
- *
  *  @author youssefamrani
  */
 

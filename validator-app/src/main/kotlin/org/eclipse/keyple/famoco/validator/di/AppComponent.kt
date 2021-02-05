@@ -19,7 +19,7 @@ import org.eclipse.keyple.famoco.validator.Application
 import org.eclipse.keyple.famoco.validator.di.scopes.AppScoped
 
 @AppScoped
-@Component(modules = [AppModule::class, UIModule::class, SchedulerModule::class, AndroidSupportInjectionModule::class, ReaderModule::class])
+@Component(modules = [AppModule::class, UIModule::class, SchedulerModule::class, AndroidSupportInjectionModule::class, ReaderModule::class, LocationModule::class])
 interface AppComponent : AndroidInjector<Application?> {
     @Component.Builder
     interface Builder {

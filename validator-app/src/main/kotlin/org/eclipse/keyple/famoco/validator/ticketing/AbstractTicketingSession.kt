@@ -28,11 +28,17 @@ import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.event.ObservableReader
 import org.eclipse.keyple.core.service.exception.KeypleReaderException
 import org.eclipse.keyple.famoco.validator.reader.IReaderRepository
+import org.eclipse.keyple.parser.dto.CardletInputDto
+import org.eclipse.keyple.parser.keyple.CardletParser
+import org.eclipse.keyple.parser.model.CardletDto
 import timber.log.Timber
 
 abstract class AbstractTicketingSession protected constructor(
     protected val readerRepository: IReaderRepository
 ) {
+
+    val poReader: Reader?
+        get() = readerRepository.poReader
 
     protected lateinit var calypsoPo: CalypsoPo
     protected lateinit var cardSelection: CardSelectionsService
@@ -87,10 +93,6 @@ abstract class AbstractTicketingSession protected constructor(
             currentPoSN = calypsoPo.applicationSerialNumberBytes
             cardContent.serialNumber = currentPoSN
             cardContent.poRevision = calypsoPo.revision.toString()
-            cardContent.environment = efEnvironmentHolder.data.allRecordsContent
-            cardContent.eventLog = efEventLog.data.allRecordsContent
-            cardContent.counters = efCounter.data.allCountersValue
-            cardContent.contracts = efContractParser.data.allRecordsContent
             status = true
         }
         return status
@@ -101,7 +103,7 @@ abstract class AbstractTicketingSession protected constructor(
     }
 
     @Throws(KeypleReaderException::class, IllegalStateException::class)
-    protected fun checkSamAndOpenChannel(samReader: Reader): CardResource<CalypsoSam> {
+    open fun checkSamAndOpenChannel(samReader: Reader): CardResource<CalypsoSam> {
         /*
          * check the availability of the SAM doing a ATR based selection, open its physical and
          * logical channels and keep it open
@@ -164,7 +166,5 @@ abstract class AbstractTicketingSession protected constructor(
             .build()
     }
 
-    fun samReaderAvailable(): Boolean {
-        return readerRepository.getSamReader() != null
-    }
+    fun parseCardlet(cardletDto: CardletInputDto): CardletDto? = CardletParser().parseCardlet(cardletDto)
 }

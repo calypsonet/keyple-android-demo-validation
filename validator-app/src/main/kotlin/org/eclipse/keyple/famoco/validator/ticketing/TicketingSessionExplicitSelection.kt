@@ -11,10 +11,6 @@
  ********************************************************************************/
 package org.eclipse.keyple.famoco.validator.ticketing
 
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.Arrays
-import java.util.Date
 import org.eclipse.keyple.calypso.command.po.exception.CalypsoPoCommandException
 import org.eclipse.keyple.calypso.command.sam.exception.CalypsoSamCommandException
 import org.eclipse.keyple.calypso.transaction.PoSelection
@@ -28,13 +24,17 @@ import org.eclipse.keyple.core.card.selection.CardSelector
 import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.exception.KeypleReaderException
 import org.eclipse.keyple.famoco.validator.reader.IReaderRepository
+import org.eclipse.keyple.famoco.validator.ticketing.CalypsoInfo.AID_HISTORIC
 import timber.log.Timber
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.Arrays
+import java.util.Date
+import java.util.Locale
 
 class TicketingSessionExplicitSelection(readerRepository: IReaderRepository) :
     AbstractTicketingSession(readerRepository), ITicketingSession {
 
-    override val poReader: Reader?
-        get() = readerRepository.poReader
     private var samReader: Reader? = null
 
     init {
@@ -52,16 +52,32 @@ class TicketingSessionExplicitSelection(readerRepository: IReaderRepository) :
         cardSelection = CardSelectionsService()
 
         /* Select Calypso */
-        val poSelectionRequest = PoSelection(PoSelector.builder()
-            .cardProtocol(readerRepository.getContactlessIsoProtocol()!!.applicationProtocolName)
-            .aidSelector(CardSelector.AidSelector.builder().aidToSelect(CalypsoInfo.AID).build())
-            .invalidatedPo(PoSelector.InvalidatedPo.REJECT).build())
+        val poSelectionRequest = PoSelection(
+            PoSelector.builder()
+                .cardProtocol(readerRepository.getContactlessIsoProtocol()!!.applicationProtocolName)
+                .aidSelector(
+                    CardSelector.AidSelector.builder().aidToSelect(AID_HISTORIC).build()
+                )
+                .invalidatedPo(PoSelector.InvalidatedPo.REJECT).build()
+        )
 
         // Prepare the reading of the Environment and Holder file.
-        poSelectionRequest.prepareReadRecordFile(CalypsoInfo.SFI_EnvironmentAndHolder, CalypsoInfo.RECORD_NUMBER_1.toInt())
-        poSelectionRequest.prepareReadRecordFile(CalypsoInfo.SFI_Contracts, CalypsoInfo.RECORD_NUMBER_1.toInt())
-        poSelectionRequest.prepareReadRecordFile(CalypsoInfo.SFI_Counter, CalypsoInfo.RECORD_NUMBER_1.toInt())
-        poSelectionRequest.prepareReadRecordFile(CalypsoInfo.SFI_EventLog, CalypsoInfo.RECORD_NUMBER_1.toInt())
+        poSelectionRequest.prepareReadRecordFile(
+            CalypsoInfo.SFI_EnvironmentAndHolder,
+            CalypsoInfo.RECORD_NUMBER_1.toInt()
+        )
+        poSelectionRequest.prepareReadRecordFile(
+            CalypsoInfo.SFI_Contracts,
+            CalypsoInfo.RECORD_NUMBER_1.toInt()
+        )
+        poSelectionRequest.prepareReadRecordFile(
+            CalypsoInfo.SFI_Counter,
+            CalypsoInfo.RECORD_NUMBER_1.toInt()
+        )
+        poSelectionRequest.prepareReadRecordFile(
+            CalypsoInfo.SFI_EventLog,
+            CalypsoInfo.RECORD_NUMBER_1.toInt()
+        )
 
         /*
          * Add the selection case to the current selection (we could have added other cases here)
@@ -93,7 +109,10 @@ class TicketingSessionExplicitSelection(readerRepository: IReaderRepository) :
 
             val poTransaction =
                 if (samReader != null)
-                    PoTransaction(CardResource(poReader, calypsoPo), getSecuritySettings(checkSamAndOpenChannel(samReader!!)))
+                    PoTransaction(
+                        CardResource(poReader, calypsoPo),
+                        getSecuritySettings(checkSamAndOpenChannel(samReader!!))
+                    )
                 else
                     PoTransaction(CardResource(poReader, calypsoPo))
 
@@ -110,18 +129,24 @@ class TicketingSessionExplicitSelection(readerRepository: IReaderRepository) :
             /*
              * Read actual ticket number
              */
-            poTransaction.prepareReadRecordFile(CalypsoInfo.SFI_Counter, CalypsoInfo.RECORD_NUMBER_1.toInt())
+            poTransaction.prepareReadRecordFile(
+                CalypsoInfo.SFI_Counter,
+                CalypsoInfo.RECORD_NUMBER_1.toInt()
+            )
             poTransaction.processPoCommands()
 
-            poTransaction.prepareIncreaseCounter(CalypsoInfo.SFI_Counter, CalypsoInfo.RECORD_NUMBER_1.toInt(), ticketNumber)
+            poTransaction.prepareIncreaseCounter(
+                CalypsoInfo.SFI_Counter,
+                CalypsoInfo.RECORD_NUMBER_1.toInt(),
+                ticketNumber
+            )
 
             /*
              * Prepare record to be sent to Calypso PO log journal
              */
-            val dateFormat: DateFormat = SimpleDateFormat("yyMMdd HH:mm:ss")
+            val dateFormat: DateFormat = SimpleDateFormat("yyMMdd HH:mm:ss", Locale.getDefault())
             val dateTime = dateFormat.format(Date())
-            var event = ""
-            event = if (ticketNumber > 0) {
+            val event = if (ticketNumber > 0) {
                 pad("$dateTime OP = +$ticketNumber", ' ', 29)
             } else {
                 pad("$dateTime T1", ' ', 29)

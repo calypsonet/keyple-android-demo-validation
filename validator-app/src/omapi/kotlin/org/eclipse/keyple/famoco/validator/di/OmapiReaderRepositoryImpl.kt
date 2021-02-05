@@ -38,13 +38,13 @@ import org.eclipse.keyple.plugin.android.omapi.PLUGIN_NAME
 import timber.log.Timber
 
 /**
- *
- *  created on 21/09/2020
- *
  *  @author youssefamrani
  */
 
-class OmapiReaderRepositoryImpl @Inject constructor(private val applicationContext: Context, private val readerObservationExceptionHandler: ReaderObservationExceptionHandler) :
+class OmapiReaderRepositoryImpl @Inject constructor(
+    private val applicationContext: Context,
+    private val readerObservationExceptionHandler: ReaderObservationExceptionHandler
+) :
     IReaderRepository {
 
     override var poReader: Reader? = null
@@ -52,9 +52,12 @@ class OmapiReaderRepositoryImpl @Inject constructor(private val applicationConte
 
     @Throws(KeypleException::class)
     override fun registerPlugin(activity: Activity) {
-        SmartCardService.getInstance().registerPlugin(AndroidNfcPluginFactory(
-            activity,
-            readerObservationExceptionHandler))
+        SmartCardService.getInstance().registerPlugin(
+            AndroidNfcPluginFactory(
+                activity,
+                readerObservationExceptionHandler
+            )
+        )
         try {
             AndroidOmapiPluginFactory(applicationContext) {
                 SmartCardService.getInstance().registerPlugin(it)

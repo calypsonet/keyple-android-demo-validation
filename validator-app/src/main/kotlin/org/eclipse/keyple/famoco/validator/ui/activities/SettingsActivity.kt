@@ -14,45 +14,44 @@ package org.eclipse.keyple.famoco.validator.ui.activities
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
-import android.text.Editable
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.ArrayAdapter
 import kotlinx.android.synthetic.main.activity_settings.batteryPoweredBox
-import kotlinx.android.synthetic.main.activity_settings.locationEdit
+import kotlinx.android.synthetic.main.activity_settings.spinnerLocationList
 import kotlinx.android.synthetic.main.activity_settings.startBtn
 import kotlinx.android.synthetic.main.activity_settings.timeBtn
-import kotlinx.android.synthetic.main.logo_toolbar.toolbarLogo
-import org.eclipse.keyple.famoco.validator.BuildConfig
 import org.eclipse.keyple.famoco.validator.R
-import org.eclipse.keyple.famoco.validator.util.KeypleSettings
+import org.eclipse.keyple.famoco.validator.models.KeypleSettings
+import org.eclipse.keyple.famoco.validator.models.Location
 
-class SettingsActivity : AppCompatActivity() {
+class SettingsActivity : BaseActivity() {
+
+    private var mLocationAdapter: ArrayAdapter<Location>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
         setSupportActionBar(findViewById(R.id.toolbar))
 
+        //Init location spinner
+        val locations = locationFileManager.getLocations()
+        mLocationAdapter = ArrayAdapter(
+            this,
+            R.layout.spinner_item_location, R.id.spinner_item_text, locations
+        )
+        spinnerLocationList.adapter = mLocationAdapter
+
         timeBtn.setOnClickListener {
             startActivityForResult(Intent(Settings.ACTION_DATE_SETTINGS), 0)
         }
 
         startBtn.setOnClickListener {
-            KeypleSettings.location = locationEdit.text.toString()
             KeypleSettings.batteryPowered = batteryPoweredBox.isChecked
-            if (!KeypleSettings.location.isNullOrBlank()) {
-                if (KeypleSettings.batteryPowered) {
-                    startActivity(Intent(this, HomeActivity::class.java))
-                } else {
-                    startActivity(Intent(this, CardReaderActivity::class.java))
-                }
+            KeypleSettings.location = spinnerLocationList.selectedItem as Location
+            if (KeypleSettings.batteryPowered) {
+                startActivity(Intent(this, HomeActivity::class.java))
             } else {
-                Toast.makeText(this, R.string.msg_location_empty, Toast.LENGTH_LONG).show()
+                startActivity(Intent(this, CardReaderActivity::class.java))
             }
-        }
-
-        if (BuildConfig.DEBUG) {
-            locationEdit.text = Editable.Factory.getInstance().newEditable("Paris")
         }
     }
 }

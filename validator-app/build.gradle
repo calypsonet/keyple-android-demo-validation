@@ -92,6 +92,8 @@ android {
 }
 
 dependencies {
+    implementation project(":keyple-parser")
+
     implementation "androidx.appcompat:appcompat:$appcompat_version"
     implementation "androidx.constraintlayout:constraintlayout:$constraintlayout_version"
     implementation "com.google.android.material:material:1.1.0-rc02"
@@ -140,8 +142,16 @@ dependencies {
     implementation "com.google.dagger:dagger-android-support:$daggerVersion"
     compileOnly 'org.glassfish:javax.annotation:10.0-b28'
 
+    // Devnied - Byte Utils
+    implementation('com.github.devnied:bit-lib4j:1.4.5') {
+        exclude group: 'org.slf4j'
+    }
+
     // Lottie for animation
     implementation 'com.airbnb.android:lottie:3.4.4'
+
+    //Joda Time
+    implementation "joda-time:joda-time:2.8.1"
 
     implementation "com.jakewharton.timber:timber:$timber_version" //Android
 
@@ -150,4 +160,5 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation "androidx.test.ext:junit:$junit_androidx_ext_version"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_core_version"
+    testImplementation 'org.robolectric:robolectric:4.3.1'
 }

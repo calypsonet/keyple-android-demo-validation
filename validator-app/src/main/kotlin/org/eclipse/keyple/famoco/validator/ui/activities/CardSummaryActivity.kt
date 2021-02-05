@@ -14,87 +14,92 @@ package org.eclipse.keyple.famoco.validator.ui.activities
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.View
-import dagger.android.support.DaggerAppCompatActivity
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
-import java.util.Timer
-import java.util.TimerTask
 import kotlinx.android.synthetic.main.activity_card_summary.animation
 import kotlinx.android.synthetic.main.activity_card_summary.bigText
+import kotlinx.android.synthetic.main.activity_card_summary.location_time
 import kotlinx.android.synthetic.main.activity_card_summary.mainView
 import kotlinx.android.synthetic.main.activity_card_summary.mediumText
 import kotlinx.android.synthetic.main.activity_card_summary.smallDesc
 import org.eclipse.keyple.famoco.validator.R
-import org.eclipse.keyple.famoco.validator.data.model.Status
-import org.eclipse.keyple.famoco.validator.data.model.Status.Companion.getStatus
-import org.eclipse.keyple.famoco.validator.util.KeypleSettings
+import org.eclipse.keyple.famoco.validator.models.CardReaderResponse
+import org.eclipse.keyple.famoco.validator.models.Status
+import org.eclipse.keyple.parser.utils.DateUtils
+import java.util.Timer
+import java.util.TimerTask
 
-class CardSummaryActivity : DaggerAppCompatActivity() {
+class CardSummaryActivity : BaseActivity() {
 
     private val timer = Timer()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_card_summary)
-        val status =
-            getStatus(
-                intent.getStringExtra(STATUS_KEY)!!
-            )
-        when (status) {
-            Status.TICKETS_FOUND -> {
-                val df: DateFormat =
-                    SimpleDateFormat("dd/MM/yyyy, HH:mm", Locale.ENGLISH)
-                val date = df.format(Calendar.getInstance().time)
-                mainView.setBackgroundColor(resources.getColor(R.color.green))
+
+        val bundle = intent.getBundleExtra("bundle")!!
+        val cardReaderResponse =
+            bundle.getParcelable<CardReaderResponse>(CardReaderResponse::class.simpleName)
+
+        when (cardReaderResponse?.status) {
+            Status.SUCCESS -> {
                 animation.setAnimation("tick_white.json")
+                mainView.setBackgroundColor(resources.getColor(R.color.green))
+
                 bigText.setText(R.string.valid_main_desc)
-                val nbTickets =
-                    intent.getIntExtra(TICKETS_KEY, 0)
-                if (nbTickets != 0) {
-                    smallDesc.text = String.format(
-                        getString(R.string.valid_small_desc),
-                        KeypleSettings.location.toString(),
-                        date,
-                        nbTickets
-                    )
+
+                val eventDate =
+                    DateUtils.formatDateToDisplayWithHour(cardReaderResponse.eventDate!!)
+                location_time.text = getString(
+                    R.string.valid_location_time,
+                    cardReaderResponse.validation?.location?.name,
+                    eventDate
+                )
+
+                val nbTickets = cardReaderResponse.nbTicketsLeft
+                if (nbTickets != null) {
+                    smallDesc.text = when (nbTickets) {
+                        0 -> getString(R.string.valid_trips_left_zero)
+                        1 -> getString(R.string.valid_trips_left_single)
+                        else -> getString(R.string.valid_trips_left_multiple, nbTickets)
+                    }
                 } else {
-                    smallDesc.text = String.format(
-                        getString(R.string.valid_season_ticket_small_desc),
-                        date,
-                        intent.getStringExtra(CONTRACT)
-                            ?.trim { it <= ' ' }
-                    )
+                    val validityEndDate =
+                        DateUtils.formatDateToDisplay(cardReaderResponse.passValidityEndDate!!)
+                    smallDesc.text = getString(R.string.valid_season_ticket, validityEndDate)
                 }
+
                 mediumText.setText(R.string.valid_last_desc)
-                mediumText.visibility = View.VISIBLE
             }
             Status.INVALID_CARD -> {
-                mainView.setBackgroundColor(resources.getColor(R.color.orange))
                 animation.setAnimation("error_white.json")
+                mainView.setBackgroundColor(resources.getColor(R.color.orange))
+
                 bigText.setText(R.string.card_invalid_main_desc)
-                smallDesc.text = String.format(
-                    getString(R.string.card_invalid_small_desc),
-                    intent.getStringExtra(CARD_TYPE)
-                        ?.trim { it <= ' ' }
-                )
-                mediumText.visibility = View.GONE
+                location_time.text = cardReaderResponse.errorMessage
+
+                mediumText.visibility = View.INVISIBLE
+                smallDesc.visibility = View.INVISIBLE
             }
             Status.EMPTY_CARD -> {
                 mainView.setBackgroundColor(resources.getColor(R.color.red))
                 animation.setAnimation("error_white.json")
-                bigText.setText(R.string.no_tickets_main_desc)
-                smallDesc.setText(R.string.no_tickets_small_desc)
-                mediumText.visibility = View.GONE
+
+                bigText.text = cardReaderResponse.errorMessage
+                location_time.setText(R.string.no_tickets_small_desc)
+
+                mediumText.visibility = View.INVISIBLE
+                smallDesc.visibility = View.INVISIBLE
             }
             else -> {
                 mainView.setBackgroundColor(resources.getColor(R.color.red))
                 animation.setAnimation("error_white.json")
+
                 bigText.setText(R.string.error_main_desc)
-                smallDesc.setText(R.string.error_small_desc)
-                mediumText.visibility = View.GONE
+                location_time.setText(R.string.error_small_desc)
+
+                mediumText.visibility = View.INVISIBLE
+                smallDesc.visibility = View.INVISIBLE
             }
         }
+
         animation.playAnimation()
 
         // Play sound
@@ -108,20 +113,12 @@ class CardSummaryActivity : DaggerAppCompatActivity() {
         }, RETURN_DELAY_MS.toLong())
     }
 
-    override fun onResume() {
-        super.onResume()
-    }
-
     override fun onPause() {
         super.onPause()
         timer.cancel()
     }
 
     companion object {
-        const val STATUS_KEY = "status"
-        const val TICKETS_KEY = "tickets"
-        const val CONTRACT = "contract"
-        const val CARD_TYPE = "cardtype"
         private const val RETURN_DELAY_MS = 6000
     }
 }
