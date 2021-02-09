@@ -15,7 +15,7 @@ android {
     buildToolsVersion "29.0.3"
 
     defaultConfig {
-        applicationId "org.eclipse.keyple.famoco.validator"
+        applicationId "org.eclipse.keyple.demo.validator"
         minSdkVersion 19
         multiDexEnabled true
         targetSdkVersion 29

@@ -9,7 +9,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.keyple.famoco.validator.di
+package org.eclipse.keyple.demo.validator.di
 
 import android.app.Activity
 import android.content.Context
@@ -26,8 +26,8 @@ import org.eclipse.keyple.core.service.exception.KeypleException
 import org.eclipse.keyple.core.service.exception.KeyplePluginInstantiationException
 import org.eclipse.keyple.core.service.util.ContactCardCommonProtocols
 import org.eclipse.keyple.core.service.util.ContactlessCardCommonProtocols
-import org.eclipse.keyple.famoco.validator.reader.IReaderRepository
-import org.eclipse.keyple.famoco.validator.reader.PoReaderProtocol
+import org.eclipse.keyple.demo.validator.reader.IReaderRepository
+import org.eclipse.keyple.demo.validator.reader.PoReaderProtocol
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcPlugin
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcPluginFactory
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcProtocolSettings

@@ -9,14 +9,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.keyple.famoco.validator.di
+package org.eclipse.keyple.demo.validator.di
 
 import android.content.Context
 import dagger.Module
 import dagger.Provides
 import org.eclipse.keyple.core.service.event.ReaderObservationExceptionHandler
-import org.eclipse.keyple.famoco.validator.di.scopes.AppScoped
-import org.eclipse.keyple.famoco.validator.reader.IReaderRepository
+import org.eclipse.keyple.demo.validator.di.scopes.AppScoped
+import org.eclipse.keyple.demo.validator.reader.IReaderRepository
 import timber.log.Timber
 
 /**

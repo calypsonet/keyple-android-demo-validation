@@ -11,7 +11,6 @@
  ********************************************************************************/
 package org.eclipse.keyple.demo.validator.di
 
-import android.content.Context
 import dagger.Module
 import dagger.Provides
 import org.eclipse.keyple.core.service.event.ReaderObservationExceptionHandler
@@ -28,12 +27,9 @@ import timber.log.Timber
 class ReaderModule {
 
     @Provides
-    fun provideReaderRepository(
-        context: Context,
-        readerObservationExceptionHandler: ReaderObservationExceptionHandler
-    ): IReaderRepository {
-        return CoppernicReaderRepositoryImpl(context, readerObservationExceptionHandler)
-    }
+    @AppScoped
+    fun provideReaderRepository(readerObservationExceptionHandler: ReaderObservationExceptionHandler): IReaderRepository =
+        FamocoReaderRepositoryImpl(readerObservationExceptionHandler)
 
     @Provides
     @AppScoped

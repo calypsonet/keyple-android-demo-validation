@@ -9,7 +9,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.keyple.famoco.validator.di
+package org.eclipse.keyple.demo.validator.di
 
 import android.app.Activity
 import android.content.Context
@@ -27,8 +27,8 @@ import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.SmartCardService
 import org.eclipse.keyple.core.service.event.ReaderObservationExceptionHandler
 import org.eclipse.keyple.core.service.exception.KeypleException
-import org.eclipse.keyple.famoco.validator.reader.IReaderRepository
-import org.eclipse.keyple.famoco.validator.reader.PoReaderProtocol
+import org.eclipse.keyple.demo.validator.reader.IReaderRepository
+import org.eclipse.keyple.demo.validator.reader.PoReaderProtocol
 
 /**
  *  @author youssefamrani
