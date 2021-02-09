@@ -13,29 +13,16 @@ package org.eclipse.keyple.demo.validator.di
 
 import dagger.Module
 import dagger.Provides
-import org.eclipse.keyple.core.service.event.ReaderObservationExceptionHandler
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import org.eclipse.keyple.demo.validator.di.scopes.AppScoped
-import org.eclipse.keyple.demo.validator.reader.IReaderRepository
-import timber.log.Timber
+import org.eclipse.keyple.demo.validator.rx.SchedulerProvider
 
-/**
- *  @author youssefamrani
- */
-
-@Suppress("unused")
 @Module
-class ReaderModule {
-
+class SchedulerModule {
     @Provides
     @AppScoped
-    fun provideReaderRepository(readerObservationExceptionHandler: ReaderObservationExceptionHandler): IReaderRepository =
-        MockSamReaderRepositoryImpl(readerObservationExceptionHandler)
-
-
-    @Provides
-    @AppScoped
-    fun provideReaderObservationExceptionHandler(): ReaderObservationExceptionHandler =
-        ReaderObservationExceptionHandler { pluginName, readerName, e ->
-            Timber.e("An unexpected reader error occurred: $pluginName:$readerName : $e")
-        }
+    fun provideSchedulerProvider(): SchedulerProvider {
+        return SchedulerProvider(Schedulers.io(), AndroidSchedulers.mainThread())
+    }
 }

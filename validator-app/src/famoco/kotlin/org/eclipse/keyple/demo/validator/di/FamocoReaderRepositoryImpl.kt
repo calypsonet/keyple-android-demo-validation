@@ -21,6 +21,9 @@ import org.eclipse.keyple.core.service.event.ReaderObservationExceptionHandler
 import org.eclipse.keyple.core.service.exception.KeypleException
 import org.eclipse.keyple.core.service.util.ContactCardCommonProtocols
 import org.eclipse.keyple.core.service.util.ContactlessCardCommonProtocols
+import org.eclipse.keyple.famoco.se.plugin.AndroidFamocoPlugin
+import org.eclipse.keyple.famoco.se.plugin.AndroidFamocoPluginFactory
+import org.eclipse.keyple.famoco.se.plugin.AndroidFamocoReader
 import org.eclipse.keyple.demo.validator.reader.IReaderRepository
 import org.eclipse.keyple.demo.validator.reader.PoReaderProtocol
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcPlugin
@@ -34,7 +37,7 @@ import timber.log.Timber
  *  @author youssefamrani
  */
 
-class MockSamReaderRepositoryImpl @Inject constructor(private val readerObservationExceptionHandler: ReaderObservationExceptionHandler) :
+class FamocoReaderRepositoryImpl @Inject constructor(private val readerObservationExceptionHandler: ReaderObservationExceptionHandler) :
     IReaderRepository {
 
     override var poReader: Reader? = null
@@ -44,12 +47,17 @@ class MockSamReaderRepositoryImpl @Inject constructor(private val readerObservat
     override fun registerPlugin(activity: Activity) {
         SmartCardService.getInstance()
             .registerPlugin(AndroidNfcPluginFactory(activity, readerObservationExceptionHandler))
+        try {
+            SmartCardService.getInstance().registerPlugin(AndroidFamocoPluginFactory())
+        } catch (e: UnsatisfiedLinkError) {
+            Timber.w(e)
+        }
     }
 
     @Throws(KeypleException::class)
     override suspend fun initPoReader(): Reader? {
         val readerPlugin = SmartCardService.getInstance().getPlugin(AndroidNfcPlugin.PLUGIN_NAME)
-        poReader = readerPlugin.readers.values.first()
+        poReader = readerPlugin.readers[AndroidNfcReader.READER_NAME]
 
         poReader?.let {
             val androidNfcReader = it as AndroidNfcReader
@@ -79,14 +87,28 @@ class MockSamReaderRepositoryImpl @Inject constructor(private val readerObservat
 
     @Throws(KeypleException::class)
     override suspend fun initSamReaders(): Map<String, Reader> {
-        samReaders =
-            mutableMapOf(Pair(AndroidMockReaderImpl.READER_NAME, AndroidMockReaderImpl()))
+        if (samReaders.isNullOrEmpty()) {
+            val samPlugin =
+                SmartCardService.getInstance().getPlugin(AndroidFamocoPlugin.PLUGIN_NAME)
+
+            if (samPlugin != null) {
+                val samReader = samPlugin.getReader(AndroidFamocoReader.READER_NAME)
+                samReader?.let {
+                    (it as AbstractLocalReader).activateProtocol(
+                        getSamReaderProtocol(),
+                        getSamReaderProtocol()
+                    )
+
+                    samReaders[AndroidFamocoReader.READER_NAME] = it
+                }
+            }
+        }
 
         return samReaders
     }
 
     override fun getSamReader(): Reader? {
-        return samReaders[AndroidMockReaderImpl.READER_NAME]
+        return samReaders[AndroidFamocoReader.READER_NAME]
     }
 
     override fun getContactlessIsoProtocol(): PoReaderProtocol? {
@@ -108,65 +130,13 @@ class MockSamReaderRepositoryImpl @Inject constructor(private val readerObservat
     }
 
     override fun clear() {
-        // with this protocol settings we activate the nfc for ISO1443_4 protocol
-        (poReader as ObservableReader).deactivateProtocol(getContactlessIsoProtocol()!!.readerProtocolName)
-        (poReader as ObservableReader).deactivateProtocol(getContactlessMifareProtocol()!!.readerProtocolName)
-    }
-
-    override fun isMockedResponse(): Boolean {
-        return true
-    }
-
-    @Suppress("INVISIBLE_ABSTRACT_MEMBER_FROM_SUPER_WARNING")
-    class AndroidMockReaderImpl : AbstractLocalReader(
-        "",
-        ""
-    ) {
-
-        override fun transmitApdu(apduIn: ByteArray?): ByteArray {
-            return apduIn ?: throw IllegalStateException("Mock no apdu in")
+        poReader?.let {
+            // with this protocol settings we activate the nfc for ISO1443_4 protocol
+            it.deactivateProtocol(getContactlessIsoProtocol()!!.readerProtocolName)
+            it.deactivateProtocol(getContactlessMifareProtocol()!!.readerProtocolName)
         }
 
-        override fun getATR(): ByteArray? {
-            return null
-        }
-
-        override fun openPhysicalChannel() {
-        }
-
-        override fun isPhysicalChannelOpen(): Boolean {
-            return true
-        }
-
-        override fun isCardPresent(): Boolean {
-            return true
-        }
-
-        override fun checkCardPresence(): Boolean {
-            return true
-        }
-
-        override fun closePhysicalChannel() {
-        }
-
-        override fun isContactless(): Boolean {
-            return false
-        }
-
-        override fun isCurrentProtocol(readerProtocolName: String?): Boolean {
-            return true
-        }
-
-        override fun deactivateReaderProtocol(readerProtocolName: String?) {
-            // Do nothing
-        }
-
-        override fun activateReaderProtocol(readerProtocolName: String?) {
-            // Do nothing
-        }
-
-        companion object {
-            const val READER_NAME = "Mock_Sam"
-        }
+        val samReader = samReaders[AndroidFamocoReader.READER_NAME]
+        samReader?.deactivateProtocol(getSamReaderProtocol())
     }
 }

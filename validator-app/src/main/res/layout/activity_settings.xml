@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/ic_img_bg_valideur"
-    tools:context="org.eclipse.keyple.famoco.validator.ui.activities.SettingsActivity">
+    tools:context="org.eclipse.keyple.demo.validator.ui.activities.SettingsActivity">
 
     <include layout="@layout/logo_toolbar" android:id="@+id/appBarLayout"/>
 
