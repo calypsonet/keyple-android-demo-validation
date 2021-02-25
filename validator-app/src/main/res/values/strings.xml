@@ -46,4 +46,7 @@
     <string name="card_invalid_title">Card not valid</string>
     <string name="card_invalid_desc">This is %s.</string>
     <string name="card_invalid_default">Invalid card</string>
+
+    <!--    Dialog-->
+    <string name="permission_denied_message">You must accept the requested permissions to continue. Please relaunch the app.</string>
 </resources>

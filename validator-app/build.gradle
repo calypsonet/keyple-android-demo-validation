@@ -74,6 +74,11 @@ android {
             resValue "string", "app_name", "Keyple Mock Sam Validator"
             applicationIdSuffix ".mockSam"
         }
+        bluebird {
+            dimension 'device'
+            resValue "string", "app_name", "Keyple Bluebird Validator"
+            applicationIdSuffix ".bluebird"
+        }
     }
 
     sourceSets {
@@ -84,6 +89,7 @@ android {
         copernic.java.srcDirs += 'src/copernic/kotlin'
         famoco.java.srcDirs += 'src/famoco/kotlin'
         mockSam.java.srcDirs += 'src/mockSam/kotlin'
+        bluebird.java.srcDirs += 'src/bluebird/kotlin'
     }
 
     androidExtensions {
@@ -110,11 +116,13 @@ dependencies {
     omapiImplementation "org.eclipse.keyple:keyple-android-plugin-omapi:$keyple_version"
 
     famocoImplementation "org.eclipse.keyple:keyple-android-plugin-nfc:$keyple_version"
-    famocoImplementation "org.eclipse.keyple:keyple-android-plugin-famoco-se-communication:$keyple_version"
+    famocoImplementation "org.eclipse.keyple:keyple-android-plugin-famoco-se-communication:$famoco_plugin_version"
 
     mockSamImplementation "org.eclipse.keyple:keyple-android-plugin-nfc:$keyple_version"
 
-    copernicImplementation "org.eclipse.keyple:keyple-android-plugin-coppernic-ask:$keyple_version"
+    copernicImplementation "org.eclipse.keyple:keyple-android-plugin-coppernic-ask:$coppernic_plugin_version"
+
+    bluebirdImplementation "org.eclipse.keyple:keyple-android-plugin-bluebird:$bluebird_plugin_version"
 
     // Android Architecture components dependencies
     implementation "androidx.lifecycle:lifecycle-runtime:$lifecycle_version"
