@@ -129,7 +129,7 @@ class CardReaderActivity : BaseActivity() {
         super.onDestroy()
     }
 
-    fun updateReaderInfos() {
+    private fun updateReaderInfos() {
 
         @Suppress("ConstantConditionIf")
         val readerPlugin = if (BuildConfig.FLAVOR == "copernic") {
@@ -254,25 +254,39 @@ class CardReaderActivity : BaseActivity() {
                 currentAppState = newAppState
                 when (readerEvent?.eventType) {
                     ReaderEvent.EventType.CARD_INSERTED, ReaderEvent.EventType.CARD_MATCHED -> {
-                        try {
-                            if (ticketingSession.analyzePoProfile()) {
-                                val validationResult =
-                                    ticketingSession.launchValidationProcedure(this@CardReaderActivity, locationFileManager.getLocations())
-                                changeDisplay(validationResult)
-                            }
-                        } catch (e: IllegalStateException) {
-                            Timber.e(e)
-                            Timber.e("Load ERROR page after exception = ${e.message}")
-                            changeDisplay(
-                                CardReaderResponse(
-                                    status = Status.ERROR,
-                                    nbTicketsLeft = 0,
-                                    contract = "",
-                                    cardType = ticketingSession.poTypeName ?: "",
-                                    validation = null,
-                                    errorMessage = e.message
+                        GlobalScope.launch {
+                            try {
+                                withContext(Dispatchers.Main){
+                                    progress.show()
+                                }
+
+                                val validationResult = withContext(Dispatchers.IO){
+                                    if (ticketingSession.analyzePoProfile()) {
+                                        ticketingSession.launchValidationProcedure(this@CardReaderActivity, locationFileManager.getLocations())
+                                    }
+                                    else{
+                                        null
+                                    }
+                                }
+
+                                withContext(Dispatchers.Main){
+                                    progress.dismiss()
+                                    changeDisplay(validationResult)
+                                }
+                            } catch (e: IllegalStateException) {
+                                Timber.e(e)
+                                Timber.e("Load ERROR page after exception = ${e.message}")
+                                changeDisplay(
+                                    CardReaderResponse(
+                                        status = Status.ERROR,
+                                        nbTicketsLeft = 0,
+                                        contract = "",
+                                        cardType = ticketingSession.poTypeName ?: "",
+                                        validation = null,
+                                        errorMessage = e.message
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                     else -> {

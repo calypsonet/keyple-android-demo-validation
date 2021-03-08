@@ -369,6 +369,17 @@ class ValidationProcedure {
 
                                 poTransaction.processPoCommands()
                                 nbTicketsLeft = counterValue - decrement
+
+//                                //TODO: check with Ludo
+//                                if(nbTicketsLeft == 0){
+//                                    //TODO: change contract priority to 31
+//                                    when (record) {
+//                                        RECORD_NUMBER_1.toInt() -> priority1 = ContractPriorityEnum.EXPIRED
+//                                        RECORD_NUMBER_2.toInt() -> priority2 = ContractPriorityEnum.EXPIRED
+//                                        RECORD_NUMBER_3.toInt() -> priority3 = ContractPriorityEnum.EXPIRED
+//                                        RECORD_NUMBER_4.toInt() -> priority4 = ContractPriorityEnum.EXPIRED
+//                                    }
+//                                }
                             }
                         }
                     } else if (contractPriority == ContractPriorityEnum.SEASON_PASS) {
