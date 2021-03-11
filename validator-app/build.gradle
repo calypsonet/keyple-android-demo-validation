@@ -56,27 +56,27 @@ android {
     productFlavors {
         omapi {
             dimension 'device'
-            resValue "string", "app_name", "Keyple OMAPI Validator"
+            resValue "string", "app_name", "Keyple Validation OMAPI"
             applicationIdSuffix ".omapi"
         }
         copernic {
             dimension 'device'
-            resValue "string", "app_name", "Keyple Copernic Validator"
+            resValue "string", "app_name", "Keyple Validation Copernic"
             applicationIdSuffix ".copernic"
         }
         famoco {
             dimension 'device'
-            resValue "string", "app_name", "Keyple Famoco Validator"
+            resValue "string", "app_name", "Keyple Validation Famoco"
             applicationIdSuffix ".famoco"
         }
         mockSam {
             dimension "device"
-            resValue "string", "app_name", "Keyple Mock Sam Validator"
+            resValue "string", "app_name", "Keyple Validation Mock Sam"
             applicationIdSuffix ".mockSam"
         }
         bluebird {
             dimension 'device'
-            resValue "string", "app_name", "Keyple Bluebird Validator"
+            resValue "string", "app_name", "Keyple Validation Bluebird"
             applicationIdSuffix ".bluebird"
         }
     }
