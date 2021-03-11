@@ -27,7 +27,6 @@ import kotlinx.coroutines.withContext
 import org.eclipse.keyple.core.service.event.ObservableReader
 import org.eclipse.keyple.core.service.event.ReaderEvent
 import org.eclipse.keyple.core.service.exception.KeyplePluginInstantiationException
-import org.eclipse.keyple.demo.validator.BuildConfig
 import org.eclipse.keyple.demo.validator.R
 import org.eclipse.keyple.demo.validator.data.CardReaderApi
 import org.eclipse.keyple.demo.validator.di.scopes.ActivityScoped
@@ -105,7 +104,6 @@ class CardReaderActivity : BaseActivity() {
                 if (readersInitialized) {
                     withContext(Dispatchers.Main) {
                         dismissProgress()
-                        updateReaderInfos()
                     }
                 }
             }
@@ -127,16 +125,6 @@ class CardReaderActivity : BaseActivity() {
         cardReaderApi.onDestroy(poReaderObserver)
         poReaderObserver = null
         super.onDestroy()
-    }
-
-    private fun updateReaderInfos() {
-
-        @Suppress("ConstantConditionIf")
-        val readerPlugin = if (BuildConfig.FLAVOR == "copernic") {
-            BuildConfig.FLAVOR
-        } else {
-            "Android NFC - ${BuildConfig.FLAVOR}"
-        }
     }
 
     override fun onPause() {

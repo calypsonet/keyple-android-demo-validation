@@ -36,7 +36,7 @@ interface IReaderRepository {
     fun getSamReader(): Reader?
     fun getContactlessIsoProtocol(): PoReaderProtocol?
     fun getContactlessMifareProtocol(): PoReaderProtocol?
-    fun getSamReaderProtocol(): String
+    fun getSamReaderProtocol(): String?
     fun clear()
 
     fun isMockedResponse(): Boolean = false

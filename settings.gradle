@@ -2,3 +2,11 @@ rootProject.name = "Keyple Validation"
 
 include ':validator-app'
 include ':keyple-parser'
+
+include ':flowbird-plugin'
+
+project(':flowbird-plugin').projectDir = new File(settingsDir, '../keyple-android-plugin-flowbird/keyple-plugins/flowbird')
+
+//include ':bluebird-plugin'
+//
+//project(':bluebird-plugin').projectDir = new File(settingsDir, '../keyple-android-plugin-bluebird/keyple-plugins/bluebird')
