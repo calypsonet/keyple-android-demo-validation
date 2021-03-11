@@ -74,6 +74,11 @@ android {
             resValue "string", "app_name", "Keyple Validation Bluebird"
             applicationIdSuffix ".bluebird"
         }
+        flowbird {
+            dimension 'device'
+            resValue "string", "app_name", "Keyple Validation Flowbird"
+            applicationIdSuffix ".flowbird"
+        }
     }
 
     sourceSets {
@@ -85,6 +90,7 @@ android {
         famoco.java.srcDirs += 'src/famoco/kotlin'
         mockSam.java.srcDirs += 'src/mockSam/kotlin'
         bluebird.java.srcDirs += 'src/bluebird/kotlin'
+        flowbird.java.srcDirs += 'src/flowbird/kotlin'
     }
 
     androidExtensions {
@@ -118,6 +124,8 @@ dependencies {
     coppernicImplementation "org.eclipse.keyple:keyple-android-plugin-coppernic-ask:$coppernic_plugin_version"
 
     bluebirdImplementation "org.eclipse.keyple:keyple-android-plugin-bluebird:$bluebird_plugin_version"
+
+    flowbirdImplementation "org.eclipse.keyple:keyple-android-plugin-flowbird:$flowbird_plugin_version"
 
     // Android Architecture components dependencies
     implementation "androidx.lifecycle:lifecycle-runtime:$lifecycle_version"

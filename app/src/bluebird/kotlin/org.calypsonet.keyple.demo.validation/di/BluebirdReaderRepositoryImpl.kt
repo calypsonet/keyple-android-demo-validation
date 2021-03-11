@@ -24,9 +24,13 @@
 package org.calypsonet.keyple.demo.validation.di
 
 import android.app.Activity
+import android.media.MediaPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.calypsonet.keyple.demo.validation.R
+import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
+import org.calypsonet.keyple.demo.validation.reader.PoReaderProtocol
 import org.eclipse.keyple.bluebird.plugin.BluebirdContactReader
 import org.eclipse.keyple.bluebird.plugin.BluebirdContactlessReader
 import org.eclipse.keyple.bluebird.plugin.BluebirdPlugin
@@ -38,8 +42,6 @@ import org.eclipse.keyple.core.service.SmartCardService
 import org.eclipse.keyple.core.service.event.ReaderObservationExceptionHandler
 import org.eclipse.keyple.core.service.exception.KeypleException
 import org.eclipse.keyple.core.service.util.ContactCardCommonProtocols
-import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
-import org.calypsonet.keyple.demo.validation.reader.PoReaderProtocol
 import javax.inject.Inject
 
 class BluebirdReaderRepositoryImpl @Inject constructor(
@@ -47,12 +49,19 @@ class BluebirdReaderRepositoryImpl @Inject constructor(
 ) :
     IReaderRepository {
 
+    lateinit var successMedia: MediaPlayer
+    lateinit var errorMedia: MediaPlayer
+
     override var poReader: Reader? = null
     override var samReaders: MutableMap<String, Reader> = mutableMapOf()
 
     @Throws(KeypleException::class)
     override fun registerPlugin(activity: Activity) {
         runBlocking {
+
+            successMedia = MediaPlayer.create(activity, R.raw.success)
+            errorMedia = MediaPlayer.create(activity, R.raw.error)
+
             val pluginFactory: BluebirdPluginFactory?
             pluginFactory = withContext(Dispatchers.IO) {
                 BluebirdPluginFactory.init(activity, readerObservationExceptionHandler)
@@ -69,8 +78,8 @@ class BluebirdReaderRepositoryImpl @Inject constructor(
         poReader?.let {
 
             it.activateProtocol(
-                getContactlessIsoProtocol()!!.readerProtocolName,
-                getContactlessIsoProtocol()!!.applicationProtocolName
+                getContactlessIsoProtocol().readerProtocolName,
+                getContactlessIsoProtocol().applicationProtocolName
             )
 
             this.poReader = poReader
@@ -112,30 +121,42 @@ class BluebirdReaderRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getContactlessIsoProtocol(): PoReaderProtocol? {
+    override fun getContactlessIsoProtocol(): PoReaderProtocol {
         return PoReaderProtocol(
             BluebirdSupportContactlessProtocols.NFC_B_BB.key,
             BluebirdSupportContactlessProtocols.NFC_B_BB.key
         )
     }
 
-    override fun getContactlessMifareProtocol(): PoReaderProtocol? {
-        return null
-    }
-
     override fun getSamReaderProtocol(): String =
         ContactCardCommonProtocols.ISO_7816_3.name
 
     override fun clear() {
-        poReader?.deactivateProtocol(getContactlessIsoProtocol()!!.readerProtocolName)
+        poReader?.deactivateProtocol(getContactlessIsoProtocol().readerProtocolName)
 
         samReaders.forEach {
             (it.value as AbstractLocalReader).deactivateProtocol(
                 getSamReaderProtocol()
             )
         }
+
+        successMedia.stop()
+        successMedia.release()
+
+        errorMedia.stop()
+        errorMedia.release()
     }
 
     override fun getPermissions(): Array<String> = arrayOf(BluebirdPlugin.BLUEBIRD_SAM_PERMISSION)
+
+    override fun displayResultSuccess(): Boolean {
+        successMedia.start()
+        return true
+    }
+
+    override fun displayResultFailed(): Boolean {
+        errorMedia.start()
+        return true
+    }
 }
 

@@ -11,7 +11,6 @@
  ********************************************************************************/
 package org.calypsonet.keyple.demo.validation.ui.activities
 
-import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.View
 import androidx.core.content.ContextCompat
@@ -25,6 +24,7 @@ import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.models.CardReaderResponse
 import org.calypsonet.keyple.demo.validation.models.Status
 import org.eclipse.keyple.parser.utils.DateUtils
+import timber.log.Timber
 import java.util.Timer
 import java.util.TimerTask
 
@@ -41,6 +41,7 @@ class CardSummaryActivity : BaseActivity() {
 
         when (cardReaderResponse?.status) {
             Status.SUCCESS -> {
+                cardReaderApi.displayResultSuccess()
                 animation.setAnimation("tick_white.json")
                 mainView.setBackgroundColor(ContextCompat.getColor(this, R.color.green))
 
@@ -70,6 +71,7 @@ class CardSummaryActivity : BaseActivity() {
                 mediumText.setText(R.string.valid_last_desc)
             }
             Status.INVALID_CARD -> {
+                cardReaderApi.displayResultFailed()
                 animation.setAnimation("error_white.json")
                 mainView.setBackgroundColor(ContextCompat.getColor(this, R.color.orange))
 
@@ -80,6 +82,7 @@ class CardSummaryActivity : BaseActivity() {
                 smallDesc.visibility = View.INVISIBLE
             }
             Status.EMPTY_CARD -> {
+                cardReaderApi.displayResultFailed()
                 mainView.setBackgroundColor(ContextCompat.getColor(this, R.color.red))
                 animation.setAnimation("error_white.json")
 
@@ -90,6 +93,7 @@ class CardSummaryActivity : BaseActivity() {
                 smallDesc.visibility = View.INVISIBLE
             }
             else -> {
+                cardReaderApi.displayResultFailed()
                 mainView.setBackgroundColor(ContextCompat.getColor(this, R.color.red))
                 animation.setAnimation("error_white.json")
 
@@ -103,15 +107,20 @@ class CardSummaryActivity : BaseActivity() {
 
         animation.playAnimation()
 
-        // Play sound
-        val mp =
-            MediaPlayer.create(this, R.raw.reading_sound)
-        mp.start()
         timer.schedule(object : TimerTask() {
             override fun run() {
                 runOnUiThread { onBackPressed() }
             }
         }, RETURN_DELAY_MS.toLong())
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (cardReaderApi.readersInitialized) {
+            cardReaderApi.stopNfcDetection()
+            Timber.d("stopNfcDetection")
+        }
     }
 
     override fun onPause() {

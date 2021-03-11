@@ -12,7 +12,10 @@
 package org.calypsonet.keyple.demo.validation.di
 
 import android.app.Activity
-import javax.inject.Inject
+import android.media.MediaPlayer
+import org.calypsonet.keyple.demo.validation.R
+import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
+import org.calypsonet.keyple.demo.validation.reader.PoReaderProtocol
 import org.eclipse.keyple.core.plugin.AbstractLocalReader
 import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.SmartCardService
@@ -24,27 +27,33 @@ import org.eclipse.keyple.core.service.util.ContactlessCardCommonProtocols
 import org.eclipse.keyple.famoco.se.plugin.AndroidFamocoPlugin
 import org.eclipse.keyple.famoco.se.plugin.AndroidFamocoPluginFactory
 import org.eclipse.keyple.famoco.se.plugin.AndroidFamocoReader
-import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
-import org.calypsonet.keyple.demo.validation.reader.PoReaderProtocol
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcPlugin
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcPluginFactory
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcProtocolSettings
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcReader
-import org.eclipse.keyple.plugin.android.nfc.AndroidNfcSupportedProtocols
 import timber.log.Timber
+import javax.inject.Inject
 
 /**
  *  @author youssefamrani
  */
 
-class FamocoReaderRepositoryImpl @Inject constructor(private val readerObservationExceptionHandler: ReaderObservationExceptionHandler) :
-    IReaderRepository {
+class FamocoReaderRepositoryImpl @Inject constructor(
+    private val readerObservationExceptionHandler: ReaderObservationExceptionHandler)
+    : IReaderRepository {
+
+    lateinit var successMedia: MediaPlayer
+    lateinit var errorMedia: MediaPlayer
 
     override var poReader: Reader? = null
     override var samReaders: MutableMap<String, Reader> = mutableMapOf()
 
     @Throws(KeypleException::class)
     override fun registerPlugin(activity: Activity) {
+
+        successMedia = MediaPlayer.create(activity, R.raw.success)
+        errorMedia = MediaPlayer.create(activity, R.raw.error)
+
         SmartCardService.getInstance()
             .registerPlugin(AndroidNfcPluginFactory(activity, readerObservationExceptionHandler))
         try {
@@ -72,13 +81,8 @@ class FamocoReaderRepositoryImpl @Inject constructor(private val readerObservati
 
             // with this protocol settings we activate the nfc for ISO1443_4 protocol
             (poReader as ObservableReader).activateProtocol(
-                getContactlessIsoProtocol()!!.readerProtocolName,
-                getContactlessIsoProtocol()!!.applicationProtocolName
-            )
-
-            (poReader as ObservableReader).activateProtocol(
-                getContactlessMifareProtocol()!!.readerProtocolName,
-                getContactlessMifareProtocol()!!.applicationProtocolName
+                getContactlessIsoProtocol().readerProtocolName,
+                getContactlessIsoProtocol().applicationProtocolName
             )
         }
 
@@ -111,17 +115,10 @@ class FamocoReaderRepositoryImpl @Inject constructor(private val readerObservati
         return samReaders[AndroidFamocoReader.READER_NAME]
     }
 
-    override fun getContactlessIsoProtocol(): PoReaderProtocol? {
+    override fun getContactlessIsoProtocol(): PoReaderProtocol {
         return PoReaderProtocol(
             ContactlessCardCommonProtocols.ISO_14443_4.name,
             AndroidNfcProtocolSettings.getSetting(ContactlessCardCommonProtocols.ISO_14443_4.name)
-        )
-    }
-
-    override fun getContactlessMifareProtocol(): PoReaderProtocol? {
-        return PoReaderProtocol(
-            AndroidNfcSupportedProtocols.MIFARE_CLASSIC.name,
-            AndroidNfcProtocolSettings.getSetting(AndroidNfcSupportedProtocols.MIFARE_CLASSIC.name)
         )
     }
 
@@ -130,13 +127,25 @@ class FamocoReaderRepositoryImpl @Inject constructor(private val readerObservati
     }
 
     override fun clear() {
-        poReader?.let {
-            // with this protocol settings we activate the nfc for ISO1443_4 protocol
-            it.deactivateProtocol(getContactlessIsoProtocol()!!.readerProtocolName)
-            it.deactivateProtocol(getContactlessMifareProtocol()!!.readerProtocolName)
-        }
+        poReader?.deactivateProtocol(getContactlessIsoProtocol().readerProtocolName)
 
         val samReader = samReaders[AndroidFamocoReader.READER_NAME]
         samReader?.deactivateProtocol(getSamReaderProtocol())
+
+        successMedia.stop()
+        successMedia.release()
+
+        errorMedia.stop()
+        errorMedia.release()
+    }
+
+    override fun displayResultSuccess(): Boolean {
+        successMedia.start()
+        return true
+    }
+
+    override fun displayResultFailed(): Boolean {
+        errorMedia.start()
+        return true
     }
 }

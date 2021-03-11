@@ -14,6 +14,7 @@ package org.calypsonet.keyple.demo.validation.ui.activities
 import android.app.ProgressDialog
 import android.content.Intent
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
@@ -25,30 +26,24 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.eclipse.keyple.core.service.event.ObservableReader
-import org.eclipse.keyple.core.service.event.ReaderEvent
-import org.eclipse.keyple.core.service.exception.KeyplePluginInstantiationException
 import org.calypsonet.keyple.demo.validation.R
-import org.calypsonet.keyple.demo.validation.data.CardReaderApi
 import org.calypsonet.keyple.demo.validation.di.scopes.ActivityScoped
 import org.calypsonet.keyple.demo.validation.models.CardReaderResponse
 import org.calypsonet.keyple.demo.validation.models.KeypleSettings
 import org.calypsonet.keyple.demo.validation.models.Status
 import org.calypsonet.keyple.demo.validation.models.Validation
-import org.calypsonet.keyple.demo.validation.models.mapper.LocationMapper
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo
 import org.calypsonet.keyple.demo.validation.ticketing.ITicketingSession
+import org.eclipse.keyple.core.service.event.ObservableReader
+import org.eclipse.keyple.core.service.event.ReaderEvent
+import org.eclipse.keyple.core.service.exception.KeyplePluginInstantiationException
 import timber.log.Timber
 import java.util.Date
 import java.util.Timer
 import java.util.TimerTask
-import javax.inject.Inject
 
 @ActivityScoped
 class CardReaderActivity : BaseActivity() {
-
-    @Inject
-    lateinit var cardReaderApi: CardReaderApi
 
     private var poReaderObserver: PoObserver? = null
 
@@ -56,7 +51,6 @@ class CardReaderActivity : BaseActivity() {
     private lateinit var progress: ProgressDialog
 
     private var timer = Timer()
-    private var readersInitialized = false
     lateinit var ticketingSession: ITicketingSession
     var currentAppState = AppState.WAIT_SYSTEM_READY
 
@@ -69,16 +63,27 @@ class CardReaderActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_card_reader)
+
         progress = ProgressDialog(this)
         progress.setMessage(getString(R.string.please_wait))
         progress.setCancelable(false)
+
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+    }
+
+    override fun onOptionsItemSelected(menuItem: MenuItem): Boolean {
+        if(menuItem.itemId == android.R.id.home){
+            finish()
+        }
+
+        return super.onOptionsItemSelected(menuItem)
     }
 
     override fun onResume() {
         super.onResume()
         animation.playAnimation()
 
-        if (!readersInitialized) {
+        if (!cardReaderApi.readersInitialized) {
             GlobalScope.launch {
                 withContext(Dispatchers.Main) {
                     showProgress()
@@ -89,7 +94,7 @@ class CardReaderActivity : BaseActivity() {
                         poReaderObserver = PoObserver()
                         cardReaderApi.init(poReaderObserver, this@CardReaderActivity)
                         ticketingSession = cardReaderApi.getTicketingSession()!!
-                        readersInitialized = true
+                        cardReaderApi.readersInitialized = true
                         handleAppEvents(AppState.WAIT_CARD, null)
                         cardReaderApi.startNfcDetection()
                     } catch (e: KeyplePluginInstantiationException) {
@@ -106,7 +111,7 @@ class CardReaderActivity : BaseActivity() {
                         }
                     }
                 }
-                if (readersInitialized) {
+                if (cardReaderApi.readersInitialized) {
                     withContext(Dispatchers.Main) {
                         dismissProgress()
                     }
@@ -126,7 +131,7 @@ class CardReaderActivity : BaseActivity() {
     }
 
     override fun onDestroy() {
-        readersInitialized = false
+        cardReaderApi.readersInitialized = false
         cardReaderApi.onDestroy(poReaderObserver)
         poReaderObserver = null
         super.onDestroy()
@@ -136,10 +141,6 @@ class CardReaderActivity : BaseActivity() {
         super.onPause()
         animation.cancelAnimation()
         timer.cancel()
-        if (readersInitialized) {
-            cardReaderApi.stopNfcDetection()
-            Timber.d("stopNfcDetection")
-        }
     }
 
     private fun changeDisplay(cardReaderResponse: CardReaderResponse?) {
@@ -190,6 +191,7 @@ class CardReaderActivity : BaseActivity() {
                 if (!seSelectionResult.hasActiveSelection()) {
                     Timber.e("PO Not selected")
                     val error = getString(R.string.card_invalid_desc)
+                    cardReaderApi.displayResultFailed()
                     changeDisplay(
                         CardReaderResponse(
                             status = Status.INVALID_CARD,
@@ -209,6 +211,7 @@ class CardReaderActivity : BaseActivity() {
                 ) {
                     val cardType = ticketingSession.poTypeName ?: "Unknown card"
                     val error = getString(R.string.card_invalid_desc)
+                    cardReaderApi.displayResultFailed()
                     changeDisplay(
                         CardReaderResponse(
                             status = Status.INVALID_CARD,
