@@ -6,6 +6,7 @@
     <string name="valid_title">Validation</string>
     <string name="error_title">Error</string>
     <string name="please_wait">Please wait</string>
+    <string name="version">version %s</string>
 
     <string name="quit">Quitter</string>
     <string name="reader_plugin">Reader plugin : %s</string>

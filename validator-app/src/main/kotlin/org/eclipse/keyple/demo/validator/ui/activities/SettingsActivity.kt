@@ -15,10 +15,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.ArrayAdapter
+import kotlinx.android.synthetic.main.activity_settings.app_version
 import kotlinx.android.synthetic.main.activity_settings.batteryPoweredBox
 import kotlinx.android.synthetic.main.activity_settings.spinnerLocationList
 import kotlinx.android.synthetic.main.activity_settings.startBtn
 import kotlinx.android.synthetic.main.activity_settings.timeBtn
+import org.eclipse.keyple.demo.validator.BuildConfig
 import org.eclipse.keyple.demo.validator.R
 import org.eclipse.keyple.demo.validator.models.KeypleSettings
 import org.eclipse.keyple.demo.validator.models.Location
@@ -53,5 +55,7 @@ class SettingsActivity : BaseActivity() {
                 startActivity(Intent(this, CardReaderActivity::class.java))
             }
         }
+
+        app_version.text = getString(R.string.version, BuildConfig.VERSION_NAME)
     }
 }
