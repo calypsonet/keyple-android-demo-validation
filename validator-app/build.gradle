@@ -117,7 +117,8 @@ dependencies {
 
     copernicImplementation "org.eclipse.keyple:keyple-android-plugin-coppernic-ask:$coppernic_plugin_version"
 
-    bluebirdImplementation "org.eclipse.keyple:keyple-android-plugin-bluebird:$bluebird_plugin_version"
+//    bluebirdImplementation "org.eclipse.keyple:keyple-android-plugin-bluebird:$bluebird_plugin_version"
+    bluebirdImplementation project(":bluebird-plugin")
 
     // Android Architecture components dependencies
     implementation "androidx.lifecycle:lifecycle-runtime:$lifecycle_version"
