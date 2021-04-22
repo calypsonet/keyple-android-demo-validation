@@ -5,8 +5,9 @@
     <color name="colorAccent">#FF4081</color>
     <color name="turquoise">#93dde0</color>
     <color name="white">#FFF</color>
-    <color name="blue">#0092d5</color>
-    <color name="red">#b80039</color>
-    <color name="orange">#e29041</color>
-    <color name="green">#1dab5d</color>
+    <color name="blue">#1D87BB</color>
+    <color name="light_blue">#5BC5F1</color>
+    <color name="red">#B7003A</color>
+    <color name="orange">#E47A27</color>
+    <color name="green">#1DAB5D</color>
 </resources>

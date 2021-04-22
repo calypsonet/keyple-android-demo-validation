@@ -1,5 +1,40 @@
+<!--
+  ~ Copyright (c) 2020 Calypso Networks Association https://www.calypsonet-asso.org/
+  ~
+  ~ See the NOTICE file(s) distributed with this work for additional information
+  ~ regarding copyright ownership.
+  ~
+  ~ This program and the accompanying materials are made available under the terms of the
+  ~ Eclipse Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0
+  ~
+  ~ SPDX-License-Identifier: EPL-2.0
+  -->
+
 <resources>
-    <dimen name="medium_text_size">18.7sp</dimen>
-    <dimen name="big_text_size">22.7sp</dimen>
-    <dimen name="small_text_size">17.3sp</dimen>
+    <dimen name="splash_title">18sp</dimen>
+    <dimen name="version">11sp</dimen>
+
+    <dimen name="toolbar_margin_top">10dp</dimen>
+    <dimen name="toolbar_logo_padding">4dp</dimen>
+
+    <dimen name="big_text_size">22sp</dimen>
+    <dimen name="medium_text_size">18sp</dimen>
+
+    <dimen name="settings_horizontal_padding">47dp</dimen>
+    <dimen name="settings_edit_margin_bottom">10dp</dimen>
+    <dimen name="settings_start_ic_size">100dp</dimen>
+    <dimen name="settings_box_text_start_margin">10dp</dimen>
+
+    <dimen name="eclipse_logo_width">163dp</dimen>
+    <dimen name="eclipse_logo_height">52dp</dimen>
+
+    <dimen name="home_element_margin">20dp</dimen>
+    <dimen name="home_start_btn_width">100dp</dimen>
+    <dimen name="home_text_width">210dp</dimen>
+    <dimen name="home_present_width">220dp</dimen>
+    <dimen name="home_start_text_margin_top">60dp</dimen>
+
+    <dimen name="reading_animation_size">150dp</dimen>
+
+    <dimen name="summary_desc_top_margin">15dp</dimen>
 </resources>

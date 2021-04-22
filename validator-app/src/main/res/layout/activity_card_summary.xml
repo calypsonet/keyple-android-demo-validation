@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:background="@color/colorAccent">
+
+    <include
+        android:id="@+id/appBarLayout"
+        layout="@layout/logo_toolbar" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineTop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.25" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineBottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="512dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineLeftAnim"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.34" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineRightAnim"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.66" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineLeftTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.10" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineRightTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.90" />
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/animation"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintDimensionRatio="w,1:1"
+        app:layout_constraintEnd_toEndOf="@id/guidelineRightAnim"
+        app:layout_constraintStart_toStartOf="@id/guidelineLeftAnim"
+        app:layout_constraintTop_toTopOf="@id/guidelineTop" />
+
+    <TextView
+        android:id="@+id/bigText"
+        style="@style/bigBoldWhite"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/summary_desc_top_margin"
+        android:gravity="center"
+        app:layout_constraintBottom_toTopOf="@id/location_time"
+        app:layout_constraintEnd_toEndOf="@id/guidelineRightTxt"
+        app:layout_constraintStart_toStartOf="@id/guidelineLeftTxt"
+        app:layout_constraintTop_toBottomOf="@id/animation"
+        tools:text="Validation completed !" />
+
+    <TextView
+        android:id="@+id/location_time"
+        style="@style/mediumRegularWhite"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/summary_desc_top_margin"
+        android:gravity="center"
+        app:layout_constraintBottom_toTopOf="@id/smallDesc"
+        app:layout_constraintEnd_toEndOf="@id/guidelineRightTxt"
+        app:layout_constraintStart_toStartOf="@id/guidelineLeftTxt"
+        app:layout_constraintTop_toBottomOf="@id/bigText"
+        tools:text="1\njour mois année" />
+
+    <TextView
+        android:id="@+id/smallDesc"
+        style="@style/mediumRegularWhite"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/summary_desc_top_margin"
+        android:gravity="center"
+        app:layout_constraintBottom_toTopOf="@id/mediumText"
+        app:layout_constraintEnd_toEndOf="@id/guidelineRightTxt"
+        app:layout_constraintStart_toStartOf="@id/guidelineLeftTxt"
+        app:layout_constraintTop_toBottomOf="@id/location_time"
+        tools:text="You have a season pass valid until JJ Month YYYY"/>
+
+    <TextView
+        android:id="@+id/mediumText"
+        style="@style/bigBoldWhite"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/summary_desc_top_margin"
+        android:gravity="center"
+        app:layout_constraintBottom_toTopOf="@+id/guidelineBottom"
+        app:layout_constraintEnd_toEndOf="@id/guidelineRightTxt"
+        app:layout_constraintStart_toStartOf="@id/guidelineLeftTxt"
+        app:layout_constraintTop_toBottomOf="@id/smallDesc"
+        tools:text="Have a nice trip !" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
