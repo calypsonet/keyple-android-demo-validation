@@ -16,7 +16,6 @@
 
     <dimen name="big_text_size">27sp</dimen>
     <dimen name="medium_text_size">23sp</dimen>
-    <dimen name="small_text_size">20sp</dimen>
 
     <dimen name="settings_start_ic_size">150dp</dimen>
 
