@@ -58,7 +58,7 @@
             android:configChanges="orientation|keyboardHidden" />
 
         <receiver android:name="org.calypsonet.keyple.demo.validation.receiver.StartUpReceiver">
-            <intent-filter android:priority="700">
+            <intent-filter android:priority="800">
                 <action android:name="com.parkeon.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>

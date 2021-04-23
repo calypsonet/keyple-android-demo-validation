@@ -11,13 +11,12 @@
  ********************************************************************************/
 package org.calypsonet.keyple.demo.validation.di
 
-import android.content.Context
 import dagger.Module
 import dagger.Provides
-import org.eclipse.keyple.core.service.event.ReaderObservationExceptionHandler
 import org.calypsonet.keyple.demo.validation.di.scopes.AppScoped
 import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
 import org.calypsonet.keyple.famoco.validation.di.OmapiReaderRepositoryImpl
+import org.calypsonet.terminal.reader.spi.CardReaderObservationExceptionHandlerSpi
 import timber.log.Timber
 
 /**
@@ -31,18 +30,16 @@ class ReaderModule {
     @Provides
     @AppScoped
     fun provideReaderRepository(
-        context: Context,
-        readerObservationExceptionHandler: ReaderObservationExceptionHandler
+        readerObservationExceptionHandler: CardReaderObservationExceptionHandlerSpi
     ): IReaderRepository =
         OmapiReaderRepositoryImpl(
-            context,
             readerObservationExceptionHandler
         )
 
     @Provides
     @AppScoped
-    fun provideReaderObservationExceptionHandler(): ReaderObservationExceptionHandler =
-        ReaderObservationExceptionHandler { pluginName, readerName, e ->
+    fun provideReaderObservationExceptionHandler(): CardReaderObservationExceptionHandlerSpi =
+        CardReaderObservationExceptionHandlerSpi { pluginName, readerName, e ->
             Timber.e("An unexpected reader error occurred: $pluginName:$readerName : $e")
         }
 }
