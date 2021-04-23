@@ -25,7 +25,7 @@ package org.eclipse.keyple.demo.validator.di
 
 import dagger.Module
 import dagger.Provides
-import org.eclipse.keyple.core.service.event.ReaderObservationExceptionHandler
+import org.eclipse.keyple.core.service.spi.ReaderObservationExceptionHandlerSpi
 import org.eclipse.keyple.demo.validator.di.scopes.AppScoped
 import org.eclipse.keyple.demo.validator.reader.IReaderRepository
 import timber.log.Timber
@@ -37,7 +37,7 @@ class ReaderModule {
     @Provides
     @AppScoped
     fun provideReaderRepository(
-        readerObservationExceptionHandler: ReaderObservationExceptionHandler
+        readerObservationExceptionHandler: ReaderObservationExceptionHandlerSpi
     ): IReaderRepository =
         BluebirdReaderRepositoryImpl(
             readerObservationExceptionHandler
@@ -45,8 +45,8 @@ class ReaderModule {
 
     @Provides
     @AppScoped
-    fun provideReaderObservationExceptionHandler(): ReaderObservationExceptionHandler =
-        ReaderObservationExceptionHandler { pluginName, readerName, e ->
+    fun provideReaderObservationExceptionHandler(): ReaderObservationExceptionHandlerSpi =
+        ReaderObservationExceptionHandlerSpi { pluginName, readerName, e ->
             Timber.e("An unexpected reader error occurred: $pluginName:$readerName : $e")
         }
 }

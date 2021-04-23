@@ -13,7 +13,6 @@ package org.eclipse.keyple.demo.validator.reader
 
 import android.app.Activity
 import org.eclipse.keyple.core.service.Reader
-import org.eclipse.keyple.core.service.exception.KeypleException
 
 /**
  *  @author youssefamrani
@@ -24,13 +23,10 @@ interface IReaderRepository {
     var poReader: Reader?
     var samReaders: MutableMap<String, Reader>
 
-    @Throws(KeypleException::class)
     fun registerPlugin(activity: Activity)
 
-    @Throws(KeypleException::class)
     suspend fun initPoReader(): Reader?
 
-    @Throws(KeypleException::class)
     suspend fun initSamReaders(): Map<String, Reader>
 
     fun getSamReader(): Reader?

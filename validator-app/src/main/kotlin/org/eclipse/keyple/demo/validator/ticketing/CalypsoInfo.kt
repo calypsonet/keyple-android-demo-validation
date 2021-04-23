@@ -47,7 +47,7 @@ object CalypsoInfo {
     /*********************************
      *           Card types
      *********************************/
-    const val PO_TYPE_NAME_CALYPSO = "Calypso"
+    const val PO_TYPE_NAME_CALYPSO_05H = "Calypso_05h"
     const val PO_TYPE_NAME_NAVIGO = "Navigo"
     const val PO_TYPE_NAME_BANKING = "Banking"
     const val PO_TYPE_NAME_OTHER = "Unknown"

@@ -11,22 +11,15 @@
  ********************************************************************************/
 package org.eclipse.keyple.demo.validator.ticketing
 
-import org.eclipse.keyple.calypso.command.sam.SamRevision
-import org.eclipse.keyple.calypso.transaction.CalypsoPo
-import org.eclipse.keyple.calypso.transaction.CalypsoSam
-import org.eclipse.keyple.calypso.transaction.ElementaryFile
-import org.eclipse.keyple.calypso.transaction.PoSecuritySettings
-import org.eclipse.keyple.calypso.transaction.PoSecuritySettings.PoSecuritySettingsBuilder
-import org.eclipse.keyple.calypso.transaction.PoTransaction.SessionSetting.AccessLevel
-import org.eclipse.keyple.calypso.transaction.SamSelection
-import org.eclipse.keyple.calypso.transaction.SamSelector
-import org.eclipse.keyple.core.card.selection.CardResource
-import org.eclipse.keyple.core.card.selection.CardSelectionsResult
-import org.eclipse.keyple.core.card.selection.CardSelectionsService
-import org.eclipse.keyple.core.card.selection.MultiSelectionProcessing
+import org.eclipse.keyple.card.calypso.CalypsoCardExtension
+import org.eclipse.keyple.card.calypso.po.ElementaryFile
+import org.eclipse.keyple.card.calypso.po.PoSmartCard
+import org.eclipse.keyple.card.calypso.transaction.PoSecuritySetting
+import org.eclipse.keyple.card.calypso.transaction.PoTransactionService
+import org.eclipse.keyple.core.service.ObservableReader
 import org.eclipse.keyple.core.service.Reader
-import org.eclipse.keyple.core.service.event.ObservableReader
-import org.eclipse.keyple.core.service.exception.KeypleReaderException
+import org.eclipse.keyple.core.service.selection.CardSelectionResult
+import org.eclipse.keyple.core.service.selection.CardSelectionService
 import org.eclipse.keyple.demo.validator.reader.IReaderRepository
 import org.eclipse.keyple.parser.dto.CardletInputDto
 import org.eclipse.keyple.parser.keyple.CardletParser
@@ -40,8 +33,11 @@ abstract class AbstractTicketingSession protected constructor(
     val poReader: Reader?
         get() = readerRepository.poReader
 
-    protected lateinit var calypsoPo: CalypsoPo
-    protected lateinit var cardSelection: CardSelectionsService
+    protected lateinit var calypsoPo: PoSmartCard
+    protected lateinit var cardSelection: CardSelectionService
+
+    lateinit var calypsoCardExtensionProvider: CalypsoCardExtension
+
     var poTypeName: String? = null
         protected set
     var cardContent: CardContent = CardContent()
@@ -62,11 +58,11 @@ abstract class AbstractTicketingSession protected constructor(
         return sb.toString()
     }
 
-    fun processSelectionsResult(selectionsResult: CardSelectionsResult) {
+    fun processSelectionsResult(selectionsResult: CardSelectionResult) {
         val selectionIndex = selectionsResult.smartCards.keys.first()
 
         if (selectionIndex == calypsoPoIndex) {
-            calypsoPo = selectionsResult.activeSmartCard as CalypsoPo
+            calypsoPo = selectionsResult.activeSmartCard as PoSmartCard
             poTypeName = "CALYPSO"
             efEnvironmentHolder = calypsoPo.getFileBySfi(CalypsoInfo.SFI_EnvironmentAndHolder)
             efEventLog = calypsoPo.getFileBySfi(CalypsoInfo.SFI_EventLog)
@@ -102,39 +98,39 @@ abstract class AbstractTicketingSession protected constructor(
         (readerRepository.poReader as ObservableReader).finalizeCardProcessing()
     }
 
-    @Throws(KeypleReaderException::class, IllegalStateException::class)
-    open fun checkSamAndOpenChannel(samReader: Reader): CardResource<CalypsoSam> {
-        /*
-         * check the availability of the SAM doing a ATR based selection, open its physical and
-         * logical channels and keep it open
-         */
-        val samSelection = CardSelectionsService(MultiSelectionProcessing.FIRST_MATCH)
+//    @Throws(KeypleReaderException::class, IllegalStateException::class)
+//    open fun checkSamAndOpenChannel(samReader: Reader): CardResource<CalypsoSam> {
+//        /*
+//         * check the availability of the SAM doing a ATR based selection, open its physical and
+//         * logical channels and keep it open
+//         */
+//        val samSelection = CardSelectionsService(MultiSelectionProcessing.FIRST_MATCH)
+//
+//        val samSelector = SamSelector.builder()
+//            .cardProtocol(readerRepository.getSamReaderProtocol())
+//            .samRevision(SamRevision.C1)
+//            .build()
+//
+//        samSelection.prepareSelection(SamSelection(samSelector))
+//
+//        return try {
+//            if (samReader.isCardPresent) {
+//                val selectionResult = samSelection.processExplicitSelections(samReader)
+//                if (selectionResult.hasActiveSelection()) {
+//                    val calypsoSam = selectionResult.activeSmartCard as CalypsoSam
+//                    CardResource(samReader, calypsoSam)
+//                } else {
+//                    throw IllegalStateException("Sam selection failed")
+//                }
+//            } else {
+//                throw IllegalStateException("Sam is not present in the reader")
+//            }
+//        } catch (e: KeypleReaderException) {
+//            throw IllegalStateException("Reader exception: " + e.message)
+//        }
+//    }
 
-        val samSelector = SamSelector.builder()
-            .cardProtocol(readerRepository.getSamReaderProtocol())
-            .samRevision(SamRevision.C1)
-            .build()
-
-        samSelection.prepareSelection(SamSelection(samSelector))
-
-        return try {
-            if (samReader.isCardPresent) {
-                val selectionResult = samSelection.processExplicitSelections(samReader)
-                if (selectionResult.hasActiveSelection()) {
-                    val calypsoSam = selectionResult.activeSmartCard as CalypsoSam
-                    CardResource(samReader, calypsoSam)
-                } else {
-                    throw IllegalStateException("Sam selection failed")
-                }
-            } else {
-                throw IllegalStateException("Sam is not present in the reader")
-            }
-        } catch (e: KeypleReaderException) {
-            throw IllegalStateException("Reader exception: " + e.message)
-        }
-    }
-
-    open fun getSecuritySettings(samResource: CardResource<CalypsoSam>?): PoSecuritySettings? {
+    fun getSecuritySettings(): PoSecuritySetting? {
 
         // The default KIF values for personalization, loading and debiting
         val DEFAULT_KIF_PERSO = 0x21.toByte()
@@ -147,24 +143,31 @@ abstract class AbstractTicketingSession protected constructor(
         val DEFAULT_KEY_RECORD_NUMBER_DEBIT = 0x03.toByte()
 
         /* define the security parameters to provide when creating PoTransaction */
-        return PoSecuritySettingsBuilder(samResource) //
-            .sessionDefaultKif(AccessLevel.SESSION_LVL_PERSO, DEFAULT_KIF_PERSO) //
-            .sessionDefaultKif(AccessLevel.SESSION_LVL_LOAD, DEFAULT_KIF_LOAD) //
-            .sessionDefaultKif(AccessLevel.SESSION_LVL_DEBIT, DEFAULT_KIF_DEBIT) //
-            .sessionDefaultKeyRecordNumber(
-                AccessLevel.SESSION_LVL_PERSO,
+        return PoSecuritySetting.builder("samResource") //
+            .assignKif(
+                PoTransactionService.SessionAccessLevel.SESSION_LVL_PERSO,
+                DEFAULT_KIF_PERSO
+            ) //
+            .assignKif(
+                PoTransactionService.SessionAccessLevel.SESSION_LVL_LOAD,
+                DEFAULT_KIF_LOAD
+            ) //
+            .assignKif(
+                PoTransactionService.SessionAccessLevel.SESSION_LVL_DEBIT,
+                DEFAULT_KIF_DEBIT
+            ) //
+            .assignKeyRecordNumber(
+                PoTransactionService.SessionAccessLevel.SESSION_LVL_PERSO,
                 DEFAULT_KEY_RECORD_NUMBER_PERSO
             ) //
-            .sessionDefaultKeyRecordNumber(
-                AccessLevel.SESSION_LVL_LOAD,
+            .assignKeyRecordNumber(
+                PoTransactionService.SessionAccessLevel.SESSION_LVL_LOAD,
                 DEFAULT_KEY_RECORD_NUMBER_LOAD
             ) //
-            .sessionDefaultKeyRecordNumber(
-                AccessLevel.SESSION_LVL_DEBIT,
+            .assignKeyRecordNumber(
+                PoTransactionService.SessionAccessLevel.SESSION_LVL_DEBIT,
                 DEFAULT_KEY_RECORD_NUMBER_DEBIT
             )
             .build()
     }
-
-    fun parseCardlet(cardletDto: CardletInputDto): CardletDto? = CardletParser().parseCardlet(cardletDto)
 }

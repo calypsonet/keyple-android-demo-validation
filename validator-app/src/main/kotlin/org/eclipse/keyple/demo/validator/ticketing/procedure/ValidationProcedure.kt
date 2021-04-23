@@ -13,12 +13,11 @@
 package org.eclipse.keyple.demo.validator.ticketing.procedure
 
 import android.content.Context
-import org.eclipse.keyple.calypso.command.po.exception.CalypsoPoCommandException
-import org.eclipse.keyple.calypso.command.sam.exception.CalypsoSamCommandException
-import org.eclipse.keyple.calypso.transaction.CalypsoPo
-import org.eclipse.keyple.calypso.transaction.PoTransaction
-import org.eclipse.keyple.calypso.transaction.exception.CalypsoPoTransactionException
-import org.eclipse.keyple.core.card.selection.CardResource
+import org.eclipse.keyple.card.calypso.po.PoSmartCard
+import org.eclipse.keyple.card.calypso.sam.SamRevision
+import org.eclipse.keyple.card.calypso.transaction.CalypsoPoTransactionException
+import org.eclipse.keyple.card.calypso.transaction.PoTransactionService
+import org.eclipse.keyple.core.card.ProxyReader
 import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.demo.validator.R
 import org.eclipse.keyple.demo.validator.exception.ContractVersionNumberErrorException
@@ -71,7 +70,7 @@ class ValidationProcedure {
         context: Context,
         validationAmount: Int,
         locations: List<Location>,
-        calypsoPo: CalypsoPo,
+        calypsoPo: PoSmartCard,
         samReader: Reader?,
         ticketingSession: AbstractTicketingSession
     ): CardReaderResponse {
@@ -86,7 +85,7 @@ class ValidationProcedure {
 
         var status: Status = Status.LOADING
         var errorMessage: String? = null
-        val poTransaction: PoTransaction?
+        val poTransaction: PoTransactionService?
         var eventDate: Date? = null
         var passValidityEndDate: Date? = null
         var nbTicketsLeft: Int? = null
@@ -98,10 +97,16 @@ class ValidationProcedure {
         poTransaction =
             try {
                 if (samReader != null) {
-                    val cardResource = ticketingSession.checkSamAndOpenChannel(samReader)
-                    PoTransaction(
-                        CardResource(ticketingSession.poReader, calypsoPo),
-                        ticketingSession.getSecuritySettings(cardResource)
+                    val samCardResourceProfileExtension =
+                        ticketingSession.calypsoCardExtensionProvider.createSamCardResourceProfileExtension()
+                    samCardResourceProfileExtension.setSamRevision(SamRevision.C1)
+
+                    ticketingSession.calypsoCardExtensionProvider.createPoSecuredTransaction(
+                        ticketingSession.poReader,
+                        calypsoPo,
+                        ticketingSession.getSecuritySettings(),
+                        samCardResourceProfileExtension,
+                        samReader as ProxyReader
                     )
                 } else {
                     throw NoSamForValidationException()
@@ -119,7 +124,7 @@ class ValidationProcedure {
                 /*
                  * Open a transaction to read/write the Calypso PO
                  */
-                poTransaction.processOpening(PoTransaction.SessionSetting.AccessLevel.SESSION_LVL_DEBIT)
+                poTransaction.processOpening(PoTransactionService.SessionAccessLevel.SESSION_LVL_DEBIT)
 
                 /*
                  * Step 2 - Unpack environment structure from the binary present in the environment record.
@@ -464,12 +469,6 @@ class ValidationProcedure {
                 }
 
             } catch (e: ValidationException) {
-                Timber.e(e)
-                errorMessage = e.message
-            } catch (e: CalypsoSamCommandException) {
-                Timber.e(e)
-                errorMessage = e.message
-            } catch (e: CalypsoPoCommandException) {
                 Timber.e(e)
                 errorMessage = e.message
             } catch (e: CalypsoPoTransactionException) {
