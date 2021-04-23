@@ -13,42 +13,39 @@
 package org.calypsonet.keyple.demo.validation.ticketing.procedure
 
 import android.content.Context
-import org.eclipse.keyple.calypso.command.po.exception.CalypsoPoCommandException
-import org.eclipse.keyple.calypso.command.sam.exception.CalypsoSamCommandException
-import org.eclipse.keyple.calypso.transaction.CalypsoPo
-import org.eclipse.keyple.calypso.transaction.PoTransaction
-import org.eclipse.keyple.calypso.transaction.exception.CalypsoPoTransactionException
-import org.eclipse.keyple.core.card.selection.CardResource
+import org.eclipse.keyple.card.calypso.card.CalypsoCard
+import org.eclipse.keyple.card.calypso.transaction.CardTransactionService
 import org.eclipse.keyple.core.service.Reader
-import org.calypsonet.keyple.demo.validation.R
-import org.calypsonet.keyple.demo.validation.exception.ContractVersionNumberErrorException
-import org.calypsonet.keyple.demo.validation.exception.EnvironmentException
-import org.calypsonet.keyple.demo.validation.exception.EnvironmentExceptionKey
-import org.calypsonet.keyple.demo.validation.exception.EventException
-import org.calypsonet.keyple.demo.validation.exception.EventExceptionKey
-import org.calypsonet.keyple.demo.validation.exception.NoContractAvailableException
-import org.calypsonet.keyple.demo.validation.exception.NoLocationDefinedException
-import org.calypsonet.keyple.demo.validation.exception.NoSamForValidationException
-import org.calypsonet.keyple.demo.validation.exception.ValidationException
-import org.calypsonet.keyple.demo.validation.models.CardReaderResponse
-import org.calypsonet.keyple.demo.validation.models.KeypleSettings
-import org.calypsonet.keyple.demo.validation.models.Location
-import org.calypsonet.keyple.demo.validation.models.Status
-import org.calypsonet.keyple.demo.validation.models.Validation
-import org.calypsonet.keyple.demo.validation.models.mapper.ValidationMapper
-import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.RECORD_NUMBER_1
-import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.RECORD_NUMBER_2
-import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.RECORD_NUMBER_3
-import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.RECORD_NUMBER_4
-import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.SFI_Contracts
-import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.SFI_Counter
-import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.SFI_Counter_0A
-import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.SFI_Counter_0B
-import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.SFI_Counter_0C
-import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.SFI_Counter_0D
-import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.SFI_EnvironmentAndHolder
-import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.SFI_EventLog
-import org.calypsonet.keyple.demo.validation.ticketing.ITicketingSession
+import org.eclipse.keyple.demo.validator.R
+import org.eclipse.keyple.demo.validator.exception.ContractVersionNumberErrorException
+import org.eclipse.keyple.demo.validator.exception.EnvironmentException
+import org.eclipse.keyple.demo.validator.exception.EnvironmentExceptionKey
+import org.eclipse.keyple.demo.validator.exception.EventException
+import org.eclipse.keyple.demo.validator.exception.EventExceptionKey
+import org.eclipse.keyple.demo.validator.exception.NoContractAvailableException
+import org.eclipse.keyple.demo.validator.exception.NoLocationDefinedException
+import org.eclipse.keyple.demo.validator.exception.NoSamForValidationException
+import org.eclipse.keyple.demo.validator.exception.ValidationException
+import org.eclipse.keyple.demo.validator.models.CardReaderResponse
+import org.eclipse.keyple.demo.validator.models.KeypleSettings
+import org.eclipse.keyple.demo.validator.models.Location
+import org.eclipse.keyple.demo.validator.models.Status
+import org.eclipse.keyple.demo.validator.models.Validation
+import org.eclipse.keyple.demo.validator.models.mapper.ValidationMapper
+import org.eclipse.keyple.demo.validator.ticketing.AbstractTicketingSession
+import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo
+import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo.RECORD_NUMBER_1
+import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo.RECORD_NUMBER_2
+import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo.RECORD_NUMBER_3
+import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo.RECORD_NUMBER_4
+import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo.SFI_Contracts
+import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo.SFI_Counter
+import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo.SFI_Counter_0A
+import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo.SFI_Counter_0B
+import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo.SFI_Counter_0C
+import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo.SFI_Counter_0D
+import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo.SFI_EnvironmentAndHolder
+import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo.SFI_EventLog
 import org.eclipse.keyple.parser.keyple.ContractStructureParser
 import org.eclipse.keyple.parser.keyple.CounterStructureParser
 import org.eclipse.keyple.parser.keyple.EnvironmentHolderStructureParser
@@ -72,7 +69,7 @@ class ValidationProcedure {
         context: Context,
         validationAmount: Int,
         locations: List<Location>,
-        calypsoPo: CalypsoPo,
+        calypsoPo: CalypsoCard,
         samReader: Reader?,
         ticketingSession: ITicketingSession
     ): CardReaderResponse {
@@ -87,7 +84,7 @@ class ValidationProcedure {
 
         var status: Status = Status.LOADING
         var errorMessage: String? = null
-        val poTransaction: PoTransaction?
+        val poTransaction: CardTransactionService?
         var eventDate: Date? = null
         var passValidityEndDate: Date? = null
         var nbTicketsLeft: Int? = null
@@ -99,10 +96,12 @@ class ValidationProcedure {
         poTransaction =
             try {
                 if (samReader != null) {
-                    val cardResource = ticketingSession.checkSamAndOpenChannel(samReader)
-                    PoTransaction(
-                        CardResource(ticketingSession.poReader, calypsoPo),
-                        ticketingSession.getSecuritySettings(cardResource)
+                    ticketingSession.setupCardResourceService(CalypsoInfo.SAM_READER_NAME_REGEX, CalypsoInfo.SAM_PROFILE_NAME)
+
+                    ticketingSession.calypsoCardExtensionProvider.createCardTransaction(
+                        ticketingSession.poReader,
+                        calypsoPo,
+                        ticketingSession.getSecuritySettings()
                     )
                 } else {
                     throw NoSamForValidationException()
@@ -129,9 +128,9 @@ class ValidationProcedure {
                 )
 
                 /*
-                 * Open a transaction to read/write the Calypso PO and read the Environment file
+                 * Open a transaction to read/write the Calypso PO
                  */
-                poTransaction.processOpening(PoTransaction.SessionSetting.AccessLevel.SESSION_LVL_DEBIT)
+                poTransaction.processOpening(CardTransactionService.SessionAccessLevel.SESSION_LVL_DEBIT)
 
                 val efEnvironmentHolder =
                     calypsoPo.getFileBySfi(SFI_EnvironmentAndHolder)
@@ -163,7 +162,7 @@ class ValidationProcedure {
                     SFI_EventLog,
                     RECORD_NUMBER_1.toInt()
                 )
-                poTransaction.processPoCommands()
+                poTransaction.processCardCommands()
 
                 val efEventLog = calypsoPo.getFileBySfi(SFI_EventLog)
                 val event = EventStructureParser().parse(efEventLog.data.content)
@@ -255,7 +254,7 @@ class ValidationProcedure {
                         record
                     )
 
-                    poTransaction.processPoCommands()
+                    poTransaction.processCardCommands()
 
                     val efContractParser = calypsoPo.getFileBySfi(SFI_Contracts)
                     val dataContent = efContractParser.data.allRecordsContent[record]!!
@@ -329,7 +328,7 @@ class ValidationProcedure {
                             counterSfi,
                             RECORD_NUMBER_1.toInt()
                         )
-                        poTransaction.processPoCommands()
+                        poTransaction.processCardCommands()
 
                         val efCounter = calypsoPo.getFileBySfi(counterSfi)
                         val counterContent = efCounter.data.allRecordsContent[1]!!
@@ -382,7 +381,7 @@ class ValidationProcedure {
                                     decrement
                                 )
 
-                                poTransaction.processPoCommands()
+                                poTransaction.processCardCommands()
                                 nbTicketsLeft = counterValue - decrement
 
 //                                //TODO: check with Ludo
@@ -470,7 +469,7 @@ class ValidationProcedure {
                         RECORD_NUMBER_1.toInt(),
                         eventBytesToWrite
                     )
-                    poTransaction.processPoCommands()
+                    poTransaction.processCardCommands()
 
                 } else {
                     Timber.i("Validation procedure result : Failed - No valid contract found")
@@ -480,15 +479,6 @@ class ValidationProcedure {
                 }
 
             } catch (e: ValidationException) {
-                Timber.e(e)
-                errorMessage = e.message
-            } catch (e: CalypsoSamCommandException) {
-                Timber.e(e)
-                errorMessage = e.message
-            } catch (e: CalypsoPoCommandException) {
-                Timber.e(e)
-                errorMessage = e.message
-            } catch (e: CalypsoPoTransactionException) {
                 Timber.e(e)
                 errorMessage = e.message
             } catch (e: Exception) {

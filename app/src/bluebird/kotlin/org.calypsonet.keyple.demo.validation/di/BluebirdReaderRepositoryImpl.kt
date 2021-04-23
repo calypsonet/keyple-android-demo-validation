@@ -34,18 +34,22 @@ import org.calypsonet.keyple.demo.validation.reader.PoReaderProtocol
 import org.eclipse.keyple.bluebird.plugin.BluebirdContactReader
 import org.eclipse.keyple.bluebird.plugin.BluebirdContactlessReader
 import org.eclipse.keyple.bluebird.plugin.BluebirdPlugin
-import org.eclipse.keyple.bluebird.plugin.BluebirdPluginFactory
+import org.eclipse.keyple.bluebird.plugin.BluebirdPluginFactoryProvider
 import org.eclipse.keyple.bluebird.plugin.BluebirdSupportContactlessProtocols
-import org.eclipse.keyple.core.plugin.AbstractLocalReader
+import org.eclipse.keyple.core.common.KeyplePluginExtensionFactory
+import org.eclipse.keyple.core.service.KeyplePluginException
+import org.eclipse.keyple.core.service.ObservableReader
+import org.eclipse.keyple.core.service.Plugin
 import org.eclipse.keyple.core.service.Reader
-import org.eclipse.keyple.core.service.SmartCardService
-import org.eclipse.keyple.core.service.event.ReaderObservationExceptionHandler
-import org.eclipse.keyple.core.service.exception.KeypleException
-import org.eclipse.keyple.core.service.util.ContactCardCommonProtocols
+import org.eclipse.keyple.core.service.SmartCardServiceProvider
+import org.eclipse.keyple.core.service.spi.ReaderObservationExceptionHandlerSpi
+import org.eclipse.keyple.core.util.protocol.ContactCardCommonProtocol
+import org.eclipse.keyple.demo.validator.reader.IReaderRepository
+import org.eclipse.keyple.demo.validator.reader.PoReaderProtocol
 import javax.inject.Inject
 
 class BluebirdReaderRepositoryImpl @Inject constructor(
-    private val readerObservationExceptionHandler: ReaderObservationExceptionHandler
+    private val readerObservationExceptionHandler: ReaderObservationExceptionHandlerSpi
 ) :
     IReaderRepository {
 
@@ -53,28 +57,30 @@ class BluebirdReaderRepositoryImpl @Inject constructor(
     lateinit var errorMedia: MediaPlayer
 
     override var poReader: Reader? = null
-    override var samReaders: MutableMap<String, Reader> = mutableMapOf()
+    override var samReaders: List<Reader> = mutableListOf()
 
-    @Throws(KeypleException::class)
+    @Throws(KeyplePluginException::class)
     override fun registerPlugin(activity: Activity) {
         runBlocking {
 
             successMedia = MediaPlayer.create(activity, R.raw.success)
             errorMedia = MediaPlayer.create(activity, R.raw.error)
 
-            val pluginFactory: BluebirdPluginFactory?
+            val pluginFactory: KeyplePluginExtensionFactory?
             pluginFactory = withContext(Dispatchers.IO) {
-                BluebirdPluginFactory.init(activity, readerObservationExceptionHandler)
+                BluebirdPluginFactoryProvider.getFactory(activity)
             }
-            SmartCardService.getInstance().registerPlugin(pluginFactory)
+            val smartCardService = SmartCardServiceProvider.getService()
+            smartCardService.registerPlugin(pluginFactory)
         }
     }
 
-    @Throws(KeypleException::class)
+    override fun getPlugin(): Plugin = SmartCardServiceProvider.getService().getPlugin(BluebirdPlugin.PLUGIN_NAME)
+
     override suspend fun initPoReader(): Reader? {
-        val askPlugin =
-            SmartCardService.getInstance().getPlugin(BluebirdPluginFactory.pluginName)
-        val poReader = askPlugin?.getReader(BluebirdContactlessReader.READER_NAME)
+        val bluebirdPlugin =
+            SmartCardServiceProvider.getService().getPlugin(BluebirdPlugin.PLUGIN_NAME)
+        val poReader = bluebirdPlugin?.getReader(BluebirdContactlessReader.READER_NAME)
         poReader?.let {
 
             it.activateProtocol(
@@ -85,19 +91,22 @@ class BluebirdReaderRepositoryImpl @Inject constructor(
             this.poReader = poReader
         }
 
+        (poReader as ObservableReader).setReaderObservationExceptionHandler(
+            readerObservationExceptionHandler
+        )
+
         return poReader
     }
 
-    @Throws(KeypleException::class)
-    override suspend fun initSamReaders(): Map<String, Reader> {
-        val askPlugin =
-            SmartCardService.getInstance().getPlugin(BluebirdPluginFactory.pluginName)
-        samReaders = askPlugin?.readers?.filter {
-            !it.value.isContactless
-        }?.toMutableMap() ?: mutableMapOf()
+    override suspend fun initSamReaders(): List<Reader> {
+        val bluebirdPlugin =
+            SmartCardServiceProvider.getService().getPlugin(BluebirdPlugin.PLUGIN_NAME)
+        samReaders = bluebirdPlugin?.readers?.filter {
+            !it.isContactless
+        }?.toMutableList() ?: mutableListOf()
 
-        samReaders.forEach {
-            (it.value as AbstractLocalReader).activateProtocol(
+        samReaders.forEach { reader ->
+            reader.activateProtocol(
                 getSamReaderProtocol(),
                 getSamReaderProtocol()
             )
@@ -108,13 +117,13 @@ class BluebirdReaderRepositoryImpl @Inject constructor(
     override fun getSamReader(): Reader? {
         return if (samReaders.isNotEmpty()) {
             val filteredByName = samReaders.filter {
-                it.value.name == BluebirdContactReader.READER_NAME
+                it.name == BluebirdContactReader.READER_NAME
             }
 
             return if (filteredByName.isNullOrEmpty()) {
-                samReaders.values.first()
+                samReaders.first()
             } else {
-                filteredByName.values.first()
+                filteredByName.first()
             }
         } else {
             null
@@ -135,7 +144,7 @@ class BluebirdReaderRepositoryImpl @Inject constructor(
         poReader?.deactivateProtocol(getContactlessIsoProtocol().readerProtocolName)
 
         samReaders.forEach {
-            (it.value as AbstractLocalReader).deactivateProtocol(
+            it.deactivateProtocol(
                 getSamReaderProtocol()
             )
         }

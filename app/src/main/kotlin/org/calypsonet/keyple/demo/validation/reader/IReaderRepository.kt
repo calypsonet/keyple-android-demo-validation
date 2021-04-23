@@ -12,8 +12,8 @@
 package org.calypsonet.keyple.demo.validation.reader
 
 import android.app.Activity
+import org.eclipse.keyple.core.service.Plugin
 import org.eclipse.keyple.core.service.Reader
-import org.eclipse.keyple.core.service.exception.KeypleException
 
 /**
  *  @author youssefamrani
@@ -22,20 +22,18 @@ import org.eclipse.keyple.core.service.exception.KeypleException
 interface IReaderRepository {
 
     var poReader: Reader?
-    var samReaders: MutableMap<String, Reader>
+    var samReaders: List<Reader>
 
-    @Throws(KeypleException::class)
     fun registerPlugin(activity: Activity)
 
-    @Throws(KeypleException::class)
     suspend fun initPoReader(): Reader?
 
-    @Throws(KeypleException::class)
-    suspend fun initSamReaders(): Map<String, Reader>
+    suspend fun initSamReaders(): List<Reader>
 
     fun getSamReader(): Reader?
     fun getContactlessIsoProtocol(): PoReaderProtocol?
-    fun getSamReaderProtocol(): String?
+    fun getSamReaderProtocol(): String
+    fun getPlugin(): Plugin
     fun clear()
 
     fun isMockedResponse(): Boolean = false

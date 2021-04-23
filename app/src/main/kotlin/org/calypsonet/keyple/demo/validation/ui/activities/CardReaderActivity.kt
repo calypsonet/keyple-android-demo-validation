@@ -26,17 +26,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.calypsonet.keyple.demo.validation.R
-import org.calypsonet.keyple.demo.validation.di.scopes.ActivityScoped
-import org.calypsonet.keyple.demo.validation.models.CardReaderResponse
-import org.calypsonet.keyple.demo.validation.models.KeypleSettings
-import org.calypsonet.keyple.demo.validation.models.Status
-import org.calypsonet.keyple.demo.validation.models.Validation
-import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo
-import org.calypsonet.keyple.demo.validation.ticketing.ITicketingSession
-import org.eclipse.keyple.core.service.event.ObservableReader
-import org.eclipse.keyple.core.service.event.ReaderEvent
-import org.eclipse.keyple.core.service.exception.KeyplePluginInstantiationException
+import org.eclipse.keyple.core.service.ReaderEvent
+import org.eclipse.keyple.core.service.spi.ReaderObserverSpi
+import org.eclipse.keyple.demo.validator.BuildConfig
+import org.eclipse.keyple.demo.validator.R
+import org.eclipse.keyple.demo.validator.data.CardReaderApi
+import org.eclipse.keyple.demo.validator.di.scopes.ActivityScoped
+import org.eclipse.keyple.demo.validator.models.CardReaderResponse
+import org.eclipse.keyple.demo.validator.models.KeypleSettings
+import org.eclipse.keyple.demo.validator.models.Status
+import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo
+import org.eclipse.keyple.demo.validator.ticketing.TicketingSession
 import timber.log.Timber
 import java.util.Date
 import java.util.Timer
@@ -97,13 +97,7 @@ class CardReaderActivity : BaseActivity() {
                         cardReaderApi.readersInitialized = true
                         handleAppEvents(AppState.WAIT_CARD, null)
                         cardReaderApi.startNfcDetection()
-                    } catch (e: KeyplePluginInstantiationException) {
-                        Timber.e(e)
-                        withContext(Dispatchers.Main) {
-                            dismissProgress()
-                            showNoProxyReaderDialog(e)
-                        }
-                    } catch (e: IllegalStateException) {
+                    } catch (e: Exception) {
                         Timber.e(e)
                         withContext(Dispatchers.Main) {
                             dismissProgress()
@@ -130,6 +124,16 @@ class CardReaderActivity : BaseActivity() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        animation.cancelAnimation()
+        timer.cancel()
+        if (readersInitialized) {
+            cardReaderApi.stopNfcDetection()
+            Timber.d("stopNfcDetection")
+        }
+    }
+
     override fun onDestroy() {
         cardReaderApi.readersInitialized = false
         cardReaderApi.onDestroy(poReaderObserver)
@@ -141,6 +145,10 @@ class CardReaderActivity : BaseActivity() {
         super.onPause()
         animation.cancelAnimation()
         timer.cancel()
+        if (readersInitialized) {
+            cardReaderApi.stopNfcDetection()
+            Timber.d("stopNfcDetection")
+        }
     }
 
     private fun changeDisplay(cardReaderResponse: CardReaderResponse?) {
@@ -186,7 +194,7 @@ class CardReaderActivity : BaseActivity() {
                 Timber.i("Process default selection...")
 
                 val seSelectionResult =
-                    ticketingSession.processDefaultSelection(readerEvent.defaultSelectionsResponse)
+                    ticketingSession.processDefaultSelection(readerEvent.scheduledCardSelectionsResponse)
 
                 if (!seSelectionResult.hasActiveSelection()) {
                     Timber.e("PO Not selected")
@@ -327,16 +335,17 @@ class CardReaderActivity : BaseActivity() {
         dialog.show()
     }
 
-    private inner class PoObserver : ObservableReader.ReaderObserver {
-        override fun update(event: ReaderEvent) {
-            Timber.i("New ReaderEvent received :${event.eventType.name}")
+    private inner class PoObserver : ReaderObserverSpi {
 
-            if (event.eventType == ReaderEvent.EventType.CARD_MATCHED &&
+        override fun onReaderEvent(readerEvent: ReaderEvent) {
+            Timber.i("New ReaderEvent received :${readerEvent.eventType.name}")
+
+            if (readerEvent.eventType == ReaderEvent.EventType.CARD_MATCHED &&
                 cardReaderApi.isMockedResponse()
             ) {
                 launchMockedEvents()
             } else {
-                handleAppEvents(currentAppState, event)
+                handleAppEvents(currentAppState, readerEvent)
             }
         }
     }
