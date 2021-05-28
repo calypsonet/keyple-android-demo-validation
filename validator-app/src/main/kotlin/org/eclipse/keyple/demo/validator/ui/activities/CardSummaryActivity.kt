@@ -14,6 +14,7 @@ package org.eclipse.keyple.demo.validator.ui.activities
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.View
+import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_card_summary.animation
 import kotlinx.android.synthetic.main.activity_card_summary.bigText
 import kotlinx.android.synthetic.main.activity_card_summary.location_time
@@ -34,14 +35,14 @@ class CardSummaryActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_card_summary)
 
-        val bundle = intent.getBundleExtra("bundle")!!
+        val bundle = intent.getBundleExtra(Bundle::class.java.simpleName)!!
         val cardReaderResponse =
             bundle.getParcelable<CardReaderResponse>(CardReaderResponse::class.simpleName)
 
         when (cardReaderResponse?.status) {
             Status.SUCCESS -> {
                 animation.setAnimation("tick_white.json")
-                mainView.setBackgroundColor(resources.getColor(R.color.green))
+                mainView.setBackgroundColor(ContextCompat.getColor(this, R.color.green))
 
                 bigText.setText(R.string.valid_main_desc)
 
@@ -70,7 +71,7 @@ class CardSummaryActivity : BaseActivity() {
             }
             Status.INVALID_CARD -> {
                 animation.setAnimation("error_white.json")
-                mainView.setBackgroundColor(resources.getColor(R.color.orange))
+                mainView.setBackgroundColor(ContextCompat.getColor(this, R.color.orange))
 
                 bigText.setText(R.string.card_invalid_main_desc)
                 location_time.text = cardReaderResponse.errorMessage
@@ -79,7 +80,7 @@ class CardSummaryActivity : BaseActivity() {
                 smallDesc.visibility = View.INVISIBLE
             }
             Status.EMPTY_CARD -> {
-                mainView.setBackgroundColor(resources.getColor(R.color.red))
+                mainView.setBackgroundColor(ContextCompat.getColor(this, R.color.red))
                 animation.setAnimation("error_white.json")
 
                 bigText.text = cardReaderResponse.errorMessage
@@ -89,7 +90,7 @@ class CardSummaryActivity : BaseActivity() {
                 smallDesc.visibility = View.INVISIBLE
             }
             else -> {
-                mainView.setBackgroundColor(resources.getColor(R.color.red))
+                mainView.setBackgroundColor(ContextCompat.getColor(this, R.color.red))
                 animation.setAnimation("error_white.json")
 
                 bigText.setText(R.string.error_main_desc)

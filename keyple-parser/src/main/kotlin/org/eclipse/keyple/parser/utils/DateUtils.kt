@@ -37,7 +37,7 @@ object DateUtils {
     const val DATE_01_01_1997 = "01/01/1997"
     const val DATE_01_01_2010 = "01/01/2010"
     const val DD_MM_YYYY = "dd/MM/yyyy"
-    const val DATE_FORMAT_DISPLAY = "dd/MM/yyyy, HH:mm"
+    const val DATE_FORMAT_DISPLAY = "dd MMMM yyyy, HH:mm"
 
     const val MILLIS_PER_DAY = 1000 * 60 * 60 * 24
     const val MILLIS_PER_MINUTE = 60 * 24

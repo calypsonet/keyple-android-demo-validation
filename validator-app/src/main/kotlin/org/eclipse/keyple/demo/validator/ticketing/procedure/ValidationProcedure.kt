@@ -36,7 +36,6 @@ import org.eclipse.keyple.demo.validator.models.Location
 import org.eclipse.keyple.demo.validator.models.Status
 import org.eclipse.keyple.demo.validator.models.Validation
 import org.eclipse.keyple.demo.validator.models.mapper.ValidationMapper
-import org.eclipse.keyple.demo.validator.ticketing.AbstractTicketingSession
 import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo.RECORD_NUMBER_1
 import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo.RECORD_NUMBER_2
 import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo.RECORD_NUMBER_3
@@ -49,6 +48,7 @@ import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo.SFI_Counter_0C
 import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo.SFI_Counter_0D
 import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo.SFI_EnvironmentAndHolder
 import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo.SFI_EventLog
+import org.eclipse.keyple.demo.validator.ticketing.ITicketingSession
 import org.eclipse.keyple.parser.keyple.ContractStructureParser
 import org.eclipse.keyple.parser.keyple.CounterStructureParser
 import org.eclipse.keyple.parser.keyple.EnvironmentHolderStructureParser
@@ -73,7 +73,7 @@ class ValidationProcedure {
         locations: List<Location>,
         calypsoPo: CalypsoPo,
         samReader: Reader?,
-        ticketingSession: AbstractTicketingSession
+        ticketingSession: ITicketingSession
     ): CardReaderResponse {
         val now = DateTime.now()
 //        val now = DateTime()
@@ -116,11 +116,9 @@ class ValidationProcedure {
         if (poTransaction != null) {
             try {
 
-                /*
-                 * Open a transaction to read/write the Calypso PO
-                 */
-                poTransaction.processOpening(PoTransaction.SessionSetting.AccessLevel.SESSION_LVL_DEBIT)
-
+                /*******************
+                 * Event and Environment Analysis
+                 *******************/
                 /*
                  * Step 2 - Unpack environment structure from the binary present in the environment record.
                  */
@@ -128,7 +126,11 @@ class ValidationProcedure {
                     SFI_EnvironmentAndHolder,
                     RECORD_NUMBER_1.toInt()
                 )
-                poTransaction.processPoCommands()
+
+                /*
+                 * Open a transaction to read/write the Calypso PO and read the Environment file
+                 */
+                poTransaction.processOpening(PoTransaction.SessionSetting.AccessLevel.SESSION_LVL_DEBIT)
 
                 val efEnvironmentHolder =
                     calypsoPo.getFileBySfi(SFI_EnvironmentAndHolder)
@@ -170,9 +172,15 @@ class ValidationProcedure {
                  * <Abort Transaction and exit process>
                  */
                 val eventVersionNumber = event.eventVersionNumber
+
                 if (eventVersionNumber != VersionNumberEnum.CURRENT_VERSION.key) {
-                    status = Status.INVALID_CARD
-                    throw EventException(EventExceptionKey.WRONG_VERSION_NUMBER)
+                    if (eventVersionNumber == VersionNumberEnum.UNDEFINED.key) {
+                        status = Status.EMPTY_CARD
+                        throw EventException(EventExceptionKey.CLEAN_CARD)
+                    } else {
+                        status = Status.INVALID_CARD
+                        throw EventException(EventExceptionKey.WRONG_VERSION_NUMBER)
+                    }
                 }
 
                 /*
@@ -180,6 +188,13 @@ class ValidationProcedure {
                  */
                 val contractPriorities = mutableListOf<Pair<Int, ContractPriorityEnum>>()
 
+
+                /*******************
+                 * Best Contract Search
+                 *******************/
+                /*
+                 * Step 7 - Create a list of ContractPriority fields that are different from 0 or 31.
+                 */
                 if (event.contractPriority1 != ContractPriorityEnum.FORBIDDEN &&
                     event.contractPriority1 != ContractPriorityEnum.EXPIRED
                 ) {
@@ -242,8 +257,7 @@ class ValidationProcedure {
                     poTransaction.processPoCommands()
 
                     val efContractParser = calypsoPo.getFileBySfi(SFI_Contracts)
-                    val dataContent =
-                        efContractParser.data.allRecordsContent[RECORD_NUMBER_1.toInt()]!!
+                    val dataContent = efContractParser.data.allRecordsContent[record]!!
                     val contract = ContractStructureParser().parse(dataContent)
 
                     /*
@@ -391,6 +405,7 @@ class ValidationProcedure {
                      */
                     contractUsed = record
                     writeEvent = true
+                    break
                 }
 
                 if (writeEvent) {

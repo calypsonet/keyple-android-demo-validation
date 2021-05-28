@@ -12,7 +12,6 @@
 package org.eclipse.keyple.demo.validator.data
 
 import android.app.Activity
-import javax.inject.Inject
 import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.SmartCardService
 import org.eclipse.keyple.core.service.event.ObservableReader
@@ -22,15 +21,15 @@ import org.eclipse.keyple.core.service.exception.KeyplePluginNotFoundException
 import org.eclipse.keyple.core.service.exception.KeypleReaderIOException
 import org.eclipse.keyple.demo.validator.di.scopes.AppScoped
 import org.eclipse.keyple.demo.validator.reader.IReaderRepository
+import org.eclipse.keyple.demo.validator.ticketing.ITicketingSession
 import org.eclipse.keyple.demo.validator.ticketing.TicketingSession
-import org.eclipse.keyple.demo.validator.ticketing.TicketingSessionManager
 import timber.log.Timber
+import javax.inject.Inject
 
 @AppScoped
 class CardReaderApi @Inject constructor(private var readerRepository: IReaderRepository) {
 
-    private lateinit var ticketingSessionManager: TicketingSessionManager
-    private var ticketingSession: TicketingSession? = null
+    private var ticketingSession: ITicketingSession? = null
 
     @Throws(
         KeyplePluginInstantiationException::class,
@@ -83,10 +82,7 @@ class CardReaderApi @Inject constructor(private var readerRepository: IReaderRep
             /* remove the observer if it already exist */
             (reader as ObservableReader).addObserver(observer)
 
-            ticketingSessionManager = TicketingSessionManager()
-
-            ticketingSession =
-                ticketingSessionManager.createTicketingSession(readerRepository) as TicketingSession
+            ticketingSession = TicketingSession(readerRepository)
         }
     }
 
@@ -109,7 +105,7 @@ class CardReaderApi @Inject constructor(private var readerRepository: IReaderRep
         }
     }
 
-    fun getTicketingSession(): TicketingSession? {
+    fun getTicketingSession(): ITicketingSession? {
         return ticketingSession
     }
 

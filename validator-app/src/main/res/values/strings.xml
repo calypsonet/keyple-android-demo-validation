@@ -12,8 +12,6 @@
     <string name="reader_plugin">Reader plugin : %s</string>
     <string name="sam_plugin">Sam plugin : %s</string>
     <string name="present_card">Please present your contactless support</string>
-    <string name="card_invalid_main_desc">Invalid on this network</string>
-    <string name="card_invalid_small_desc">This is a \"%s\" card.</string>
     <string name="no_trips_left">No trips left</string>
     <string name="expired_title">Expired title</string>
     <string name="no_valid_title_detected">No valid title detected</string>
@@ -45,8 +43,11 @@
 
     <!-- Error screen -->
     <string name="card_invalid_title">Card not valid</string>
-    <string name="card_invalid_desc">This is %s.</string>
+    <string name="card_invalid_desc">Selection error : AID not found.</string>
     <string name="card_invalid_default">Invalid card</string>
+    <string name="card_invalid_main_desc">Invalid on this network</string>
+    <string name="card_invalid_structure">Selection error : Unknown structure.</string>
+    <string name="card_invalid_small_desc">This is a \"%s\" card.</string>
 
     <!--    Dialog-->
     <string name="permission_denied_message">You must accept the requested permissions to continue. Please relaunch the app.</string>

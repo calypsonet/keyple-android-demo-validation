@@ -15,4 +15,5 @@ class EventException(key: EventExceptionKey) : ValidationException(key.value)
 
 enum class EventExceptionKey constructor(val key: Int, val value: String) {
     WRONG_VERSION_NUMBER(0, "Event - Wrong version number"),
+    CLEAN_CARD(1, "No valid title detected");
 }

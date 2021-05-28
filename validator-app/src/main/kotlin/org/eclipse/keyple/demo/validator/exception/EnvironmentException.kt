@@ -15,6 +15,6 @@ class EnvironmentException(key: EnvironmentExceptionKey) :
     ValidationException(key.value)
 
 enum class EnvironmentExceptionKey constructor(val key: Int, val value: String) {
-    WRONG_VERSION_NUMBER(0, "Environment Error : wrong version number"),
-    EXPIRED(1, "Environment Error : end date expired");
+    WRONG_VERSION_NUMBER(0, "Environment Error: wrong version number"),
+    EXPIRED(1, "Environment Error: end date expired");
 }

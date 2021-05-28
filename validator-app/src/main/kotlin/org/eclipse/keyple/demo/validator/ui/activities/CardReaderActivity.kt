@@ -16,6 +16,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import com.airbnb.lottie.LottieDrawable
 import kotlinx.android.synthetic.main.activity_card_reader.animation
 import kotlinx.android.synthetic.main.activity_card_reader.mainView
@@ -27,7 +28,6 @@ import kotlinx.coroutines.withContext
 import org.eclipse.keyple.core.service.event.ObservableReader
 import org.eclipse.keyple.core.service.event.ReaderEvent
 import org.eclipse.keyple.core.service.exception.KeyplePluginInstantiationException
-import org.eclipse.keyple.demo.validator.BuildConfig
 import org.eclipse.keyple.demo.validator.R
 import org.eclipse.keyple.demo.validator.data.CardReaderApi
 import org.eclipse.keyple.demo.validator.di.scopes.ActivityScoped
@@ -35,7 +35,7 @@ import org.eclipse.keyple.demo.validator.models.CardReaderResponse
 import org.eclipse.keyple.demo.validator.models.KeypleSettings
 import org.eclipse.keyple.demo.validator.models.Status
 import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo
-import org.eclipse.keyple.demo.validator.ticketing.TicketingSession
+import org.eclipse.keyple.demo.validator.ticketing.ITicketingSession
 import timber.log.Timber
 import java.util.Date
 import java.util.Timer
@@ -50,21 +50,23 @@ class CardReaderActivity : BaseActivity() {
 
     private var poReaderObserver: PoObserver? = null
 
+    @Suppress("DEPRECATION")
     private lateinit var progress: ProgressDialog
+
     private var timer = Timer()
     private var readersInitialized = false
-    lateinit var ticketingSession: TicketingSession
+    lateinit var ticketingSession: ITicketingSession
     var currentAppState = AppState.WAIT_SYSTEM_READY
 
     /* application states */
     enum class AppState {
-        UNSPECIFIED, WAIT_SYSTEM_READY, WAIT_CARD, CARD_STATUS
+        WAIT_SYSTEM_READY, WAIT_CARD, CARD_STATUS
     }
 
+    @Suppress("DEPRECATION")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_card_reader)
-
         progress = ProgressDialog(this)
         progress.setMessage(getString(R.string.please_wait))
         progress.setCancelable(false)
@@ -105,7 +107,6 @@ class CardReaderActivity : BaseActivity() {
                 if (readersInitialized) {
                     withContext(Dispatchers.Main) {
                         dismissProgress()
-                        updateReaderInfos()
                     }
                 }
             }
@@ -129,16 +130,6 @@ class CardReaderActivity : BaseActivity() {
         super.onDestroy()
     }
 
-    private fun updateReaderInfos() {
-
-        @Suppress("ConstantConditionIf")
-        val readerPlugin = if (BuildConfig.FLAVOR == "copernic") {
-            BuildConfig.FLAVOR
-        } else {
-            "Android NFC - ${BuildConfig.FLAVOR}"
-        }
-    }
-
     override fun onPause() {
         super.onPause()
         animation.cancelAnimation()
@@ -153,7 +144,8 @@ class CardReaderActivity : BaseActivity() {
         if (cardReaderResponse != null) {
             if (cardReaderResponse.status === Status.LOADING) {
                 presentCardTv.visibility = View.GONE
-                mainView.setBackgroundColor(resources.getColor(R.color.turquoise))
+                mainView.setBackgroundColor(ContextCompat.getColor(this,
+                    R.color.turquoise))
                 supportActionBar?.show()
                 animation.playAnimation()
                 animation.repeatCount = LottieDrawable.INFINITE
@@ -164,12 +156,7 @@ class CardReaderActivity : BaseActivity() {
                 val intent = Intent(this, CardSummaryActivity::class.java)
                 val bundle = Bundle()
                 bundle.putParcelable(CardReaderResponse::class.simpleName, cardReaderResponse)
-                intent.putExtra("bundle", bundle)
-//                intent.putExtra(CardSummaryActivity.STATUS_KEY, cardReaderResponse.status.toString())
-//                intent.putExtra(CardSummaryActivity.TICKETS_KEY, cardReaderResponse.nbTicketsLeft)
-//                intent.putExtra(CardSummaryActivity.CONTRACT, cardReaderResponse.contract)
-//                intent.putExtra(CardSummaryActivity.CARD_TYPE, cardReaderResponse.cardType)
-
+                intent.putExtra(Bundle::class.java.simpleName, bundle)
                 startActivity(intent)
             }
         } else {
@@ -200,10 +187,7 @@ class CardReaderActivity : BaseActivity() {
 
                 if (!seSelectionResult.hasActiveSelection()) {
                     Timber.e("PO Not selected")
-                    val error = String.format(
-                        getString(R.string.card_invalid_desc),
-                        "a case of PO Not selected"
-                    )
+                    val error = getString(R.string.card_invalid_desc)
                     changeDisplay(
                         CardReaderResponse(
                             status = Status.INVALID_CARD,
@@ -217,12 +201,12 @@ class CardReaderActivity : BaseActivity() {
                 }
 
                 Timber.i("PO Type = ${ticketingSession.poTypeName}")
-                if (CalypsoInfo.PO_TYPE_NAME_CALYPSO != ticketingSession.poTypeName) {
+                if (CalypsoInfo.PO_TYPE_NAME_CALYPSO_05h != ticketingSession.poTypeName &&
+                    CalypsoInfo.PO_TYPE_NAME_CALYPSO_32h != ticketingSession.poTypeName &&
+                    CalypsoInfo.PO_TYPE_NAME_NAVIGO_05h != ticketingSession.poTypeName
+                ) {
                     val cardType = ticketingSession.poTypeName ?: "Unknown card"
-                    val error = String.format(
-                        getString(R.string.card_invalid_small_desc),
-                        cardType.trim { it <= ' ' }
-                    )
+                    val error = getString(R.string.card_invalid_desc)
                     changeDisplay(
                         CardReaderResponse(
                             status = Status.INVALID_CARD,
@@ -233,10 +217,24 @@ class CardReaderActivity : BaseActivity() {
                         )
                     )
                     return
-                } else {
-                    Timber.i("A Calypso PO selection succeeded.")
-                    newAppState = AppState.CARD_STATUS
                 }
+
+                if (!ticketingSession.checkStructure()) {
+                    val error = getString(R.string.card_invalid_structure)
+                    changeDisplay(
+                        CardReaderResponse(
+                            status = Status.INVALID_CARD,
+                            cardType = null,
+                            contract = null,
+                            validation = null,
+                            errorMessage = error
+                        )
+                    )
+                    return
+                }
+
+                Timber.i("A Calypso PO selection succeeded.")
+                newAppState = AppState.CARD_STATUS
             }
             ReaderEvent.EventType.CARD_REMOVED -> {
                 currentAppState = AppState.WAIT_SYSTEM_READY
@@ -256,20 +254,22 @@ class CardReaderActivity : BaseActivity() {
                     ReaderEvent.EventType.CARD_INSERTED, ReaderEvent.EventType.CARD_MATCHED -> {
                         GlobalScope.launch {
                             try {
-                                withContext(Dispatchers.Main){
+                                withContext(Dispatchers.Main) {
                                     progress.show()
                                 }
 
-                                val validationResult = withContext(Dispatchers.IO){
-                                    if (ticketingSession.analyzePoProfile()) {
-                                        ticketingSession.launchValidationProcedure(this@CardReaderActivity, locationFileManager.getLocations())
-                                    }
-                                    else{
+                                val validationResult = withContext(Dispatchers.IO) {
+                                    if (ticketingSession.checkStartupInfo()) {
+                                        ticketingSession.launchValidationProcedure(
+                                            this@CardReaderActivity,
+                                            locationFileManager.getLocations()
+                                        )
+                                    } else {
                                         null
                                     }
                                 }
 
-                                withContext(Dispatchers.Main){
+                                withContext(Dispatchers.Main) {
                                     progress.dismiss()
                                     changeDisplay(validationResult)
                                 }
@@ -294,8 +294,6 @@ class CardReaderActivity : BaseActivity() {
                     }
                 }
             }
-            else -> {
-            }
         }
         Timber.i("New state = $currentAppState")
     }
@@ -306,13 +304,13 @@ class CardReaderActivity : BaseActivity() {
         }
     }
 
-    fun dismissProgress() {
+    private fun dismissProgress() {
         if (progress.isShowing) {
             progress.dismiss()
         }
     }
 
-    fun showNoProxyReaderDialog(t: Throwable) {
+    private fun showNoProxyReaderDialog(t: Throwable) {
         val builder = AlertDialog.Builder(this)
         builder.setTitle(R.string.error_title)
         builder.setMessage(t.message)
@@ -356,7 +354,7 @@ class CardReaderActivity : BaseActivity() {
                             status = status,
                             nbTicketsLeft = 7,
                             contract = "Season Pass",
-                            cardType = CalypsoInfo.PO_TYPE_NAME_CALYPSO,
+                            cardType = CalypsoInfo.PO_TYPE_NAME_CALYPSO_05h,
                             validation = null,
                             eventDate = Date()
                         )
