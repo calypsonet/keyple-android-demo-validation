@@ -12,6 +12,7 @@
 package org.eclipse.keyple.demo.validator.reader
 
 import android.app.Activity
+import org.eclipse.keyple.core.service.Plugin
 import org.eclipse.keyple.core.service.Reader
 
 /**
@@ -21,18 +22,19 @@ import org.eclipse.keyple.core.service.Reader
 interface IReaderRepository {
 
     var poReader: Reader?
-    var samReaders: MutableMap<String, Reader>
+    var samReaders: List<Reader>
 
     fun registerPlugin(activity: Activity)
 
     suspend fun initPoReader(): Reader?
 
-    suspend fun initSamReaders(): Map<String, Reader>
+    suspend fun initSamReaders(): List<Reader>
 
     fun getSamReader(): Reader?
     fun getContactlessIsoProtocol(): PoReaderProtocol?
     fun getContactlessMifareProtocol(): PoReaderProtocol?
     fun getSamReaderProtocol(): String
+    fun getPlugin(): Plugin
     fun clear()
 
     fun isMockedResponse(): Boolean = false

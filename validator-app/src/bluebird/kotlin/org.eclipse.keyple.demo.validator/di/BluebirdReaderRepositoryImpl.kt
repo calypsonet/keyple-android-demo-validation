@@ -35,6 +35,7 @@ import org.eclipse.keyple.bluebird.plugin.BluebirdSupportContactlessProtocols
 import org.eclipse.keyple.core.common.KeyplePluginExtensionFactory
 import org.eclipse.keyple.core.service.KeyplePluginException
 import org.eclipse.keyple.core.service.ObservableReader
+import org.eclipse.keyple.core.service.Plugin
 import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.SmartCardServiceProvider
 import org.eclipse.keyple.core.service.spi.ReaderObservationExceptionHandlerSpi
@@ -49,7 +50,7 @@ class BluebirdReaderRepositoryImpl @Inject constructor(
     IReaderRepository {
 
     override var poReader: Reader? = null
-    override var samReaders: MutableMap<String, Reader> = mutableMapOf()
+    override var samReaders: List<Reader> = mutableListOf()
 
     @Throws(KeyplePluginException::class)
     override fun registerPlugin(activity: Activity) {
@@ -62,6 +63,8 @@ class BluebirdReaderRepositoryImpl @Inject constructor(
             smartCardService.registerPlugin(pluginFactory)
         }
     }
+
+    override fun getPlugin(): Plugin = SmartCardServiceProvider.getService().getPlugin(BluebirdPlugin.PLUGIN_NAME)
 
     override suspend fun initPoReader(): Reader? {
         val bluebirdPlugin =
@@ -84,15 +87,15 @@ class BluebirdReaderRepositoryImpl @Inject constructor(
         return poReader
     }
 
-    override suspend fun initSamReaders(): Map<String, Reader> {
+    override suspend fun initSamReaders(): List<Reader> {
         val bluebirdPlugin =
             SmartCardServiceProvider.getService().getPlugin(BluebirdPlugin.PLUGIN_NAME)
         samReaders = bluebirdPlugin?.readers?.filter {
-            !it.value.isContactless
-        }?.toMutableMap() ?: mutableMapOf()
+            !it.isContactless
+        }?.toMutableList() ?: mutableListOf()
 
         samReaders.forEach { reader ->
-            reader.value.activateProtocol(
+            reader.activateProtocol(
                 getSamReaderProtocol(),
                 getSamReaderProtocol()
             )
@@ -103,13 +106,13 @@ class BluebirdReaderRepositoryImpl @Inject constructor(
     override fun getSamReader(): Reader? {
         return if (samReaders.isNotEmpty()) {
             val filteredByName = samReaders.filter {
-                it.value.name == BluebirdContactReader.READER_NAME
+                it.name == BluebirdContactReader.READER_NAME
             }
 
             return if (filteredByName.isNullOrEmpty()) {
-                samReaders.values.first()
+                samReaders.first()
             } else {
-                filteredByName.values.first()
+                filteredByName.first()
             }
         } else {
             null
@@ -133,7 +136,7 @@ class BluebirdReaderRepositoryImpl @Inject constructor(
         poReader?.deactivateProtocol(getContactlessIsoProtocol()!!.readerProtocolName)
 
         samReaders.forEach {
-            it.value.deactivateProtocol(
+            it.deactivateProtocol(
                 getSamReaderProtocol()
             )
         }
