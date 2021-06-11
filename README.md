@@ -121,7 +121,7 @@ This procedure's main steps are as follows:
     - If AID not found reject the card
   - Selection Analysis:
     - If File Structure unknow reject the card
-  - Environment Analysis:
+- Environment Analysis:
   - Open a Validation session (Calypso Secure Session) reading the environment record.
   - Unpack environment structure from the binary present in the environment record:
     - If EnvVersionNumber of the Environment structure is not the expected one (==1 for the current version) reject the card.
