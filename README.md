@@ -1,6 +1,6 @@
 # Keyple Validation Demo
 
-This is the repository for the Keyple Android Demo Validation application. 
+This is the repository for the Keyple Android Validation Demo application. 
 
 This demo is an open source project provided by [Calypso Networks Association] (https://calypsonet.org), you can adapt the demo for your cards, terminals, projects, etc. 
 
