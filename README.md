@@ -2,28 +2,28 @@
 
 This is the repository for the Keyple Android Validation Demo application. 
 
-This demo is an open source project provided by [Calypso Networks Association] (https://calypsonet.org), you can adapt the demo for your cards, terminals, projects, etc. 
+This demo is an open source project provided by [Calypso Networks Association](https://calypsonet.org), you can adapt the demo for your cards, terminals, projects, etc. 
 
-This demo shows how to easily validate a contract (Season Pass and/or Multi-trip ticket) written on a card using the [Eclipse Keyple] (https://keyple.org) components.
+This demo shows how to easily validate a contract (Season Pass and/or Multi-trip ticket) written on a card using the [Eclipse Keyple](https://keyple.org) components.
 
 It implements multiple plugins and switching from one plugin to another is made easy by using the flavours feature for handling multiple devices:
 - [Keyple Plugin Android NFC | Eclipse Keyple](https://keyple.org/components-java/plugins/nfc/)
-- [Keyple Plugin Android OMAPI | Eclipse Keyple]( (https://keyple.org/components-java/plugins/omapi/)
+- [Keyple Plugin Android OMAPI | Eclipse Keyple](https://keyple.org/components-java/plugins/omapi/)
 - [Coppernic](https://github.com/calypsonet/keyple-android-plugin-coppernic)
 - [Famoco](https://github.com/calypsonet/keyple-famoco)
 
-The source code and APKs for several terminals are available at  [calypsonet/keyple-android-demo-validation/releases] (https://github.com/calypsonet/keyple-android-demo-validation/releases)
+The source code and APKs for several terminals are available at  [calypsonet/keyple-android-demo-validation/releases](https://github.com/calypsonet/keyple-android-demo-validation/releases)
 
 ## Keyple Demos
 
 This demo is part of a set of three demos:
-* [Keyple Remote Demo] (https://github.com/calypsonet/keyple-java-demo-remote)
-* [Keyple Validation Demo] (https://github.com/calypsonet/keyple-android-demo-validation)
-* [Keyple Control Demo] (https://github.com/calypsonet/keyple-android-demo-control)
+* [Keyple Remote Demo](https://github.com/calypsonet/keyple-java-demo-remote)
+* [Keyple Validation Demo](https://github.com/calypsonet/keyple-android-demo-validation)
+* [Keyple Control Demo](https://github.com/calypsonet/keyple-android-demo-control)
 
 ## Calypso Card Applications
 
-The demo works with the cards provided in the [Test kit] (https://calypsonet.org/technical-support-documentation/)
+The demo works with the cards provided in the [Test kit](https://calypsonet.org/technical-support-documentation/)
 
 This demo can be used with Calypso cards with the following configurations:
 * AID 315449432E49434131h - File Structure 05h (CD Light/GTML Compatibility)
