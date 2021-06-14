@@ -39,7 +39,7 @@
     <!-- Home screen -->
     <string name="home_description">Open source API for Smart Ticketing</string>
     <string name="start_validation_label">Start validation</string>
-    <string name="eclipse_foundation">Eclipse Foundation</string>
+    <string name="calypso">Calypso Networks Association</string>
 
     <!-- Error screen -->
     <string name="card_invalid_title">Card not valid</string>
