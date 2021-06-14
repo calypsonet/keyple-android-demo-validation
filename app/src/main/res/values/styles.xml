@@ -1,0 +1,70 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar" >
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowBackground">@drawable/ic_img_bg_valideur</item>
+    </style>
+
+    <style name="mediumBoldBlue">
+        <item name="fontFamily">@font/worksans_bold</item>
+        <item name="android:textSize">@dimen/medium_text_size</item>
+        <item name="android:textColor">@color/blue</item>
+    </style>
+
+    <style name="mediumBoldWhite">
+        <item name="fontFamily">@font/worksans_bold</item>
+        <item name="android:textSize">@dimen/medium_text_size</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="mediumRegularBlue">
+        <item name="fontFamily">@font/worksans_regular</item>
+        <item name="android:textSize">@dimen/medium_text_size</item>
+        <item name="android:textColor">@color/blue</item>
+    </style>
+
+    <style name="mediumRegularBlack">
+        <item name="fontFamily">@font/worksans_regular</item>
+        <item name="android:textSize">@dimen/medium_text_size</item>
+        <item name="android:textColor">@android:color/black</item>
+    </style>
+
+    <style name="mediumRegularWhite">
+        <item name="fontFamily">@font/worksans_regular</item>
+        <item name="android:textSize">@dimen/medium_text_size</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="whiteBtnText">
+        <item name="fontFamily">@font/worksans_bold</item>
+        <item name="android:textSize">@dimen/medium_text_size</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="bigBoldBlue">
+        <item name="fontFamily">@font/worksans_bold</item>
+        <item name="android:textSize">@dimen/big_text_size</item>
+        <item name="android:textColor">@color/blue</item>
+    </style>
+
+    <style name="bigBoldWhite">
+        <item name="fontFamily">@font/worksans_bold</item>
+        <item name="android:textSize">@dimen/big_text_size</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="bigRegularWhite">
+        <item name="fontFamily">@font/worksans_regular</item>
+        <item name="android:textSize">@dimen/big_text_size</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+</resources>

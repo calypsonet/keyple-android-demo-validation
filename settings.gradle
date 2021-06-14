@@ -1,4 +1,4 @@
 rootProject.name = "Keyple Validation"
 
-include ':validator-app'
+include ':app'
 include ':keyple-parser'
