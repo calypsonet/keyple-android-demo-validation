@@ -15,7 +15,7 @@ android {
         multiDexEnabled true
         targetSdkVersion 29
         versionCode 2
-        versionName "2021.06"
+        versionName "2021.06-SNAPSHOT"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -69,11 +69,6 @@ android {
             resValue "string", "app_name", "Keyple Validation Mock Sam"
             applicationIdSuffix ".mockSam"
         }
-        bluebird {
-            dimension 'device'
-            resValue "string", "app_name", "Keyple Validation Bluebird"
-            applicationIdSuffix ".bluebird"
-        }
         flowbird {
             dimension 'device'
             resValue "string", "app_name", "Keyple Validation Flowbird"
@@ -89,7 +84,6 @@ android {
         coppernic.java.srcDirs += 'src/coppernic/kotlin'
         famoco.java.srcDirs += 'src/famoco/kotlin'
         mockSam.java.srcDirs += 'src/mockSam/kotlin'
-        bluebird.java.srcDirs += 'src/bluebird/kotlin'
         flowbird.java.srcDirs += 'src/flowbird/kotlin'
     }
 
@@ -122,8 +116,6 @@ dependencies {
     mockSamImplementation "org.eclipse.keyple:keyple-android-plugin-nfc:$keyple_version"
 
     coppernicImplementation "org.eclipse.keyple:keyple-android-plugin-coppernic-ask:$coppernic_plugin_version"
-
-    bluebirdImplementation "org.eclipse.keyple:keyple-android-plugin-bluebird:$bluebird_plugin_version"
 
     flowbirdImplementation "org.eclipse.keyple:keyple-android-plugin-flowbird:$flowbird_plugin_version"
 
