@@ -42,6 +42,7 @@ import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.PO_TYPE_NAME_
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.PO_TYPE_NAME_NAVIGO_05h
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.PO_TYPE_NAME_OTHER
 import org.calypsonet.keyple.demo.validation.ticketing.procedure.ValidationProcedure
+import org.joda.time.DateTime
 import timber.log.Timber
 import java.util.EnumMap
 
@@ -50,6 +51,8 @@ class TicketingSession(private val readerRepository: IReaderRepository) : ITicke
     private var calypsoPoIndex05h = 0
     private var calypsoPoIndex32h = 0
     private var navigoCardIndex05h = 0
+
+    private var now = DateTime.now()
 
     private lateinit var calypsoPo: CalypsoPo
 
@@ -183,7 +186,8 @@ class TicketingSession(private val readerRepository: IReaderRepository) : ITicke
             locations = locations,
             calypsoPo = calypsoPo,
             samReader = samReader,
-            ticketingSession = this
+            ticketingSession = this,
+            now = now
         )
     }
 

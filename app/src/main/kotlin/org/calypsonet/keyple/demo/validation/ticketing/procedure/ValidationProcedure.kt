@@ -68,6 +68,7 @@ import java.util.Date
 class ValidationProcedure {
 
     fun launch(
+        now: DateTime,
         context: Context,
         validationAmount: Int,
         locations: List<Location>,
@@ -75,7 +76,7 @@ class ValidationProcedure {
         samReader: Reader?,
         ticketingSession: ITicketingSession
     ): CardReaderResponse {
-        val now = DateTime.now()
+//        val now = DateTime.now()
 //        val now = DateTime()
 //            .withTimeAtStartOfDay()
 //            .withYear(2021)

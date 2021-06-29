@@ -13,10 +13,13 @@ package org.calypsonet.keyple.demo.validation.di
 
 import android.app.Activity
 import android.content.Context
-import javax.inject.Inject
+import android.media.MediaPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.calypsonet.keyple.demo.validation.R
+import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
+import org.calypsonet.keyple.demo.validation.reader.PoReaderProtocol
 import org.eclipse.keyple.coppernic.ask.plugin.Cone2ContactReader
 import org.eclipse.keyple.coppernic.ask.plugin.Cone2ContactlessReader
 import org.eclipse.keyple.coppernic.ask.plugin.Cone2PluginFactory
@@ -27,8 +30,7 @@ import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.SmartCardService
 import org.eclipse.keyple.core.service.event.ReaderObservationExceptionHandler
 import org.eclipse.keyple.core.service.exception.KeypleException
-import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
-import org.calypsonet.keyple.demo.validation.reader.PoReaderProtocol
+import javax.inject.Inject
 
 /**
  *  @author youssefamrani
@@ -37,8 +39,10 @@ import org.calypsonet.keyple.demo.validation.reader.PoReaderProtocol
 class CoppernicReaderRepositoryImpl @Inject constructor(
     private val applicationContext: Context,
     private val readerObservationExceptionHandler: ReaderObservationExceptionHandler
-) :
-    IReaderRepository {
+) : IReaderRepository {
+
+    lateinit var successMedia: MediaPlayer
+    lateinit var errorMedia: MediaPlayer
 
     override var poReader: Reader? = null
     override var samReaders: MutableMap<String, Reader> = mutableMapOf()
@@ -46,6 +50,10 @@ class CoppernicReaderRepositoryImpl @Inject constructor(
     @Throws(KeypleException::class)
     override fun registerPlugin(activity: Activity) {
         runBlocking {
+
+            successMedia = MediaPlayer.create(activity, R.raw.success)
+            errorMedia = MediaPlayer.create(activity, R.raw.error)
+
             val pluginFactory: Cone2PluginFactory?
             pluginFactory = withContext(Dispatchers.IO) {
                 Cone2PluginFactory.init(applicationContext, readerObservationExceptionHandler)
@@ -62,8 +70,8 @@ class CoppernicReaderRepositoryImpl @Inject constructor(
         poReader?.let {
 
             it.activateProtocol(
-                getContactlessIsoProtocol()!!.readerProtocolName,
-                getContactlessIsoProtocol()!!.applicationProtocolName
+                getContactlessIsoProtocol().readerProtocolName,
+                getContactlessIsoProtocol().applicationProtocolName
             )
 
             this.poReader = poReader
@@ -105,17 +113,10 @@ class CoppernicReaderRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getContactlessIsoProtocol(): PoReaderProtocol? {
+    override fun getContactlessIsoProtocol(): PoReaderProtocol {
         return PoReaderProtocol(
             ParagonSupportedContactlessProtocols.ISO_14443.name,
             ParagonSupportedContactlessProtocols.ISO_14443.name
-        )
-    }
-
-    override fun getContactlessMifareProtocol(): PoReaderProtocol? {
-        return PoReaderProtocol(
-            ParagonSupportedContactlessProtocols.MIFARE.name,
-            ParagonSupportedContactlessProtocols.MIFARE.name
         )
     }
 
@@ -123,13 +124,29 @@ class CoppernicReaderRepositoryImpl @Inject constructor(
         ParagonSupportedContactProtocols.INNOVATRON_HIGH_SPEED_PROTOCOL.name
 
     override fun clear() {
-        poReader?.deactivateProtocol(getContactlessIsoProtocol()!!.readerProtocolName)
+        poReader?.deactivateProtocol(getContactlessIsoProtocol().readerProtocolName)
 
         samReaders.forEach {
             (it.value as AbstractLocalReader).deactivateProtocol(
                 getSamReaderProtocol()
             )
         }
+
+        successMedia.stop()
+        successMedia.release()
+
+        errorMedia.stop()
+        errorMedia.release()
+    }
+
+    override fun displayResultSuccess(): Boolean {
+        successMedia.start()
+        return true
+    }
+
+    override fun displayResultFailed(): Boolean {
+        errorMedia.start()
+        return true
     }
 
     companion object {

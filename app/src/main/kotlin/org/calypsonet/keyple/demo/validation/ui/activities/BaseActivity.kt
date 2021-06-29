@@ -14,6 +14,7 @@ package org.calypsonet.keyple.demo.validation.ui.activities
 
 import dagger.android.support.DaggerAppCompatActivity
 import org.calypsonet.keyple.demo.validation.data.LocationFileManager
+import org.calypsonet.keyple.demo.validation.data.CardReaderApi
 import javax.inject.Inject
 
 /**
@@ -23,6 +24,8 @@ import javax.inject.Inject
 abstract class BaseActivity : DaggerAppCompatActivity() {
 
     @Inject
-    lateinit var locationFileManager: LocationFileManager
+    lateinit var cardReaderApi: CardReaderApi
 
+    @Inject
+    lateinit var locationFileManager: LocationFileManager
 }

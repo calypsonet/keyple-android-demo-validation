@@ -12,6 +12,7 @@
 package org.calypsonet.keyple.demo.validation.data
 
 import android.app.Activity
+import android.content.Context
 import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.SmartCardService
 import org.eclipse.keyple.core.service.event.ObservableReader
@@ -30,6 +31,8 @@ import javax.inject.Inject
 class CardReaderApi @Inject constructor(private var readerRepository: IReaderRepository) {
 
     private var ticketingSession: ITicketingSession? = null
+
+    var readersInitialized = false
 
     @Throws(
         KeyplePluginInstantiationException::class,
@@ -125,4 +128,9 @@ class CardReaderApi @Inject constructor(private var readerRepository: IReaderRep
     fun isMockedResponse(): Boolean {
         return readerRepository.isMockedResponse()
     }
+
+    fun displayResultSuccess(): Boolean = readerRepository.displayResultSuccess()
+
+    fun displayResultFailed(): Boolean = readerRepository.displayResultFailed()
+
 }
