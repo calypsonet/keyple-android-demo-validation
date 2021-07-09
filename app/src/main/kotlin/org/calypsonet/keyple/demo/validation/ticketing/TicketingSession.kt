@@ -16,12 +16,14 @@ import org.calypsonet.keyple.demo.validation.models.CardReaderResponse
 import org.calypsonet.keyple.demo.validation.models.Location
 import org.calypsonet.keyple.demo.validation.models.StructureEnum
 import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
+import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.AID_HIS_STRUCTURE_2H
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.AID_HIS_STRUCTURE_32H
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.AID_HIS_STRUCTURE_5H
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.AID_NORMALIZED_IDF_05H
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.DEFAULT_KIF_DEBIT
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.DEFAULT_KIF_LOAD
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.DEFAULT_KIF_PERSO
+import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.PO_TYPE_NAME_CALYPSO_02h
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.PO_TYPE_NAME_CALYPSO_05h
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.PO_TYPE_NAME_CALYPSO_32h
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.PO_TYPE_NAME_NAVIGO_05h
@@ -55,6 +57,7 @@ import java.util.EnumMap
 
 class TicketingSession(private val readerRepository: IReaderRepository) : ITicketingSession {
 
+    private var calypsoPoIndex02h = 0
     private var calypsoPoIndex05h = 0
     private var calypsoPoIndex32h = 0
     private var navigoCardIndex05h = 0
@@ -84,6 +87,10 @@ class TicketingSession(private val readerRepository: IReaderRepository) : ITicke
      * Should be instanciated through the ticketing session mananger
     */
     init {
+        allowedStructures[StructureEnum.STRUCTURE_02H] =
+            listOf(
+                PO_TYPE_NAME_CALYPSO_02h
+            )
         allowedStructures[StructureEnum.STRUCTURE_05H] =
             listOf(
                 PO_TYPE_NAME_CALYPSO_05h,
@@ -116,6 +123,13 @@ class TicketingSession(private val readerRepository: IReaderRepository) : ITicke
         /*
          * Select Calypso
          */
+        val poSelectionRequest02h =
+            calypsoCardExtensionProvider.createCardSelection()
+        poSelectionRequest02h
+            .filterByDfName(AID_HIS_STRUCTURE_2H)
+            .filterByCardProtocol(readerRepository.getContactlessIsoProtocol()!!.applicationProtocolName)
+        calypsoPoIndex02h = cardSelectionManager.prepareSelection(poSelectionRequest02h)
+
         val poSelectionRequest05h =
             calypsoCardExtensionProvider.createCardSelection()
         poSelectionRequest05h
@@ -156,6 +170,11 @@ class TicketingSession(private val readerRepository: IReaderRepository) : ITicke
             cardSelectionManager.parseScheduledCardSelectionsResponse(selectionResponse)
         if (selectionsResult.activeSelectionIndex != -1) {
             when (selectionsResult.smartCards.keys.first()) {
+                calypsoPoIndex02h -> {
+                    calypsoCard = selectionsResult.activeSmartCard as CalypsoCard
+                    poTypeName = PO_TYPE_NAME_CALYPSO_02h
+                    poStructure = StructureEnum.findEnumByKey(calypsoCard.applicationSubtype.toInt())
+                }
                 calypsoPoIndex05h -> {
                     calypsoCard = selectionsResult.activeSmartCard as CalypsoCard
                     poTypeName = PO_TYPE_NAME_CALYPSO_05h
