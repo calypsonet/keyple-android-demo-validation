@@ -31,6 +31,7 @@ import kotlinx.coroutines.withContext
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
 import org.calypsonet.keyple.demo.validation.reader.PoReaderProtocol
+import org.calypsonet.terminal.reader.spi.CardReaderObservationExceptionHandlerSpi
 import org.eclipse.keyple.bluebird.plugin.BluebirdContactReader
 import org.eclipse.keyple.bluebird.plugin.BluebirdContactlessReader
 import org.eclipse.keyple.bluebird.plugin.BluebirdPlugin
@@ -42,14 +43,11 @@ import org.eclipse.keyple.core.service.ObservableReader
 import org.eclipse.keyple.core.service.Plugin
 import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.SmartCardServiceProvider
-import org.eclipse.keyple.core.service.spi.ReaderObservationExceptionHandlerSpi
 import org.eclipse.keyple.core.util.protocol.ContactCardCommonProtocol
-import org.eclipse.keyple.demo.validator.reader.IReaderRepository
-import org.eclipse.keyple.demo.validator.reader.PoReaderProtocol
 import javax.inject.Inject
 
 class BluebirdReaderRepositoryImpl @Inject constructor(
-    private val readerObservationExceptionHandler: ReaderObservationExceptionHandlerSpi
+    private val readerObservationExceptionHandler: CardReaderObservationExceptionHandlerSpi
 ) :
     IReaderRepository {
 
@@ -138,7 +136,9 @@ class BluebirdReaderRepositoryImpl @Inject constructor(
     }
 
     override fun getSamReaderProtocol(): String =
-        ContactCardCommonProtocols.ISO_7816_3.name
+        ContactCardCommonProtocol.ISO_7816_3.name
+
+    override fun getSamRegex(): String = SAM_READER_NAME_REGEX
 
     override fun clear() {
         poReader?.deactivateProtocol(getContactlessIsoProtocol().readerProtocolName)
@@ -166,6 +166,10 @@ class BluebirdReaderRepositoryImpl @Inject constructor(
     override fun displayResultFailed(): Boolean {
         errorMedia.start()
         return true
+    }
+
+    companion object{
+        const val SAM_READER_NAME_REGEX = ".*ContactReader"
     }
 }
 

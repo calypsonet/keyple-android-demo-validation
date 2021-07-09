@@ -12,16 +12,17 @@
 package org.calypsonet.keyple.demo.validation.data
 
 import android.app.Activity
-import org.eclipse.keyple.core.card.ReaderCommunicationException
+import org.calypsonet.keyple.demo.validation.di.scopes.AppScoped
+import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
+import org.calypsonet.keyple.demo.validation.ticketing.ITicketingSession
+import org.calypsonet.keyple.demo.validation.ticketing.TicketingSession
+import org.calypsonet.terminal.reader.ObservableCardReader
+import org.calypsonet.terminal.reader.ReaderCommunicationException
+import org.calypsonet.terminal.reader.spi.CardReaderObserverSpi
 import org.eclipse.keyple.core.service.KeyplePluginException
 import org.eclipse.keyple.core.service.ObservableReader
 import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.SmartCardServiceProvider
-import org.eclipse.keyple.core.service.spi.ReaderObserverSpi
-import org.eclipse.keyple.demo.validator.di.scopes.AppScoped
-import org.eclipse.keyple.demo.validator.reader.IReaderRepository
-import org.eclipse.keyple.demo.validator.ticketing.TicketingSession
-import org.eclipse.keyple.demo.validator.ticketing.TicketingSessionManager
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -37,7 +38,7 @@ class CardReaderApi @Inject constructor(private var readerRepository: IReaderRep
         IllegalStateException::class,
         Exception::class
     )
-    suspend fun init(observer: ReaderObserverSpi?, activity: Activity) {
+    suspend fun init(observer: CardReaderObserverSpi?, activity: Activity) {
 
         /*
          * Register plugin
@@ -96,7 +97,7 @@ class CardReaderApi @Inject constructor(private var readerRepository: IReaderRep
         */
         ticketingSession?.prepareAndSetPoDefaultSelection()
 
-        (readerRepository.poReader as ObservableReader).startCardDetection(ObservableReader.PollingMode.REPEATING)
+        (readerRepository.poReader as ObservableReader).startCardDetection(ObservableCardReader.DetectionMode.REPEATING)
     }
 
     fun stopNfcDetection() {
@@ -114,7 +115,7 @@ class CardReaderApi @Inject constructor(private var readerRepository: IReaderRep
         return ticketingSession
     }
 
-    fun onDestroy(observer: ReaderObserverSpi?) {
+    fun onDestroy(observer: CardReaderObserverSpi?) {
         readerRepository.clear()
         if (observer != null && readerRepository.poReader != null) {
             (readerRepository.poReader as ObservableReader).removeObserver(observer)

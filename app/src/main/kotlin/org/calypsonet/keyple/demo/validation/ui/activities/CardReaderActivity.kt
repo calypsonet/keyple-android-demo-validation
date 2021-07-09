@@ -26,17 +26,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.calypsonet.keyple.demo.validation.R
+import org.calypsonet.keyple.demo.validation.di.scopes.ActivityScoped
+import org.calypsonet.keyple.demo.validation.models.CardReaderResponse
+import org.calypsonet.keyple.demo.validation.models.KeypleSettings
+import org.calypsonet.keyple.demo.validation.models.Status
+import org.calypsonet.keyple.demo.validation.models.Validation
+import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo
+import org.calypsonet.keyple.demo.validation.ticketing.ITicketingSession
+import org.calypsonet.terminal.reader.CardReaderEvent
+import org.calypsonet.terminal.reader.spi.CardReaderObserverSpi
 import org.eclipse.keyple.core.service.ReaderEvent
-import org.eclipse.keyple.core.service.spi.ReaderObserverSpi
-import org.eclipse.keyple.demo.validator.BuildConfig
-import org.eclipse.keyple.demo.validator.R
-import org.eclipse.keyple.demo.validator.data.CardReaderApi
-import org.eclipse.keyple.demo.validator.di.scopes.ActivityScoped
-import org.eclipse.keyple.demo.validator.models.CardReaderResponse
-import org.eclipse.keyple.demo.validator.models.KeypleSettings
-import org.eclipse.keyple.demo.validator.models.Status
-import org.eclipse.keyple.demo.validator.ticketing.CalypsoInfo
-import org.eclipse.keyple.demo.validator.ticketing.TicketingSession
 import timber.log.Timber
 import java.util.Date
 import java.util.Timer
@@ -124,16 +124,6 @@ class CardReaderActivity : BaseActivity() {
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-        animation.cancelAnimation()
-        timer.cancel()
-        if (readersInitialized) {
-            cardReaderApi.stopNfcDetection()
-            Timber.d("stopNfcDetection")
-        }
-    }
-
     override fun onDestroy() {
         cardReaderApi.readersInitialized = false
         cardReaderApi.onDestroy(poReaderObserver)
@@ -145,7 +135,7 @@ class CardReaderActivity : BaseActivity() {
         super.onPause()
         animation.cancelAnimation()
         timer.cancel()
-        if (readersInitialized) {
+        if (cardReaderApi.readersInitialized) {
             cardReaderApi.stopNfcDetection()
             Timber.d("stopNfcDetection")
         }
@@ -181,13 +171,13 @@ class CardReaderActivity : BaseActivity() {
      * @param appState
      * @param readerEvent
      */
-    private fun handleAppEvents(appState: AppState, readerEvent: ReaderEvent?) {
+    private fun handleAppEvents(appState: AppState, readerEvent: CardReaderEvent?) {
 
         var newAppState = appState
 
-        Timber.i("Current state = $currentAppState, wanted new state = $newAppState, event = ${readerEvent?.eventType}")
-        when (readerEvent?.eventType) {
-            ReaderEvent.EventType.CARD_INSERTED, ReaderEvent.EventType.CARD_MATCHED -> {
+        Timber.i("Current state = $currentAppState, wanted new state = $newAppState, event = ${readerEvent?.type}")
+        when (readerEvent?.type) {
+            CardReaderEvent.Type.CARD_INSERTED, CardReaderEvent.Type.CARD_MATCHED -> {
                 if (newAppState == AppState.WAIT_SYSTEM_READY) {
                     return
                 }
@@ -196,7 +186,7 @@ class CardReaderActivity : BaseActivity() {
                 val seSelectionResult =
                     ticketingSession.processDefaultSelection(readerEvent.scheduledCardSelectionsResponse)
 
-                if (!seSelectionResult.hasActiveSelection()) {
+                if (seSelectionResult.activeSelectionIndex == -1) {
                     Timber.e("PO Not selected")
                     val error = getString(R.string.card_invalid_desc)
                     cardReaderApi.displayResultFailed()
@@ -249,7 +239,7 @@ class CardReaderActivity : BaseActivity() {
                 Timber.i("A Calypso PO selection succeeded.")
                 newAppState = AppState.CARD_STATUS
             }
-            ReaderEvent.EventType.CARD_REMOVED -> {
+            CardReaderEvent.Type.CARD_REMOVED -> {
                 currentAppState = AppState.WAIT_SYSTEM_READY
             }
             else -> {
@@ -263,8 +253,8 @@ class CardReaderActivity : BaseActivity() {
             }
             AppState.CARD_STATUS -> {
                 currentAppState = newAppState
-                when (readerEvent?.eventType) {
-                    ReaderEvent.EventType.CARD_INSERTED, ReaderEvent.EventType.CARD_MATCHED -> {
+                when (readerEvent?.type) {
+                    CardReaderEvent.Type.CARD_INSERTED, CardReaderEvent.Type.CARD_MATCHED -> {
                         GlobalScope.launch {
                             try {
                                 withContext(Dispatchers.Main) {
@@ -335,12 +325,11 @@ class CardReaderActivity : BaseActivity() {
         dialog.show()
     }
 
-    private inner class PoObserver : ReaderObserverSpi {
+    private inner class PoObserver : CardReaderObserverSpi {
 
-        override fun onReaderEvent(readerEvent: ReaderEvent) {
-            Timber.i("New ReaderEvent received :${readerEvent.eventType.name}")
-
-            if (readerEvent.eventType == ReaderEvent.EventType.CARD_MATCHED &&
+        override fun onReaderEvent(readerEvent: CardReaderEvent?) {
+            Timber.i("New ReaderEvent received :${readerEvent?.type?.name}")
+            if (readerEvent?.type == CardReaderEvent.Type.CARD_MATCHED &&
                 cardReaderApi.isMockedResponse()
             ) {
                 launchMockedEvents()

@@ -35,6 +35,7 @@ interface IReaderRepository {
     fun getSamReaderProtocol(): String
     fun getPlugin(): Plugin
     fun clear()
+    fun getSamRegex(): String
 
     fun isMockedResponse(): Boolean = false
 

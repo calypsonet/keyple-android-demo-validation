@@ -31,6 +31,7 @@ allprojects {
         maven { url 'https://artifactory.coppernic.fr/artifactory/libs-release'}
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
         maven { url 'https://oss.sonatype.org/content/repositories/releases' }
+        maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots' }
         google()
         jcenter()
     }
@@ -89,6 +90,8 @@ ext{
     famoco_plugin_version = '1.0.0'
     coppernic_plugin_version = '1.0.0'
     bluebird_plugin_version = '2.0.0-SNAPSHOT'
+    flowbird_plugin_version = '2.0.0-SNAPSHOT'
+
 
     appcompat_version = '1.1.0'
     core_ktx_version = '1.2.0'

@@ -12,14 +12,13 @@
 package org.calypsonet.keyple.demo.validation.ticketing
 
 import android.content.Context
-import org.eclipse.keyple.calypso.transaction.CalypsoSam
-import org.eclipse.keyple.calypso.transaction.PoSecuritySettings
-import org.eclipse.keyple.core.card.selection.CardResource
-import org.eclipse.keyple.core.card.selection.CardSelectionsResult
-import org.eclipse.keyple.core.service.Reader
-import org.eclipse.keyple.core.service.event.AbstractDefaultSelectionsResponse
 import org.calypsonet.keyple.demo.validation.models.CardReaderResponse
 import org.calypsonet.keyple.demo.validation.models.Location
+import org.calypsonet.terminal.calypso.transaction.CardSecuritySetting
+import org.calypsonet.terminal.reader.selection.CardSelectionResult
+import org.calypsonet.terminal.reader.selection.ScheduledCardSelectionsResponse
+import org.eclipse.keyple.core.service.Plugin
+import org.eclipse.keyple.core.service.Reader
 
 interface ITicketingSession {
     val poReader: Reader?
@@ -27,10 +26,11 @@ interface ITicketingSession {
     val poTypeName: String?
 
     fun prepareAndSetPoDefaultSelection()
-    fun processDefaultSelection(selectionResponse: AbstractDefaultSelectionsResponse?): CardSelectionsResult
+    fun processDefaultSelection(selectionResponse: ScheduledCardSelectionsResponse?): CardSelectionResult
     fun checkStructure(): Boolean
     fun checkStartupInfo(): Boolean
     fun launchValidationProcedure(context: Context, locations: List<Location>): CardReaderResponse
-    fun checkSamAndOpenChannel(samReader: Reader): CardResource<CalypsoSam>
-    fun getSecuritySettings(samResource: CardResource<CalypsoSam>?): PoSecuritySettings?
+    fun setupCardResourceService(samProfileName: String?)
+    fun getSecuritySettings(): CardSecuritySetting?
+    fun getPlugin(): Plugin
 }
