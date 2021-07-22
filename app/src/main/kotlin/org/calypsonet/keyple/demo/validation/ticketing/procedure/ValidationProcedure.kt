@@ -13,13 +13,6 @@
 package org.calypsonet.keyple.demo.validation.ticketing.procedure
 
 import android.content.Context
-import org.eclipse.keyple.calypso.command.po.exception.CalypsoPoCommandException
-import org.eclipse.keyple.calypso.command.sam.exception.CalypsoSamCommandException
-import org.eclipse.keyple.calypso.transaction.CalypsoPo
-import org.eclipse.keyple.calypso.transaction.PoTransaction
-import org.eclipse.keyple.calypso.transaction.exception.CalypsoPoTransactionException
-import org.eclipse.keyple.core.card.selection.CardResource
-import org.eclipse.keyple.core.service.Reader
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.exception.ContractVersionNumberErrorException
 import org.calypsonet.keyple.demo.validation.exception.EnvironmentException
@@ -40,6 +33,7 @@ import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.RECORD_NUMBER
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.RECORD_NUMBER_2
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.RECORD_NUMBER_3
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.RECORD_NUMBER_4
+import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.SAM_PROFILE_NAME
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.SFI_Contracts
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.SFI_Counter
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.SFI_Counter_0A
@@ -49,6 +43,11 @@ import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.SFI_Counter_0
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.SFI_EnvironmentAndHolder
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.SFI_EventLog
 import org.calypsonet.keyple.demo.validation.ticketing.ITicketingSession
+import org.calypsonet.terminal.calypso.WriteAccessLevel
+import org.calypsonet.terminal.calypso.card.CalypsoCard
+import org.calypsonet.terminal.calypso.transaction.CardTransactionManager
+import org.eclipse.keyple.card.calypso.CalypsoExtensionService
+import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.parser.keyple.ContractStructureParser
 import org.eclipse.keyple.parser.keyple.CounterStructureParser
 import org.eclipse.keyple.parser.keyple.EnvironmentHolderStructureParser
@@ -72,11 +71,10 @@ class ValidationProcedure {
         context: Context,
         validationAmount: Int,
         locations: List<Location>,
-        calypsoPo: CalypsoPo,
+        calypsoCard: CalypsoCard,
         samReader: Reader?,
         ticketingSession: ITicketingSession
     ): CardReaderResponse {
-//        val now = DateTime.now()
 //        val now = DateTime()
 //            .withTimeAtStartOfDay()
 //            .withYear(2021)
@@ -85,13 +83,17 @@ class ValidationProcedure {
 //            .withHourOfDay(15)
 //            .withMinuteOfHour(30)
 
+        val poReader = ticketingSession.poReader
+
         var status: Status = Status.LOADING
         var errorMessage: String? = null
-        val poTransaction: PoTransaction?
+        val poTransaction: CardTransactionManager?
         var eventDate: Date? = null
         var passValidityEndDate: Date? = null
         var nbTicketsLeft: Int? = null
         var validation: Validation? = null
+
+        val calypsoCardExtensionProvider = CalypsoExtensionService.getInstance()
 
         /*
          * Step 1 - Open a Validation session reading the environment record.
@@ -99,10 +101,12 @@ class ValidationProcedure {
         poTransaction =
             try {
                 if (samReader != null) {
-                    val cardResource = ticketingSession.checkSamAndOpenChannel(samReader)
-                    PoTransaction(
-                        CardResource(ticketingSession.poReader, calypsoPo),
-                        ticketingSession.getSecuritySettings(cardResource)
+                    ticketingSession.setupCardResourceService(SAM_PROFILE_NAME)
+
+                    calypsoCardExtensionProvider.createCardTransaction(
+                        poReader,
+                        calypsoCard,
+                        ticketingSession.getSecuritySettings()
                     )
                 } else {
                     throw NoSamForValidationException()
@@ -129,12 +133,12 @@ class ValidationProcedure {
                 )
 
                 /*
-                 * Open a transaction to read/write the Calypso PO and read the Environment file
+                 * Open a transaction to read/write the Calypso PO
                  */
-                poTransaction.processOpening(PoTransaction.SessionSetting.AccessLevel.SESSION_LVL_DEBIT)
+                poTransaction.processOpening(WriteAccessLevel.DEBIT)
 
                 val efEnvironmentHolder =
-                    calypsoPo.getFileBySfi(SFI_EnvironmentAndHolder)
+                    calypsoCard.getFileBySfi(SFI_EnvironmentAndHolder)
                 val env = EnvironmentHolderStructureParser().parse(efEnvironmentHolder.data.content)
 
                 /*
@@ -163,9 +167,9 @@ class ValidationProcedure {
                     SFI_EventLog,
                     RECORD_NUMBER_1.toInt()
                 )
-                poTransaction.processPoCommands()
+                poTransaction.processCardCommands()
 
-                val efEventLog = calypsoPo.getFileBySfi(SFI_EventLog)
+                val efEventLog = calypsoCard.getFileBySfi(SFI_EventLog)
                 val event = EventStructureParser().parse(efEventLog.data.content)
 
                 /*
@@ -255,9 +259,9 @@ class ValidationProcedure {
                         record
                     )
 
-                    poTransaction.processPoCommands()
+                    poTransaction.processCardCommands()
 
-                    val efContractParser = calypsoPo.getFileBySfi(SFI_Contracts)
+                    val efContractParser = calypsoCard.getFileBySfi(SFI_Contracts)
                     val dataContent = efContractParser.data.allRecordsContent[record]!!
                     val contract = ContractStructureParser().parse(dataContent)
 
@@ -329,9 +333,9 @@ class ValidationProcedure {
                             counterSfi,
                             RECORD_NUMBER_1.toInt()
                         )
-                        poTransaction.processPoCommands()
+                        poTransaction.processCardCommands()
 
-                        val efCounter = calypsoPo.getFileBySfi(counterSfi)
+                        val efCounter = calypsoCard.getFileBySfi(counterSfi)
                         val counterContent = efCounter.data.allRecordsContent[1]!!
                         val counterValue =
                             CounterStructureParser().parse(counterContent).counterValue
@@ -382,7 +386,7 @@ class ValidationProcedure {
                                     decrement
                                 )
 
-                                poTransaction.processPoCommands()
+                                poTransaction.processCardCommands()
                                 nbTicketsLeft = counterValue - decrement
 
 //                                //TODO: check with Ludo
@@ -470,7 +474,7 @@ class ValidationProcedure {
                         RECORD_NUMBER_1.toInt(),
                         eventBytesToWrite
                     )
-                    poTransaction.processPoCommands()
+                    poTransaction.processCardCommands()
 
                 } else {
                     Timber.i("Validation procedure result : Failed - No valid contract found")
@@ -480,15 +484,6 @@ class ValidationProcedure {
                 }
 
             } catch (e: ValidationException) {
-                Timber.e(e)
-                errorMessage = e.message
-            } catch (e: CalypsoSamCommandException) {
-                Timber.e(e)
-                errorMessage = e.message
-            } catch (e: CalypsoPoCommandException) {
-                Timber.e(e)
-                errorMessage = e.message
-            } catch (e: CalypsoPoTransactionException) {
                 Timber.e(e)
                 errorMessage = e.message
             } catch (e: Exception) {
