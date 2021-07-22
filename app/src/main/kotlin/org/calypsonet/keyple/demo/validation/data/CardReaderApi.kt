@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Calypso Networks Association https://www.calypsonet-asso.org/
+ * Copyright (c) 2021 Calypso Networks Association https://calypsonet.org/
  *
  * See the NOTICE file(s) distributed with this work for additional information regarding copyright
  * ownership.
@@ -12,6 +12,7 @@
 package org.calypsonet.keyple.demo.validation.data
 
 import android.app.Activity
+import javax.inject.Inject
 import org.calypsonet.keyple.demo.validation.di.scopes.AppScoped
 import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
 import org.calypsonet.keyple.demo.validation.ticketing.ITicketingSession
@@ -24,7 +25,6 @@ import org.eclipse.keyple.core.service.ObservableReader
 import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.SmartCardServiceProvider
 import timber.log.Timber
-import javax.inject.Inject
 
 @AppScoped
 class CardReaderApi @Inject constructor(private var readerRepository: IReaderRepository) {
@@ -136,5 +136,4 @@ class CardReaderApi @Inject constructor(private var readerRepository: IReaderRep
     fun displayResultSuccess(): Boolean = readerRepository.displayResultSuccess()
 
     fun displayResultFailed(): Boolean = readerRepository.displayResultFailed()
-
 }

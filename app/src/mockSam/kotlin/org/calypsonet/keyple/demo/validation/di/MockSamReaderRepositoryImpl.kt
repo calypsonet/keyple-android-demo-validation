@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Calypso Networks Association https://www.calypsonet-asso.org/
+ * Copyright (c) 2021 Calypso Networks Association https://calypsonet.org/
  *
  * See the NOTICE file(s) distributed with this work for additional information regarding copyright
  * ownership.
@@ -13,6 +13,7 @@ package org.calypsonet.keyple.demo.validation.di
 
 import android.app.Activity
 import android.media.MediaPlayer
+import javax.inject.Inject
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
 import org.calypsonet.keyple.demo.validation.reader.PoReaderProtocol
@@ -29,7 +30,6 @@ import org.eclipse.keyple.plugin.android.nfc.AndroidNfcPluginFactory
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcProtocolSettings
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcReader
 import timber.log.Timber
-import javax.inject.Inject
 
 /**
  *  @author youssefamrani

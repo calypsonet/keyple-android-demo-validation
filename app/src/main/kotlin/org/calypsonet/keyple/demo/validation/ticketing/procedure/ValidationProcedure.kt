@@ -1,18 +1,19 @@
-/*
- * Copyright (c) 2021 Calypso Networks Association https://www.calypsonet-asso.org/
+/********************************************************************************
+ * Copyright (c) 2021 Calypso Networks Association https://calypsonet.org/
  *
- * See the NOTICE file(s) distributed with this work for additional information
- * regarding copyright ownership.
+ * See the NOTICE file(s) distributed with this work for additional information regarding copyright
+ * ownership.
  *
- * This program and the accompanying materials are made available under the terms of the
- * Eclipse Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0
+ * This program and the accompanying materials are made available under the terms of the Eclipse
+ * Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
- */
-
+ ********************************************************************************/
 package org.calypsonet.keyple.demo.validation.ticketing.procedure
 
 import android.content.Context
+import java.util.Calendar
+import java.util.Date
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.exception.ContractVersionNumberErrorException
 import org.calypsonet.keyple.demo.validation.exception.EnvironmentException
@@ -58,8 +59,6 @@ import org.eclipse.keyple.parser.model.type.VersionNumberEnum
 import org.eclipse.keyple.parser.utils.DateUtils
 import org.joda.time.DateTime
 import timber.log.Timber
-import java.util.Calendar
-import java.util.Date
 
 /**
  *  @author youssefamrani
@@ -193,7 +192,6 @@ class ValidationProcedure {
                  */
                 val contractPriorities = mutableListOf<Pair<Int, ContractPriorityEnum>>()
 
-
                 /*******************
                  * Best Contract Search
                  *******************/
@@ -228,7 +226,6 @@ class ValidationProcedure {
                     status = Status.EMPTY_CARD
                     throw NoContractAvailableException()
                 }
-
 
                 var priority1 = event.contractPriority1
                 var priority2 = event.contractPriority2
@@ -288,7 +285,7 @@ class ValidationProcedure {
                          * Step 11.3.2 - If the value of ContractSaleSam is present in the SAM Black List reject the card.
                          * <Abort Transaction if inTransactionFlag is true and exit process>
                          */
-                        //TODO: steps 11.3.1 & 11.3.2
+                        // TODO: steps 11.3.1 & 11.3.2
                     }
 
                     /*
@@ -475,14 +472,12 @@ class ValidationProcedure {
                         eventBytesToWrite
                     )
                     poTransaction.processCardCommands()
-
                 } else {
                     Timber.i("Validation procedure result : Failed - No valid contract found")
                     if (errorMessage.isNullOrEmpty()) {
                         errorMessage = context.getString(R.string.no_valid_title_detected)
                     }
                 }
-
             } catch (e: ValidationException) {
                 Timber.e(e)
                 errorMessage = e.message

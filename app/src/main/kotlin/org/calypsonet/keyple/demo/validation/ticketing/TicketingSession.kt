@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Calypso Networks Association https://www.calypsonet-asso.org/
+ * Copyright (c) 2021 Calypso Networks Association https://calypsonet.org/
  *
  * See the NOTICE file(s) distributed with this work for additional information regarding copyright
  * ownership.
@@ -12,6 +12,7 @@
 package org.calypsonet.keyple.demo.validation.ticketing
 
 import android.content.Context
+import java.util.EnumMap
 import org.calypsonet.keyple.demo.validation.models.CardReaderResponse
 import org.calypsonet.keyple.demo.validation.models.Location
 import org.calypsonet.keyple.demo.validation.models.StructureEnum
@@ -50,7 +51,6 @@ import org.eclipse.keyple.core.service.resource.PluginsConfigurator
 import org.eclipse.keyple.core.service.spi.PluginObservationExceptionHandlerSpi
 import org.joda.time.DateTime
 import timber.log.Timber
-import java.util.EnumMap
 
 class TicketingSession(private val readerRepository: IReaderRepository) : ITicketingSession {
 
@@ -162,11 +162,11 @@ class TicketingSession(private val readerRepository: IReaderRepository) : ITicke
                 calypsoPoIndex05h_02h -> {
                     calypsoCard = selectionsResult.activeSmartCard as CalypsoCard
                     poStructure = StructureEnum.findEnumByKey(calypsoCard.applicationSubtype.toInt())
-                    when(poStructure){
+                    when (poStructure) {
                         StructureEnum.STRUCTURE_02H -> poTypeName = PO_TYPE_NAME_CALYPSO_02h
                         StructureEnum.STRUCTURE_05H -> poTypeName = PO_TYPE_NAME_CALYPSO_05h
                         else -> {
-                            //Do nothing
+                            // Do nothing
                         }
                     }
                 }
@@ -225,7 +225,6 @@ class TicketingSession(private val readerRepository: IReaderRepository) : ITicke
     }
 
     override fun getPlugin(): Plugin = readerRepository.getPlugin()
-
 
     override fun getSecuritySettings(): CardSecuritySetting? {
 
