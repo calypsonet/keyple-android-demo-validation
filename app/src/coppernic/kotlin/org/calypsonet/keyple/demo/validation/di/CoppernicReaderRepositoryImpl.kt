@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Calypso Networks Association https://www.calypsonet-asso.org/
+ * Copyright (c) 2021 Calypso Networks Association https://calypsonet.org/
  *
  * See the NOTICE file(s) distributed with this work for additional information regarding copyright
  * ownership.
@@ -14,20 +14,21 @@ package org.calypsonet.keyple.demo.validation.di
 import android.app.Activity
 import android.content.Context
 import android.media.MediaPlayer
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
 import org.calypsonet.keyple.demo.validation.reader.PoReaderProtocol
+import org.calypsonet.keyple.plugin.coppernic.Cone2ContactReader
+import org.calypsonet.keyple.plugin.coppernic.Cone2ContactlessReader
+import org.calypsonet.keyple.plugin.coppernic.Cone2Plugin
+import org.calypsonet.keyple.plugin.coppernic.Cone2PluginFactory
+import org.calypsonet.keyple.plugin.coppernic.Cone2PluginFactoryProvider
+import org.calypsonet.keyple.plugin.coppernic.ParagonSupportedContactProtocols
+import org.calypsonet.keyple.plugin.coppernic.ParagonSupportedContactlessProtocols
 import org.calypsonet.terminal.reader.spi.CardReaderObservationExceptionHandlerSpi
-import org.eclipse.keyple.coppernic.ask.plugin.Cone2ContactReader
-import org.eclipse.keyple.coppernic.ask.plugin.Cone2ContactlessReader
-import org.eclipse.keyple.coppernic.ask.plugin.Cone2Plugin
-import org.eclipse.keyple.coppernic.ask.plugin.Cone2PluginFactory
-import org.eclipse.keyple.coppernic.ask.plugin.Cone2PluginFactoryProvider
-import org.eclipse.keyple.coppernic.ask.plugin.ParagonSupportedContactProtocols
-import org.eclipse.keyple.coppernic.ask.plugin.ParagonSupportedContactlessProtocols
 import org.eclipse.keyple.core.service.KeyplePluginException
 import org.eclipse.keyple.core.service.ObservableReader
 import org.eclipse.keyple.core.service.Plugin
@@ -35,7 +36,6 @@ import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.SmartCardServiceProvider
 import org.eclipse.keyple.core.service.resource.spi.ReaderConfiguratorSpi
 import timber.log.Timber
-import javax.inject.Inject
 
 /**
  *  @author youssefamrani

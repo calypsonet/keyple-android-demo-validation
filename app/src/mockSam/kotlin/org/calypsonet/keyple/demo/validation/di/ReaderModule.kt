@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Calypso Networks Association https://www.calypsonet-asso.org/
+ * Copyright (c) 2021 Calypso Networks Association https://calypsonet.org/
  *
  * See the NOTICE file(s) distributed with this work for additional information regarding copyright
  * ownership.
@@ -13,9 +13,9 @@ package org.calypsonet.keyple.demo.validation.di
 
 import dagger.Module
 import dagger.Provides
-import org.eclipse.keyple.core.service.event.ReaderObservationExceptionHandler
 import org.calypsonet.keyple.demo.validation.di.scopes.AppScoped
 import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
+import org.eclipse.keyple.core.service.event.ReaderObservationExceptionHandler
 import timber.log.Timber
 
 /**
@@ -30,7 +30,6 @@ class ReaderModule {
     @AppScoped
     fun provideReaderRepository(readerObservationExceptionHandler: ReaderObservationExceptionHandler): IReaderRepository =
         MockSamReaderRepositoryImpl(readerObservationExceptionHandler)
-
 
     @Provides
     @AppScoped

@@ -1,30 +1,28 @@
-/*
- * Copyright (c) 2020 Calypso Networks Association https://www.calypsonet-asso.org/
+/********************************************************************************
+ * Copyright (c) 2021 Calypso Networks Association https://calypsonet.org/
  *
- * See the NOTICE file(s) distributed with this work for additional information
- * regarding copyright ownership.
+ * See the NOTICE file(s) distributed with this work for additional information regarding copyright
+ * ownership.
  *
- * This program and the accompanying materials are made available under the terms of the
- * Eclipse Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0
+ * This program and the accompanying materials are made available under the terms of the Eclipse
+ * Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
- */
-
-
+ ********************************************************************************/
 package org.calypsonet.keyple.demo.validation.ui.activities
 
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import java.util.Timer
+import java.util.TimerTask
+import javax.inject.Inject
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.di.scopes.ActivityScoped
 import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
 import org.calypsonet.keyple.demo.validation.ui.dialog.PermissionDeniedDialog
 import org.calypsonet.keyple.demo.validation.util.PermissionHelper
-import java.util.Timer
-import java.util.TimerTask
-import javax.inject.Inject
 
 @ActivityScoped
 class SplashScreenActivity : BaseActivity() {
@@ -38,7 +36,7 @@ class SplashScreenActivity : BaseActivity() {
         setContentView(R.layout.activity_splashscreen)
 
         val permissions = mutableListOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        if(!readerRepository.getPermissions().isNullOrEmpty()){
+        if (!readerRepository.getPermissions().isNullOrEmpty()) {
             permissions.addAll(readerRepository.getPermissions()!!)
         }
 

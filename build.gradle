@@ -6,6 +6,7 @@ buildscript {
         mavenLocal()
         mavenCentral()
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots' }
         maven { url 'https://oss.sonatype.org/content/repositories/releases' }
         google()
         jcenter()
@@ -28,10 +29,10 @@ allprojects {
     repositories {
         mavenLocal()
         mavenCentral()
-        maven { url 'https://artifactory.coppernic.fr/artifactory/libs-release'}
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-        maven { url 'https://oss.sonatype.org/content/repositories/releases' }
         maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots' }
+        maven { url 'https://oss.sonatype.org/content/repositories/releases' }
+        maven { url 'https://artifactory.coppernic.fr/artifactory/libs-release'}
         google()
         jcenter()
     }
@@ -57,7 +58,7 @@ subprojects{
 
             // also supports license headers
             licenseHeader '/********************************************************************************\n' +
-                    ' * Copyright (c) $YEAR Calypso Networks Association https://www.calypsonet-asso.org/\n' +
+                    ' * Copyright (c) $YEAR Calypso Networks Association https://calypsonet.org/\n' +
                     ' *\n' +
                     ' * See the NOTICE file(s) distributed with this work for additional information regarding copyright\n' +
                     ' * ownership.\n' +
@@ -85,13 +86,17 @@ subprojects{
 
 ext{
     keyple_version_1_0 = '1.0-SNAPSHOT'
-    keyple_version_2_0_0 = '2.0.0-SNAPSHOT'
-    keyple_version_2_0_0_rc1 = '2.0.0-rc1'
+    keyple_version_1_0_plus = '1.0.+'
 
+    keyple_version_2_0 = '2.0-SNAPSHOT'
+    keyple_version_2_0_0 = '2.0.0-SNAPSHOT'
+
+    android_nfc_plugin_version = '2.0.0-SNAPSHOT'
+    omapi_plugin_version = '2.0.0-SNAPSHOT'
     famoco_plugin_version = '2.0.0-SNAPSHOT'
     coppernic_plugin_version = '2.0.0-SNAPSHOT'
-    bluebird_plugin_version = '2.0.0-SNAPSHOT'
     flowbird_plugin_version = '2.0.0-SNAPSHOT'
+    bluebird_plugin_version = '2.0.0-SNAPSHOT'
 
     appcompat_version = '1.1.0'
     core_ktx_version = '1.2.0'

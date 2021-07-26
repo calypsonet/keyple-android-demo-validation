@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Calypso Networks Association https://www.calypsonet-asso.org/
+ * Copyright (c) 2021 Calypso Networks Association https://calypsonet.org/
  *
  * See the NOTICE file(s) distributed with this work for additional information regarding copyright
  * ownership.
@@ -19,6 +19,9 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import com.airbnb.lottie.LottieDrawable
+import java.util.Date
+import java.util.Timer
+import java.util.TimerTask
 import kotlinx.android.synthetic.main.activity_card_reader.animation
 import kotlinx.android.synthetic.main.activity_card_reader.mainView
 import kotlinx.android.synthetic.main.activity_card_reader.presentCardTv
@@ -36,11 +39,7 @@ import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo
 import org.calypsonet.keyple.demo.validation.ticketing.ITicketingSession
 import org.calypsonet.terminal.reader.CardReaderEvent
 import org.calypsonet.terminal.reader.spi.CardReaderObserverSpi
-import org.eclipse.keyple.core.service.ReaderEvent
 import timber.log.Timber
-import java.util.Date
-import java.util.Timer
-import java.util.TimerTask
 
 @ActivityScoped
 class CardReaderActivity : BaseActivity() {
@@ -72,7 +71,7 @@ class CardReaderActivity : BaseActivity() {
     }
 
     override fun onOptionsItemSelected(menuItem: MenuItem): Boolean {
-        if(menuItem.itemId == android.R.id.home){
+        if (menuItem.itemId == android.R.id.home) {
             finish()
         }
 
@@ -293,7 +292,7 @@ class CardReaderActivity : BaseActivity() {
                         }
                     }
                     else -> {
-                        //Do nothing
+                        // Do nothing
                     }
                 }
             }

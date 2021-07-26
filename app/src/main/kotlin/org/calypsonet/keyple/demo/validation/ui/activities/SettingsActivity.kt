@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Calypso Networks Association https://www.calypsonet-asso.org/
+ * Copyright (c) 2021 Calypso Networks Association https://calypsonet.org/
  *
  * See the NOTICE file(s) distributed with this work for additional information regarding copyright
  * ownership.
@@ -34,7 +34,7 @@ class SettingsActivity : BaseActivity() {
         setContentView(R.layout.activity_settings)
         setSupportActionBar(findViewById(R.id.toolbar))
 
-        //Init location spinner
+        // Init location spinner
         val locations = locationFileManager.getLocations()
         mLocationAdapter = ArrayAdapter(
             this,
