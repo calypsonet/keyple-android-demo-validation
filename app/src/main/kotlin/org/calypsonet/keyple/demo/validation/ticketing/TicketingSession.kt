@@ -26,6 +26,7 @@ import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.DEFAULT_KIF_P
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.PO_TYPE_NAME_CALYPSO_02h
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.PO_TYPE_NAME_CALYPSO_05h
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.PO_TYPE_NAME_CALYPSO_32h
+import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.PO_TYPE_NAME_CALYPSO_OTHER
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.PO_TYPE_NAME_NAVIGO_05h
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.PO_TYPE_NAME_OTHER
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.SAM_PROFILE_NAME
@@ -165,9 +166,7 @@ class TicketingSession(private val readerRepository: IReaderRepository) : ITicke
                     when (poStructure) {
                         StructureEnum.STRUCTURE_02H -> poTypeName = PO_TYPE_NAME_CALYPSO_02h
                         StructureEnum.STRUCTURE_05H -> poTypeName = PO_TYPE_NAME_CALYPSO_05h
-                        else -> {
-                            // Do nothing
-                        }
+                        else -> poTypeName = PO_TYPE_NAME_CALYPSO_OTHER
                     }
                 }
                 calypsoPoIndex32h -> {
