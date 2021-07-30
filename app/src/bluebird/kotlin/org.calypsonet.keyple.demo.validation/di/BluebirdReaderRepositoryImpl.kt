@@ -19,7 +19,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
-import org.calypsonet.keyple.demo.validation.reader.PoReaderProtocol
+import org.calypsonet.keyple.demo.validation.reader.CardReaderProtocol
 import org.calypsonet.keyple.plugin.bluebird.BluebirdContactReader
 import org.calypsonet.keyple.plugin.bluebird.BluebirdContactlessReader
 import org.calypsonet.keyple.plugin.bluebird.BluebirdPlugin
@@ -43,7 +43,7 @@ class BluebirdReaderRepositoryImpl @Inject constructor(
     private lateinit var successMedia: MediaPlayer
     private lateinit var errorMedia: MediaPlayer
 
-    override var poReader: Reader? = null
+    override var cardReader: Reader? = null
     override var samReaders: MutableList<Reader> = mutableListOf()
 
     @Throws(KeyplePluginException::class)
@@ -65,25 +65,25 @@ class BluebirdReaderRepositoryImpl @Inject constructor(
         SmartCardServiceProvider.getService().getPlugin(BluebirdPlugin.PLUGIN_NAME)
 
     @Throws(KeyplePluginException::class)
-    override suspend fun initPoReader(): Reader {
+    override suspend fun initCardReader(): Reader {
         val bluebirdPlugin =
             SmartCardServiceProvider.getService().getPlugin(BluebirdPlugin.PLUGIN_NAME)
-        val poReader = bluebirdPlugin?.getReader(BluebirdContactlessReader.READER_NAME)
-        poReader?.let {
+        val cardReader = bluebirdPlugin?.getReader(BluebirdContactlessReader.READER_NAME)
+        cardReader?.let {
 
             it.activateProtocol(
                 getContactlessIsoProtocol().readerProtocolName,
                 getContactlessIsoProtocol().applicationProtocolName
             )
 
-            this.poReader = poReader
+            this.cardReader = cardReader
         }
 
-        (poReader as ObservableReader).setReaderObservationExceptionHandler(
+        (cardReader as ObservableReader).setReaderObservationExceptionHandler(
             readerObservationExceptionHandler
         )
 
-        return poReader
+        return cardReader
     }
 
     @Throws(KeyplePluginException::class)
@@ -119,8 +119,8 @@ class BluebirdReaderRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getContactlessIsoProtocol(): PoReaderProtocol {
-        return PoReaderProtocol(
+    override fun getContactlessIsoProtocol(): CardReaderProtocol {
+        return CardReaderProtocol(
             BluebirdSupportContactlessProtocols.NFC_ALL.key,
             BluebirdSupportContactlessProtocols.NFC_ALL.key
         )
@@ -132,7 +132,7 @@ class BluebirdReaderRepositoryImpl @Inject constructor(
     override fun getSamRegex(): String = SAM_READER_NAME_REGEX
 
     override fun clear() {
-        poReader?.deactivateProtocol(getContactlessIsoProtocol().readerProtocolName)
+        cardReader?.deactivateProtocol(getContactlessIsoProtocol().readerProtocolName)
 
         samReaders.forEach {
             it.deactivateProtocol(

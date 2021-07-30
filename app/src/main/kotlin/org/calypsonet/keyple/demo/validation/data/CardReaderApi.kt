@@ -51,11 +51,11 @@ class CardReaderApi @Inject constructor(private var readerRepository: IReaderRep
         }
 
         /*
-         * Init PO reader
+         * Init Card reader
          */
-        val poReader: Reader?
+        val cardReader: Reader?
         try {
-            poReader = readerRepository.initPoReader()
+            cardReader = readerRepository.initCardReader()
         } catch (e: KeyplePluginException) {
             Timber.e(e)
             throw IllegalStateException(e.message)
@@ -82,7 +82,7 @@ class CardReaderApi @Inject constructor(private var readerRepository: IReaderRep
             Timber.w("No SAM reader available")
         }
 
-        poReader.let { reader ->
+        cardReader.let { reader ->
             /* remove the observer if it already exist */
             (reader as ObservableReader).addObserver(observer)
 
@@ -92,18 +92,18 @@ class CardReaderApi @Inject constructor(private var readerRepository: IReaderRep
 
     fun startNfcDetection() {
         /*
-        * Provide the Reader with the selection operation to be processed when a PO is
+        * Provide the Reader with the selection operation to be processed when a Card is
         * inserted.
         */
-        ticketingSession?.prepareAndSetPoDefaultSelection()
+        ticketingSession?.prepareAndSetCardDefaultSelection()
 
-        (readerRepository.poReader as ObservableReader).startCardDetection(ObservableCardReader.DetectionMode.REPEATING)
+        (readerRepository.cardReader as ObservableReader).startCardDetection(ObservableCardReader.DetectionMode.REPEATING)
     }
 
     fun stopNfcDetection() {
         try {
             // notify reader that se detection has been switched off
-            (readerRepository.poReader as ObservableReader).stopCardDetection()
+            (readerRepository.cardReader as ObservableReader).stopCardDetection()
         } catch (e: KeyplePluginException) {
             Timber.e(e, "NFC Plugin not found")
         } catch (e: Exception) {
@@ -117,8 +117,8 @@ class CardReaderApi @Inject constructor(private var readerRepository: IReaderRep
 
     fun onDestroy(observer: CardReaderObserverSpi?) {
         readerRepository.clear()
-        if (observer != null && readerRepository.poReader != null) {
-            (readerRepository.poReader as ObservableReader).removeObserver(observer)
+        if (observer != null && readerRepository.cardReader != null) {
+            (readerRepository.cardReader as ObservableReader).removeObserver(observer)
         }
 
         val smartCardService = SmartCardServiceProvider.getService()

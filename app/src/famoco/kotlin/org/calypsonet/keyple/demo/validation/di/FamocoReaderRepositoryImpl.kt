@@ -16,7 +16,7 @@ import android.media.MediaPlayer
 import javax.inject.Inject
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
-import org.calypsonet.keyple.demo.validation.reader.PoReaderProtocol
+import org.calypsonet.keyple.demo.validation.reader.CardReaderProtocol
 import org.calypsonet.keyple.plugin.famoco.AndroidFamocoPlugin
 import org.calypsonet.keyple.plugin.famoco.AndroidFamocoPluginFactoryProvider
 import org.calypsonet.keyple.plugin.famoco.AndroidFamocoReader
@@ -43,7 +43,7 @@ class FamocoReaderRepositoryImpl @Inject constructor(private val readerObservati
     lateinit var successMedia: MediaPlayer
     lateinit var errorMedia: MediaPlayer
 
-    override var poReader: Reader? = null
+    override var cardReader: Reader? = null
     override var samReaders: MutableList<Reader> = mutableListOf()
 
     @Throws(KeyplePluginException::class)
@@ -67,7 +67,7 @@ class FamocoReaderRepositoryImpl @Inject constructor(private val readerObservati
         SmartCardServiceProvider.getService().getPlugin(AndroidFamocoPlugin.PLUGIN_NAME)
 
     @Throws(KeyplePluginException::class)
-    override suspend fun initPoReader(): Reader {
+    override suspend fun initCardReader(): Reader {
         val readerPlugin =
             SmartCardServiceProvider.getService().getPlugin(AndroidNfcPlugin.PLUGIN_NAME)
         val poReader = readerPlugin.getReader(AndroidNfcReader.READER_NAME)
@@ -79,10 +79,10 @@ class FamocoReaderRepositoryImpl @Inject constructor(private val readerObservati
                 getContactlessIsoProtocol().applicationProtocolName
             )
 
-            this.poReader = poReader
+            this.cardReader = poReader
         }
 
-        (poReader as org.eclipse.keyple.core.service.ObservableReader).setReaderObservationExceptionHandler(
+        (poReader as ObservableReader).setReaderObservationExceptionHandler(
             readerObservationExceptionHandler
         )
 
@@ -128,8 +128,8 @@ class FamocoReaderRepositoryImpl @Inject constructor(private val readerObservati
 
     override fun getSamRegex(): String = SAM_READER_NAME_REGEX
 
-    override fun getContactlessIsoProtocol(): PoReaderProtocol {
-        return PoReaderProtocol(
+    override fun getContactlessIsoProtocol(): CardReaderProtocol {
+        return CardReaderProtocol(
             ContactlessCardCommonProtocol.ISO_14443_4.name,
             ContactlessCardCommonProtocol.ISO_14443_4.name
         )
@@ -140,7 +140,7 @@ class FamocoReaderRepositoryImpl @Inject constructor(private val readerObservati
     }
 
     override fun clear() {
-        poReader?.deactivateProtocol(getContactlessIsoProtocol().readerProtocolName)
+        cardReader?.deactivateProtocol(getContactlessIsoProtocol().readerProtocolName)
 
         samReaders.forEach {
             it.deactivateProtocol(

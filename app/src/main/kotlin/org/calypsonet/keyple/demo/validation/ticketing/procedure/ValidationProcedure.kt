@@ -12,8 +12,6 @@
 package org.calypsonet.keyple.demo.validation.ticketing.procedure
 
 import android.content.Context
-import java.util.Calendar
-import java.util.Date
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.exception.ContractVersionNumberErrorException
 import org.calypsonet.keyple.demo.validation.exception.EnvironmentException
@@ -59,6 +57,8 @@ import org.eclipse.keyple.parser.model.type.VersionNumberEnum
 import org.eclipse.keyple.parser.utils.DateUtils
 import org.joda.time.DateTime
 import timber.log.Timber
+import java.util.Calendar
+import java.util.Date
 
 /**
  *  @author youssefamrani
@@ -82,11 +82,11 @@ class ValidationProcedure {
 //            .withHourOfDay(15)
 //            .withMinuteOfHour(30)
 
-        val poReader = ticketingSession.poReader
+        val card = ticketingSession.cardReader
 
         var status: Status = Status.LOADING
         var errorMessage: String? = null
-        val poTransaction: CardTransactionManager?
+        val cardTransaction: CardTransactionManager?
         var eventDate: Date? = null
         var passValidityEndDate: Date? = null
         var nbTicketsLeft: Int? = null
@@ -97,13 +97,13 @@ class ValidationProcedure {
         /*
          * Step 1 - Open a Validation session reading the environment record.
          */
-        poTransaction =
+        cardTransaction =
             try {
                 if (samReader != null) {
                     ticketingSession.setupCardResourceService(SAM_PROFILE_NAME)
 
                     calypsoCardExtensionProvider.createCardTransaction(
-                        poReader,
+                        card,
                         calypsoCard,
                         ticketingSession.getSecuritySettings()
                     )
@@ -117,7 +117,7 @@ class ValidationProcedure {
                 null
             }
 
-        if (poTransaction != null) {
+        if (cardTransaction != null) {
             try {
 
                 /*******************
@@ -126,7 +126,7 @@ class ValidationProcedure {
                 /*
                  * Step 2 - Unpack environment structure from the binary present in the environment record.
                  */
-                poTransaction.prepareReadRecordFile(
+                cardTransaction.prepareReadRecordFile(
                     SFI_EnvironmentAndHolder,
                     RECORD_NUMBER_1.toInt()
                 )
@@ -134,7 +134,7 @@ class ValidationProcedure {
                 /*
                  * Open a transaction to read/write the Calypso PO
                  */
-                poTransaction.processOpening(WriteAccessLevel.DEBIT)
+                cardTransaction.processOpening(WriteAccessLevel.DEBIT)
 
                 val efEnvironmentHolder =
                     calypsoCard.getFileBySfi(SFI_EnvironmentAndHolder)
@@ -162,11 +162,11 @@ class ValidationProcedure {
                 /*
                  * Step 5 - Read and unpack the last event record.
                  */
-                poTransaction.prepareReadRecordFile(
+                cardTransaction.prepareReadRecordFile(
                     SFI_EventLog,
                     RECORD_NUMBER_1.toInt()
                 )
-                poTransaction.processCardCommands()
+                cardTransaction.processCardCommands()
 
                 val efEventLog = calypsoCard.getFileBySfi(SFI_EventLog)
                 val event = EventStructureParser().parse(efEventLog.data.content)
@@ -251,12 +251,12 @@ class ValidationProcedure {
                     /*
                      * Step 11.1 - Read and unpack the contract record for the index being iterated.
                      */
-                    poTransaction.prepareReadRecordFile(
+                    cardTransaction.prepareReadRecordFile(
                         SFI_Contracts,
                         record
                     )
 
-                    poTransaction.processCardCommands()
+                    cardTransaction.processCardCommands()
 
                     val efContractParser = calypsoCard.getFileBySfi(SFI_Contracts)
                     val dataContent = efContractParser.data.allRecordsContent[record]!!
@@ -326,11 +326,11 @@ class ValidationProcedure {
                             else -> throw IllegalStateException("Unhandled counter record number : $record")
                         }
 
-                        poTransaction.prepareReadCounterFile(
+                        cardTransaction.prepareReadCounterFile(
                             counterSfi,
                             RECORD_NUMBER_1.toInt()
                         )
-                        poTransaction.processCardCommands()
+                        cardTransaction.processCardCommands()
 
                         val efCounter = calypsoCard.getFileBySfi(counterSfi)
                         val counterContent = efCounter.data.allRecordsContent[1]!!
@@ -377,13 +377,13 @@ class ValidationProcedure {
                                 else -> 0
                             }
                             if (decrement > 0) {
-                                poTransaction.prepareDecreaseCounter(
+                                cardTransaction.prepareDecreaseCounter(
                                     SFI_Counter,
                                     record,
                                     decrement
                                 )
 
-                                poTransaction.processCardCommands()
+                                cardTransaction.processCardCommands()
                                 nbTicketsLeft = counterValue - decrement
 
 //                                //TODO: check with Ludo
@@ -466,12 +466,12 @@ class ValidationProcedure {
                      * Step 13 - Pack the Event structure and append it to the event file
                      */
                     val eventBytesToWrite = EventStructureParser().generate(eventToWrite)
-                    poTransaction.prepareUpdateRecord(
+                    cardTransaction.prepareUpdateRecord(
                         SFI_EventLog,
                         RECORD_NUMBER_1.toInt(),
                         eventBytesToWrite
                     )
-                    poTransaction.processCardCommands()
+                    cardTransaction.processCardCommands()
                 } else {
                     Timber.i("Validation procedure result : Failed - No valid contract found")
                     if (errorMessage.isNullOrEmpty()) {
@@ -490,7 +490,12 @@ class ValidationProcedure {
                  * Step 14 - END: Close the session
                  */
                 try {
-                    poTransaction.processClosing()
+                    if(status == Status.SUCCESS){
+                        cardTransaction.processClosing()
+                    }
+                    else{
+                        cardTransaction.processCancel()
+                    }
 
                     if (status == Status.LOADING) {
                         status = Status.ERROR
@@ -505,7 +510,6 @@ class ValidationProcedure {
 
         return CardReaderResponse(
             status = status,
-            cardType = ticketingSession.poTypeName,
             nbTicketsLeft = nbTicketsLeft,
             contract = "",
             validation = validation,

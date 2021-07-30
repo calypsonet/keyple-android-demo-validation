@@ -126,6 +126,8 @@ dependencies {
     famocoImplementation "org.eclipse.keyple:keyple-plugin-android-nfc-java-lib:$android_nfc_plugin_version"
     famocoImplementation "org.calypsonet.keyple:keyple-plugin-cna-famoco-se-communication-java-lib:$famoco_plugin_version"
 
+
+    mockSamImplementation "org.eclipse.keyple:keyple-plugin-java-api:2.0.0-SNAPSHOT"
     mockSamImplementation "org.eclipse.keyple:keyple-util-java-lib:2.0.0-SNAPSHOT"
     mockSamImplementation "org.eclipse.keyple:keyple-common-java-api:2.0.0-SNAPSHOT"
     mockSamImplementation "org.eclipse.keyple:keyple-plugin-android-nfc-java-lib:$android_nfc_plugin_version"

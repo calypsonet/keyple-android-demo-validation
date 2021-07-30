@@ -98,7 +98,7 @@ class CardSummaryActivity : BaseActivity() {
                 animation.setAnimation("error_white.json")
 
                 bigText.setText(R.string.error_main_desc)
-                location_time.setText(R.string.error_small_desc)
+                location_time.text = cardReaderResponse?.errorMessage ?: getString(R.string.error_small_desc)
 
                 mediumText.visibility = View.INVISIBLE
                 smallDesc.visibility = View.INVISIBLE

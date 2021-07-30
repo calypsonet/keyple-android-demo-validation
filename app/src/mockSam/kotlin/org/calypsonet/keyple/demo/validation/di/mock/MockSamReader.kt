@@ -9,19 +9,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.calypsonet.keyple.demo.validation.models
+package org.calypsonet.keyple.demo.validation.di.mock
 
-import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
-import java.util.Date
+import org.eclipse.keyple.core.common.KeypleReaderExtension
 
-@Parcelize
-data class CardReaderResponse(
-    val status: Status,
-    val nbTicketsLeft: Int? = null,
-    val contract: String?,
-    val validation: Validation?,
-    val eventDate: Date? = null,
-    val passValidityEndDate: Date? = null,
-    val errorMessage: String? = null
-) : Parcelable
+// Allow to provide a non ambiguous name for the reader while keeping it internal
+interface MockSamReader : KeypleReaderExtension {
+    companion object {
+        const val READER_NAME = "MockSamReader"
+    }
+}
