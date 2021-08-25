@@ -14,7 +14,7 @@ package org.calypsonet.keyple.demo.validation.ticketing
 import android.content.Context
 import org.calypsonet.keyple.demo.validation.models.CardReaderResponse
 import org.calypsonet.keyple.demo.validation.models.Location
-import org.calypsonet.keyple.demo.validation.models.StructureEnum
+import org.calypsonet.keyple.demo.validation.models.FileStructureEnum
 import org.calypsonet.terminal.calypso.transaction.CardSecuritySetting
 import org.calypsonet.terminal.reader.selection.CardSelectionResult
 import org.calypsonet.terminal.reader.selection.ScheduledCardSelectionsResponse
@@ -25,7 +25,7 @@ interface ITicketingSession {
     val cardReader: Reader?
     val samReader: Reader?
     val cardAid: String?
-    val cardFileStructure: StructureEnum?
+    val fileStructure: FileStructureEnum?
 
     fun prepareAndSetCardDefaultSelection()
     fun processDefaultSelection(selectionResponse: ScheduledCardSelectionsResponse?): CardSelectionResult

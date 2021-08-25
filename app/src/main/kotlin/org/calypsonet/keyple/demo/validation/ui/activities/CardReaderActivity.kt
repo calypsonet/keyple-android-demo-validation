@@ -29,7 +29,7 @@ import kotlinx.coroutines.withContext
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.di.scopes.ActivityScoped
 import org.calypsonet.keyple.demo.validation.models.CardReaderResponse
-import org.calypsonet.keyple.demo.validation.models.KeypleSettings
+import org.calypsonet.keyple.demo.validation.models.ValidationAppSettings
 import org.calypsonet.keyple.demo.validation.models.Status
 import org.calypsonet.keyple.demo.validation.models.Validation
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo
@@ -44,7 +44,7 @@ import java.util.TimerTask
 @ActivityScoped
 class CardReaderActivity : BaseActivity() {
 
-    private var cardReaderObserver: PoObserver? = null
+    private var cardReaderObserver: CardReaderObserver? = null
 
     @Suppress("DEPRECATION")
     private lateinit var progress: ProgressDialog
@@ -90,7 +90,7 @@ class CardReaderActivity : BaseActivity() {
 
                 withContext(Dispatchers.IO) {
                     try {
-                        cardReaderObserver = PoObserver()
+                        cardReaderObserver = CardReaderObserver()
                         cardReaderApi.init(cardReaderObserver, this@CardReaderActivity)
                         ticketingSession = cardReaderApi.getTicketingSession()!!
                         cardReaderApi.readersInitialized = true
@@ -113,7 +113,7 @@ class CardReaderActivity : BaseActivity() {
         } else {
             cardReaderApi.startNfcDetection()
         }
-        if (KeypleSettings.batteryPowered) {
+        if (ValidationAppSettings.batteryPowered) {
             timer = Timer() // Need to reinit timer after cancel
             timer.schedule(object : TimerTask() {
                 override fun run() {
@@ -319,7 +319,7 @@ class CardReaderActivity : BaseActivity() {
         dialog.show()
     }
 
-    private inner class PoObserver : CardReaderObserverSpi {
+    private inner class CardReaderObserver : CardReaderObserverSpi {
 
         override fun onReaderEvent(readerEvent: CardReaderEvent?) {
             Timber.i("New ReaderEvent received :${readerEvent?.type?.name}")

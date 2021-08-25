@@ -19,6 +19,20 @@ import org.eclipse.keyple.parser.model.CounterStructureDto
 class CounterStructureParser :
     IParser<CounterStructureDto> {
 
+    fun parseAllCounters(content: ByteArray, nbCounters: Int): List<CounterStructureDto> {
+        val resultList = mutableListOf<CounterStructureDto>()
+
+        val bitUtils = BitUtils(content)
+        bitUtils.currentBitIndex = 0
+
+        for (i in 0 until nbCounters) {
+            val counterValue = bitUtils.getNextInteger(COUNTER_SIZE)
+            resultList.add(CounterStructureDto(counterValue = counterValue))
+        }
+
+        return resultList
+    }
+
     override fun parse(content: ByteArray): CounterStructureDto {
 
         val bitUtils = BitUtils(content)
