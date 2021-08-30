@@ -44,22 +44,6 @@ internal class MockSamReaderAdapter :
         return false
     }
 
-    override fun isCurrentProtocol(readerProtocolName: String?): Boolean {
-        return true
-    }
-
-    override fun isProtocolSupported(readerProtocol: String?): Boolean {
-        return true
-    }
-
-    override fun activateProtocol(readerProtocol: String?) {
-        // Do nothing
-    }
-
-    override fun deactivateProtocol(readerProtocol: String?) {
-        // Do nothing
-    }
-
     override fun getName(): String = READER_NAME
 
     override fun onUnregister() {

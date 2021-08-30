@@ -20,6 +20,7 @@ import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
 import org.calypsonet.keyple.demo.validation.reader.CardReaderProtocol
 import org.calypsonet.terminal.reader.spi.CardReaderObservationExceptionHandlerSpi
+import org.eclipse.keyple.core.service.ConfigurableReader
 import org.eclipse.keyple.core.service.KeyplePluginException
 import org.eclipse.keyple.core.service.ObservableReader
 import org.eclipse.keyple.core.service.Plugin
@@ -81,7 +82,7 @@ class OmapiReaderRepositoryImpl @Inject constructor(
         cardReader = readerPlugin.getReader(AndroidNfcReader.READER_NAME)
 
         // with this protocol settings we activate the nfc for ISO1443_4 protocol
-        cardReader?.activateProtocol(
+        (cardReader as ConfigurableReader).activateProtocol(
             getContactlessIsoProtocol().readerProtocolName,
             getContactlessIsoProtocol().applicationProtocolName
         )
@@ -119,7 +120,7 @@ class OmapiReaderRepositoryImpl @Inject constructor(
         }
         samReaders.forEach {
             if (getSamReaderProtocol()?.isNotEmpty() == true) {
-                it.activateProtocol(
+                (it as ConfigurableReader).activateProtocol(
                     getSamReaderProtocol(),
                     getSamReaderProtocol()
                 )
@@ -157,11 +158,11 @@ class OmapiReaderRepositoryImpl @Inject constructor(
     override fun clear() {
         if (getSamReaderProtocol()?.isNotEmpty() == true) {
             samReaders.forEach {
-                it.deactivateProtocol(getSamReaderProtocol())
+                (it as ConfigurableReader).deactivateProtocol(getSamReaderProtocol())
             }
         }
 
-        cardReader?.deactivateProtocol(getContactlessIsoProtocol().readerProtocolName)
+        (cardReader as ConfigurableReader).deactivateProtocol(getContactlessIsoProtocol().readerProtocolName)
 
         successMedia.stop()
         successMedia.release()
