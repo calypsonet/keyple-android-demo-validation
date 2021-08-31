@@ -19,9 +19,6 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import com.airbnb.lottie.LottieDrawable
-import java.util.Date
-import java.util.Timer
-import java.util.TimerTask
 import kotlinx.android.synthetic.main.activity_card_reader.animation
 import kotlinx.android.synthetic.main.activity_card_reader.mainView
 import kotlinx.android.synthetic.main.activity_card_reader.presentCardTv
@@ -32,7 +29,7 @@ import kotlinx.coroutines.withContext
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.di.scopes.ActivityScoped
 import org.calypsonet.keyple.demo.validation.models.CardReaderResponse
-import org.calypsonet.keyple.demo.validation.models.KeypleSettings
+import org.calypsonet.keyple.demo.validation.models.ValidationAppSettings
 import org.calypsonet.keyple.demo.validation.models.Status
 import org.calypsonet.keyple.demo.validation.models.Validation
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo
@@ -40,11 +37,14 @@ import org.calypsonet.keyple.demo.validation.ticketing.ITicketingSession
 import org.calypsonet.terminal.reader.CardReaderEvent
 import org.calypsonet.terminal.reader.spi.CardReaderObserverSpi
 import timber.log.Timber
+import java.util.Date
+import java.util.Timer
+import java.util.TimerTask
 
 @ActivityScoped
 class CardReaderActivity : BaseActivity() {
 
-    private var poReaderObserver: PoObserver? = null
+    private var cardReaderObserver: CardReaderObserver? = null
 
     @Suppress("DEPRECATION")
     private lateinit var progress: ProgressDialog
@@ -90,8 +90,8 @@ class CardReaderActivity : BaseActivity() {
 
                 withContext(Dispatchers.IO) {
                     try {
-                        poReaderObserver = PoObserver()
-                        cardReaderApi.init(poReaderObserver, this@CardReaderActivity)
+                        cardReaderObserver = CardReaderObserver()
+                        cardReaderApi.init(cardReaderObserver, this@CardReaderActivity)
                         ticketingSession = cardReaderApi.getTicketingSession()!!
                         cardReaderApi.readersInitialized = true
                         handleAppEvents(AppState.WAIT_CARD, null)
@@ -113,7 +113,7 @@ class CardReaderActivity : BaseActivity() {
         } else {
             cardReaderApi.startNfcDetection()
         }
-        if (KeypleSettings.batteryPowered) {
+        if (ValidationAppSettings.batteryPowered) {
             timer = Timer() // Need to reinit timer after cancel
             timer.schedule(object : TimerTask() {
                 override fun run() {
@@ -125,8 +125,8 @@ class CardReaderActivity : BaseActivity() {
 
     override fun onDestroy() {
         cardReaderApi.readersInitialized = false
-        cardReaderApi.onDestroy(poReaderObserver)
-        poReaderObserver = null
+        cardReaderApi.onDestroy(cardReaderObserver)
+        cardReaderObserver = null
         super.onDestroy()
     }
 
@@ -186,14 +186,13 @@ class CardReaderActivity : BaseActivity() {
                     ticketingSession.processDefaultSelection(readerEvent.scheduledCardSelectionsResponse)
 
                 if (seSelectionResult.activeSelectionIndex == -1) {
-                    Timber.e("PO Not selected")
+                    Timber.e("Card Not selected")
                     val error = getString(R.string.card_invalid_desc)
                     cardReaderApi.displayResultFailed()
                     changeDisplay(
                         CardReaderResponse(
                             status = Status.INVALID_CARD,
                             contract = null,
-                            cardType = null,
                             validation = null,
                             errorMessage = error
                         )
@@ -201,19 +200,16 @@ class CardReaderActivity : BaseActivity() {
                     return
                 }
 
-                Timber.i("PO Type = ${ticketingSession.poTypeName}")
-                if (CalypsoInfo.PO_TYPE_NAME_CALYPSO_05h != ticketingSession.poTypeName &&
-                    CalypsoInfo.PO_TYPE_NAME_CALYPSO_32h != ticketingSession.poTypeName &&
-                    CalypsoInfo.PO_TYPE_NAME_NAVIGO_05h != ticketingSession.poTypeName &&
-                    CalypsoInfo.PO_TYPE_NAME_CALYPSO_OTHER != ticketingSession.poTypeName
+                Timber.i("Card AID = ${ticketingSession.cardAid}")
+                if (CalypsoInfo.AID_1TIC_ICA_1 != ticketingSession.cardAid &&
+                    CalypsoInfo.AID_1TIC_ICA_3 != ticketingSession.cardAid &&
+                    CalypsoInfo.AID_NORMALIZED_IDF != ticketingSession.cardAid
                 ) {
-                    val cardType = ticketingSession.poTypeName ?: "Unknown card"
                     val error = getString(R.string.card_invalid_desc)
                     cardReaderApi.displayResultFailed()
                     changeDisplay(
                         CardReaderResponse(
                             status = Status.INVALID_CARD,
-                            cardType = cardType,
                             contract = null,
                             validation = null,
                             errorMessage = error
@@ -227,7 +223,6 @@ class CardReaderActivity : BaseActivity() {
                     changeDisplay(
                         CardReaderResponse(
                             status = Status.INVALID_CARD,
-                            cardType = null,
                             contract = null,
                             validation = null,
                             errorMessage = error
@@ -236,7 +231,7 @@ class CardReaderActivity : BaseActivity() {
                     return
                 }
 
-                Timber.i("A Calypso PO selection succeeded.")
+                Timber.i("A Calypso Card selection succeeded.")
                 newAppState = AppState.CARD_STATUS
             }
             CardReaderEvent.Type.CARD_REMOVED -> {
@@ -284,7 +279,6 @@ class CardReaderActivity : BaseActivity() {
                                         status = Status.ERROR,
                                         nbTicketsLeft = 0,
                                         contract = "",
-                                        cardType = ticketingSession.poTypeName ?: "",
                                         validation = null,
                                         errorMessage = e.message
                                     )
@@ -325,7 +319,7 @@ class CardReaderActivity : BaseActivity() {
         dialog.show()
     }
 
-    private inner class PoObserver : CardReaderObserverSpi {
+    private inner class CardReaderObserver : CardReaderObserverSpi {
 
         override fun onReaderEvent(readerEvent: CardReaderEvent?) {
             Timber.i("New ReaderEvent received :${readerEvent?.type?.name}")
@@ -366,7 +360,6 @@ class CardReaderActivity : BaseActivity() {
                                 status = status,
                                 nbTicketsLeft = 7,
                                 contract = "Season Pass",
-                                cardType = CalypsoInfo.PO_TYPE_NAME_CALYPSO_05h,
                                 validation = validation,
                                 eventDate = Date()
                             )
@@ -377,7 +370,6 @@ class CardReaderActivity : BaseActivity() {
                             status = status,
                             nbTicketsLeft = 0,
                             contract = "",
-                            cardType = "",
                             validation = null,
                             errorMessage = "An error has occured during validation"
                         )

@@ -22,17 +22,17 @@ import org.eclipse.keyple.core.service.resource.spi.ReaderConfiguratorSpi
 
 interface IReaderRepository {
 
-    var poReader: Reader?
+    var cardReader: Reader?
     var samReaders: MutableList<Reader>
 
     fun registerPlugin(activity: Activity)
 
-    suspend fun initPoReader(): Reader?
+    suspend fun initCardReader(): Reader?
 
     suspend fun initSamReaders(): List<Reader>
 
     fun getSamReader(): Reader?
-    fun getContactlessIsoProtocol(): PoReaderProtocol?
+    fun getContactlessIsoProtocol(): CardReaderProtocol?
     fun getSamReaderProtocol(): String?
     fun getPlugin(): Plugin
     fun clear()
@@ -59,4 +59,4 @@ interface IReaderRepository {
     fun displayResultFailed(): Boolean = false
 }
 
-data class PoReaderProtocol(val readerProtocolName: String, val applicationProtocolName: String)
+data class CardReaderProtocol(val readerProtocolName: String, val applicationProtocolName: String)

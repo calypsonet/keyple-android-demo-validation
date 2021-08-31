@@ -15,7 +15,7 @@ android {
         multiDexEnabled true
         targetSdkVersion 29
         versionCode 3
-        versionName "2021.07-SNAPSHOT"
+        versionName "2021.08-SNAPSHOT"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -41,6 +41,7 @@ android {
 
     packagingOptions {
         exclude 'META-INF/NOTICE.md'
+        exclude 'META-INF/plugin_release.kotlin_module'
     }
 
     dataBinding {
@@ -113,6 +114,8 @@ dependencies {
     implementation "org.eclipse.keyple:keyple-service-java-lib:2.0.0-SNAPSHOT"
     implementation "org.eclipse.keyple:keyple-card-calypso-java-lib:2.0.0-SNAPSHOT"
     implementation "org.eclipse.keyple:keyple-service-resource-java-lib:2.0.0-SNAPSHOT"
+    implementation "org.eclipse.keyple:keyple-util-java-lib:2.0.0-SNAPSHOT"
+    implementation "org.eclipse.keyple:keyple-common-java-api:2.0.0-SNAPSHOT"
 
     implementation "org.calypsonet.terminal:calypsonet-terminal-reader-java-api:1.0.0-SNAPSHOT"
     implementation "org.calypsonet.terminal:calypsonet-terminal-calypso-java-api:1.0.0-SNAPSHOT"
@@ -126,6 +129,8 @@ dependencies {
     famocoImplementation "org.eclipse.keyple:keyple-plugin-android-nfc-java-lib:$android_nfc_plugin_version"
     famocoImplementation "org.calypsonet.keyple:keyple-plugin-cna-famoco-se-communication-java-lib:$famoco_plugin_version"
 
+
+    mockSamImplementation "org.eclipse.keyple:keyple-plugin-java-api:2.0.0-SNAPSHOT"
     mockSamImplementation "org.eclipse.keyple:keyple-util-java-lib:2.0.0-SNAPSHOT"
     mockSamImplementation "org.eclipse.keyple:keyple-common-java-api:2.0.0-SNAPSHOT"
     mockSamImplementation "org.eclipse.keyple:keyple-plugin-android-nfc-java-lib:$android_nfc_plugin_version"

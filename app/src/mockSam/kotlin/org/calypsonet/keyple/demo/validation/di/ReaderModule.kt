@@ -15,7 +15,7 @@ import dagger.Module
 import dagger.Provides
 import org.calypsonet.keyple.demo.validation.di.scopes.AppScoped
 import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
-import org.eclipse.keyple.core.service.event.ReaderObservationExceptionHandler
+import org.calypsonet.terminal.reader.spi.CardReaderObservationExceptionHandlerSpi
 import timber.log.Timber
 
 /**
@@ -28,13 +28,13 @@ class ReaderModule {
 
     @Provides
     @AppScoped
-    fun provideReaderRepository(readerObservationExceptionHandler: ReaderObservationExceptionHandler): IReaderRepository =
+    fun provideReaderRepository(readerObservationExceptionHandler: CardReaderObservationExceptionHandlerSpi): IReaderRepository =
         MockSamReaderRepositoryImpl(readerObservationExceptionHandler)
 
     @Provides
     @AppScoped
-    fun provideReaderObservationExceptionHandler(): ReaderObservationExceptionHandler =
-        ReaderObservationExceptionHandler { pluginName, readerName, e ->
+    fun provideReaderObservationExceptionHandler(): CardReaderObservationExceptionHandlerSpi =
+        CardReaderObservationExceptionHandlerSpi { pluginName, readerName, e ->
             Timber.e("An unexpected reader error occurred: $pluginName:$readerName : $e")
         }
 }

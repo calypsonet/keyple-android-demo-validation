@@ -11,17 +11,7 @@
  ********************************************************************************/
 package org.calypsonet.keyple.demo.validation.models
 
-import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
-import java.util.Date
-
-@Parcelize
-data class CardReaderResponse(
-    val status: Status,
-    val nbTicketsLeft: Int? = null,
-    val contract: String?,
-    val validation: Validation?,
-    val eventDate: Date? = null,
-    val passValidityEndDate: Date? = null,
-    val errorMessage: String? = null
-) : Parcelable
+object ValidationAppSettings {
+    var location: Location? = null
+    var batteryPowered: Boolean = true
+}

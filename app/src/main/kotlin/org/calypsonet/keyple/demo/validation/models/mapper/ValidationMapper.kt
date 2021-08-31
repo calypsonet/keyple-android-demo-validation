@@ -13,7 +13,7 @@ package org.calypsonet.keyple.demo.validation.models.mapper
 
 import org.calypsonet.keyple.demo.validation.models.Location
 import org.calypsonet.keyple.demo.validation.models.Validation
-import org.eclipse.keyple.parser.model.EventStructureDto
+import org.calypsonet.keyple.parser.model.EventStructureDto
 
 /**
  *

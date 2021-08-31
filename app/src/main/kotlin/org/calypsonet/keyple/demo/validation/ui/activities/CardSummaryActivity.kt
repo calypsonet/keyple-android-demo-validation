@@ -14,8 +14,6 @@ package org.calypsonet.keyple.demo.validation.ui.activities
 import android.os.Bundle
 import android.view.View
 import androidx.core.content.ContextCompat
-import java.util.Timer
-import java.util.TimerTask
 import kotlinx.android.synthetic.main.activity_card_summary.animation
 import kotlinx.android.synthetic.main.activity_card_summary.bigText
 import kotlinx.android.synthetic.main.activity_card_summary.location_time
@@ -25,8 +23,10 @@ import kotlinx.android.synthetic.main.activity_card_summary.smallDesc
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.models.CardReaderResponse
 import org.calypsonet.keyple.demo.validation.models.Status
-import org.eclipse.keyple.parser.utils.DateUtils
+import org.calypsonet.keyple.parser.utils.DateUtils
 import timber.log.Timber
+import java.util.Timer
+import java.util.TimerTask
 
 class CardSummaryActivity : BaseActivity() {
 
@@ -98,7 +98,7 @@ class CardSummaryActivity : BaseActivity() {
                 animation.setAnimation("error_white.json")
 
                 bigText.setText(R.string.error_main_desc)
-                location_time.setText(R.string.error_small_desc)
+                location_time.text = cardReaderResponse?.errorMessage ?: getString(R.string.error_small_desc)
 
                 mediumText.visibility = View.INVISIBLE
                 smallDesc.visibility = View.INVISIBLE

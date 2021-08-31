@@ -11,17 +11,21 @@
  ********************************************************************************/
 package org.calypsonet.keyple.demo.validation.models
 
-import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
-import java.util.Date
+enum class FileStructureEnum(val key: Int) {
+    FILE_STRUCTURE_02H(0x2),
+    FILE_STRUCTURE_05H(0x5),
+    FILE_STRUCTURE_32H(0x32);
 
-@Parcelize
-data class CardReaderResponse(
-    val status: Status,
-    val nbTicketsLeft: Int? = null,
-    val contract: String?,
-    val validation: Validation?,
-    val eventDate: Date? = null,
-    val passValidityEndDate: Date? = null,
-    val errorMessage: String? = null
-) : Parcelable
+    override fun toString(): String {
+        return "Structure ${Integer.toHexString(key)}h"
+    }
+
+    companion object {
+        fun findEnumByKey(key: Int): FileStructureEnum? {
+            val values = values()
+            return values.find {
+                it.key == key
+            }
+        }
+    }
+}
