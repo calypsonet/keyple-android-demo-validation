@@ -15,20 +15,23 @@ android {
         multiDexEnabled true
         targetSdkVersion 29
         versionCode 4
-        versionName "2021.08"
+        versionName "2021.09-SNAPSHOT"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         debug {
-//            versionNameSuffix "-DEBUG"
+            debuggable true
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
 
         release {
             debuggable false
-            minifyEnabled false
-            shrinkResources false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
