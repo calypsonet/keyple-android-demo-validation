@@ -19,8 +19,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.calypsonet.keyple.demo.validation.R
-import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
 import org.calypsonet.keyple.demo.validation.reader.CardReaderProtocol
+import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
 import org.calypsonet.keyple.plugin.coppernic.Cone2ContactReader
 import org.calypsonet.keyple.plugin.coppernic.Cone2ContactlessReader
 import org.calypsonet.keyple.plugin.coppernic.Cone2Plugin
@@ -122,6 +122,10 @@ class CoppernicReaderRepositoryImpl @Inject constructor(private val applicationC
         } else {
             null
         }
+    }
+
+    override fun getSamPluginName(): String {
+        return Cone2Plugin.PLUGIN_NAME
     }
 
     override fun getContactlessIsoProtocol(): CardReaderProtocol {

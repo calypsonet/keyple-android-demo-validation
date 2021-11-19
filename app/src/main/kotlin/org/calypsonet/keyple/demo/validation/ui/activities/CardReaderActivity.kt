@@ -19,6 +19,9 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import com.airbnb.lottie.LottieDrawable
+import java.util.Date
+import java.util.Timer
+import java.util.TimerTask
 import kotlinx.android.synthetic.main.activity_card_reader.animation
 import kotlinx.android.synthetic.main.activity_card_reader.mainView
 import kotlinx.android.synthetic.main.activity_card_reader.presentCardTv
@@ -29,17 +32,14 @@ import kotlinx.coroutines.withContext
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.di.scopes.ActivityScoped
 import org.calypsonet.keyple.demo.validation.models.CardReaderResponse
-import org.calypsonet.keyple.demo.validation.models.ValidationAppSettings
 import org.calypsonet.keyple.demo.validation.models.Status
 import org.calypsonet.keyple.demo.validation.models.Validation
+import org.calypsonet.keyple.demo.validation.models.ValidationAppSettings
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo
 import org.calypsonet.keyple.demo.validation.ticketing.ITicketingSession
 import org.calypsonet.terminal.reader.CardReaderEvent
 import org.calypsonet.terminal.reader.spi.CardReaderObserverSpi
 import timber.log.Timber
-import java.util.Date
-import java.util.Timer
-import java.util.TimerTask
 
 @ActivityScoped
 class CardReaderActivity : BaseActivity() {

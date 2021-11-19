@@ -14,6 +14,8 @@ package org.calypsonet.keyple.demo.validation.ui.activities
 import android.os.Bundle
 import android.view.View
 import androidx.core.content.ContextCompat
+import java.util.Timer
+import java.util.TimerTask
 import kotlinx.android.synthetic.main.activity_card_summary.animation
 import kotlinx.android.synthetic.main.activity_card_summary.bigText
 import kotlinx.android.synthetic.main.activity_card_summary.location_time
@@ -25,8 +27,6 @@ import org.calypsonet.keyple.demo.validation.models.CardReaderResponse
 import org.calypsonet.keyple.demo.validation.models.Status
 import org.calypsonet.keyple.parser.utils.DateUtils
 import timber.log.Timber
-import java.util.Timer
-import java.util.TimerTask
 
 class CardSummaryActivity : BaseActivity() {
 

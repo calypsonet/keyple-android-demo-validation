@@ -22,8 +22,8 @@ import kotlinx.android.synthetic.main.activity_settings.startBtn
 import kotlinx.android.synthetic.main.activity_settings.timeBtn
 import org.calypsonet.keyple.demo.validation.BuildConfig
 import org.calypsonet.keyple.demo.validation.R
-import org.calypsonet.keyple.demo.validation.models.ValidationAppSettings
 import org.calypsonet.keyple.demo.validation.models.Location
+import org.calypsonet.keyple.demo.validation.models.ValidationAppSettings
 
 class SettingsActivity : BaseActivity() {
 

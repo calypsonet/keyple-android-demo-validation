@@ -18,8 +18,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.calypsonet.keyple.demo.validation.R
-import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
 import org.calypsonet.keyple.demo.validation.reader.CardReaderProtocol
+import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
 import org.calypsonet.keyple.plugin.bluebird.BluebirdContactReader
 import org.calypsonet.keyple.plugin.bluebird.BluebirdContactlessReader
 import org.calypsonet.keyple.plugin.bluebird.BluebirdPlugin
@@ -112,6 +112,10 @@ class BluebirdReaderRepositoryImpl @Inject constructor(
         } else {
             null
         }
+    }
+
+    override fun getSamPluginName(): String {
+        return BluebirdPlugin.PLUGIN_NAME
     }
 
     override fun getContactlessIsoProtocol(): CardReaderProtocol {

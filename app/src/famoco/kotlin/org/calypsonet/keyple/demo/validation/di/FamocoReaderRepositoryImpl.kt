@@ -13,6 +13,7 @@ package org.calypsonet.keyple.demo.validation.di
 
 import android.app.Activity
 import android.media.MediaPlayer
+import javax.inject.Inject
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.reader.CardReaderProtocol
 import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
@@ -33,7 +34,6 @@ import org.eclipse.keyple.plugin.android.nfc.AndroidNfcPlugin
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcPluginFactoryProvider
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcReader
 import timber.log.Timber
-import javax.inject.Inject
 
 class FamocoReaderRepositoryImpl @Inject constructor(private val readerObservationExceptionHandler: CardReaderObservationExceptionHandlerSpi) :
     IReaderRepository {
@@ -117,6 +117,10 @@ class FamocoReaderRepositoryImpl @Inject constructor(private val readerObservati
         } else {
             null
         }
+    }
+
+    override fun getSamPluginName(): String {
+        return AndroidFamocoPlugin.PLUGIN_NAME
     }
 
     override fun getSamRegex(): String = SAM_READER_NAME_REGEX
