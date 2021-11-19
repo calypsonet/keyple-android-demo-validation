@@ -5,6 +5,11 @@ plugins {
     id 'kotlin-kapt'
 }
 
+Properties properties = new Properties()
+if (project.rootProject.file("local.properties").exists()) {
+    properties.load(project.rootProject.file("local.properties").newDataInputStream())
+}
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.3"
@@ -20,7 +25,25 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (properties.containsKey("path_to_se_registered_keystore_cna")) {
+            releaseCna {
+                storeFile file(properties["path_to_se_registered_keystore_cna"])
+                storePassword properties["store_password_cna"]
+                keyAlias properties["key_alias_cna"]
+                keyPassword properties["key_password_cna"]
+            }
+        }
+    }
+
     buildTypes {
+
+        if (properties.containsKey("path_to_se_registered_keystore_cna")) {
+            release {
+                signingConfig signingConfigs.releaseCna
+            }
+        }
+
         debug {
             debuggable true
             minifyEnabled false
