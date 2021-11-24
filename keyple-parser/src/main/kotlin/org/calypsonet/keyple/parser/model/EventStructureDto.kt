@@ -12,12 +12,12 @@
 package org.calypsonet.keyple.parser.model
 
 import android.os.Parcelable
+import java.util.Calendar
+import java.util.Date
 import kotlinx.android.parcel.Parcelize
 import org.calypsonet.keyple.parser.model.type.ContractPriorityEnum
 import org.calypsonet.keyple.parser.utils.DateUtils
 import org.calypsonet.keyple.parser.utils.DateUtils.DATE_01_01_2010
-import java.util.Calendar
-import java.util.Date
 
 /**
  *

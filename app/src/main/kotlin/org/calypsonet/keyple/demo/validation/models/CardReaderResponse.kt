@@ -12,8 +12,8 @@
 package org.calypsonet.keyple.demo.validation.models
 
 import android.os.Parcelable
-import kotlinx.android.parcel.Parcelize
 import java.util.Date
+import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class CardReaderResponse(

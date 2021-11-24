@@ -12,6 +12,8 @@
 package org.calypsonet.keyple.demo.validation.ticketing.procedure
 
 import android.content.Context
+import java.util.Calendar
+import java.util.Date
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.exception.ContractVersionNumberErrorException
 import org.calypsonet.keyple.demo.validation.exception.EnvironmentException
@@ -52,8 +54,6 @@ import org.eclipse.keyple.card.calypso.CalypsoExtensionService
 import org.eclipse.keyple.core.service.Reader
 import org.joda.time.DateTime
 import timber.log.Timber
-import java.util.Calendar
-import java.util.Date
 
 /**
  *  @author youssefamrani
@@ -67,6 +67,7 @@ class ValidationProcedure {
         locations: List<Location>,
         calypsoCard: CalypsoCard,
         samReader: Reader?,
+        samPluginName: String?,
         ticketingSession: ITicketingSession
     ): CardReaderResponse {
 
@@ -88,7 +89,7 @@ class ValidationProcedure {
         cardTransaction =
             try {
                 if (samReader != null) {
-                    ticketingSession.setupCardResourceService(SAM_PROFILE_NAME)
+                    ticketingSession.setupCardResourceService(SAM_PROFILE_NAME, samPluginName)
 
                     calypsoCardExtensionProvider.createCardTransaction(
                         card,
@@ -458,10 +459,9 @@ class ValidationProcedure {
                  * Step 14 - END: Close the session
                  */
                 try {
-                    if(status == Status.SUCCESS){
+                    if (status == Status.SUCCESS) {
                         cardTransaction.processClosing()
-                    }
-                    else{
+                    } else {
                         cardTransaction.processCancel()
                     }
 

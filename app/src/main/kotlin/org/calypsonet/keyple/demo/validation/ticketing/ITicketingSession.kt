@@ -13,8 +13,8 @@ package org.calypsonet.keyple.demo.validation.ticketing
 
 import android.content.Context
 import org.calypsonet.keyple.demo.validation.models.CardReaderResponse
-import org.calypsonet.keyple.demo.validation.models.Location
 import org.calypsonet.keyple.demo.validation.models.FileStructureEnum
+import org.calypsonet.keyple.demo.validation.models.Location
 import org.calypsonet.terminal.calypso.transaction.CardSecuritySetting
 import org.calypsonet.terminal.reader.selection.CardSelectionResult
 import org.calypsonet.terminal.reader.selection.ScheduledCardSelectionsResponse
@@ -24,6 +24,7 @@ import org.eclipse.keyple.core.service.Reader
 interface ITicketingSession {
     val cardReader: Reader?
     val samReader: Reader?
+    val samPluginName: String?
     val cardAid: String?
     val fileStructure: FileStructureEnum?
 
@@ -32,7 +33,7 @@ interface ITicketingSession {
     fun checkStructure(): Boolean
     fun checkStartupInfo(): Boolean
     fun launchValidationProcedure(context: Context, locations: List<Location>): CardReaderResponse
-    fun setupCardResourceService(samProfileName: String?)
+    fun setupCardResourceService(samProfileName: String?, samPluginName: String?)
     fun getSecuritySettings(): CardSecuritySetting?
     fun getPlugin(): Plugin
 }

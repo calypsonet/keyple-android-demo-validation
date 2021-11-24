@@ -17,8 +17,8 @@ import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.calypsonet.keyple.demo.validation.R
-import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
 import org.calypsonet.keyple.demo.validation.reader.CardReaderProtocol
+import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
 import org.calypsonet.terminal.reader.spi.CardReaderObservationExceptionHandlerSpi
 import org.eclipse.keyple.core.service.ConfigurableReader
 import org.eclipse.keyple.core.service.KeyplePluginException
@@ -31,6 +31,7 @@ import org.eclipse.keyple.core.util.protocol.ContactlessCardCommonProtocol
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcPlugin
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcPluginFactoryProvider
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcReader
+import org.eclipse.keyple.plugin.android.omapi.AndroidOmapiPlugin
 import org.eclipse.keyple.plugin.android.omapi.AndroidOmapiPluginFactoryProvider
 import org.eclipse.keyple.plugin.android.omapi.AndroidOmapiReader
 import timber.log.Timber
@@ -107,7 +108,7 @@ class OmapiReaderRepositoryImpl @Inject constructor(
         })
         for (x in 1..MAX_TRIES) {
             val readerPlugin =
-                SmartCardServiceProvider.getService().getPlugin(AndroidNfcPlugin.PLUGIN_NAME)
+                SmartCardServiceProvider.getService().getPlugin(getSamPluginName())
             samReaders = readerPlugin.readers.toMutableList()
             if (samReaders.isEmpty()) {
                 Timber.d("No readers found in OMAPI Keyple Plugin")
@@ -133,7 +134,9 @@ class OmapiReaderRepositoryImpl @Inject constructor(
     override fun getSamReader(): Reader? {
         return if (samReaders.isNotEmpty()) {
             val filteredByName = samReaders.filter {
-                it.name == AndroidOmapiReader.READER_NAME_SIM_1
+                // it.name == AndroidOmapiReader.READER_NAME_SIM_1
+                // On Famoco FX205 the SAM reader name is AT901
+                it.name == "AT901"
             }
 
             return if (filteredByName.isNullOrEmpty()) {
@@ -144,6 +147,10 @@ class OmapiReaderRepositoryImpl @Inject constructor(
         } else {
             null
         }
+    }
+
+    override fun getSamPluginName(): String {
+        return AndroidOmapiPlugin.PLUGIN_NAME
     }
 
     override fun getContactlessIsoProtocol(): CardReaderProtocol {
@@ -205,6 +212,7 @@ class OmapiReaderRepositoryImpl @Inject constructor(
 
     companion object {
         private const val MAX_TRIES = 10
-        const val SAM_READER_NAME_REGEX = ".*AndroidOmapiReader*"
+        // Should allow to
+        const val SAM_READER_NAME_REGEX = ".*AT901*"
     }
 }

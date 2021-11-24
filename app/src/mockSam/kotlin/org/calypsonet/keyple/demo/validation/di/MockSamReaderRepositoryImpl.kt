@@ -13,6 +13,7 @@ package org.calypsonet.keyple.demo.validation.di
 
 import android.app.Activity
 import android.media.MediaPlayer
+import javax.inject.Inject
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.di.mock.MockSamPlugin
 import org.calypsonet.keyple.demo.validation.di.mock.MockSamReader
@@ -31,7 +32,6 @@ import org.eclipse.keyple.plugin.android.nfc.AndroidNfcPlugin
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcPluginFactoryProvider
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcReader
 import timber.log.Timber
-import javax.inject.Inject
 
 /**
  *  @author youssefamrani
@@ -115,6 +115,9 @@ class MockSamReaderRepositoryImpl @Inject constructor(private val readerObservat
         }
     }
 
+    override fun getSamPluginName(): String {
+        return MockSamPlugin.PLUGIN_NAME
+    }
 
     override fun getSamRegex(): String = SAM_READER_NAME_REGEX
 

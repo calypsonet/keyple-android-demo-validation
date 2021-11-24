@@ -12,9 +12,10 @@
 package org.calypsonet.keyple.demo.validation.ticketing
 
 import android.content.Context
+import java.util.EnumMap
 import org.calypsonet.keyple.demo.validation.models.CardReaderResponse
-import org.calypsonet.keyple.demo.validation.models.Location
 import org.calypsonet.keyple.demo.validation.models.FileStructureEnum
+import org.calypsonet.keyple.demo.validation.models.Location
 import org.calypsonet.keyple.demo.validation.reader.IReaderRepository
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.AID_1TIC_ICA_1
 import org.calypsonet.keyple.demo.validation.ticketing.CalypsoInfo.AID_1TIC_ICA_3
@@ -46,7 +47,6 @@ import org.eclipse.keyple.core.service.resource.PluginsConfigurator
 import org.eclipse.keyple.core.service.spi.PluginObservationExceptionHandlerSpi
 import org.joda.time.DateTime
 import timber.log.Timber
-import java.util.EnumMap
 
 class TicketingSession(private val readerRepository: IReaderRepository) : ITicketingSession {
 
@@ -68,6 +68,9 @@ class TicketingSession(private val readerRepository: IReaderRepository) : ITicke
 
     override val samReader: Reader?
         get() = readerRepository.getSamReader()
+
+    override val samPluginName: String?
+        get() = readerRepository.getSamPluginName()
 
     private val allowedFileStructures: EnumMap<FileStructureEnum, List<String>> =
         EnumMap(FileStructureEnum::class.java)
@@ -186,6 +189,7 @@ class TicketingSession(private val readerRepository: IReaderRepository) : ITicke
             locations = locations,
             calypsoCard = calypsoCard,
             samReader = samReader,
+            samPluginName = samPluginName,
             ticketingSession = this,
             now = DateTime.now()
         )
@@ -247,10 +251,11 @@ class TicketingSession(private val readerRepository: IReaderRepository) : ITicke
      * Setup the [CardResourceService] to provide a Calypso SAM C1 resource when requested.
      *
      * @param samProfileName A string defining the SAM profile.
+     * @param samPluginName Name of the plugin used to access sam.
      * @throws IllegalStateException If the expected card resource is not found.
      */
 
-    override fun setupCardResourceService(samProfileName: String?) {
+    override fun setupCardResourceService(samProfileName: String?, samPluginName: String?) {
         // Create a card resource extension expecting a SAM "C1".
         val samSelection = CalypsoExtensionService.getInstance()
             .createSamSelection()
@@ -278,7 +283,7 @@ class TicketingSession(private val readerRepository: IReaderRepository) : ITicke
             .withPlugins(
                 PluginsConfigurator.builder()
                     .addPluginWithMonitoring(
-                        getPlugin(),
+                        SmartCardServiceProvider.getService().getPlugin(samPluginName),
                         readerRepository.getReaderConfiguratorSpi(),
                         pluginAndReaderExceptionHandler,
                         pluginAndReaderExceptionHandler

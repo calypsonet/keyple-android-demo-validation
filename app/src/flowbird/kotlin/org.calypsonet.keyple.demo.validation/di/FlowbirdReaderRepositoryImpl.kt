@@ -12,6 +12,7 @@
 package org.calypsonet.keyple.demo.validation.di
 
 import android.app.Activity
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -33,7 +34,6 @@ import org.eclipse.keyple.core.service.Reader
 import org.eclipse.keyple.core.service.SmartCardServiceProvider
 import org.eclipse.keyple.core.service.resource.spi.ReaderConfiguratorSpi
 import timber.log.Timber
-import javax.inject.Inject
 
 class FlowbirdReaderRepositoryImpl @Inject constructor(
     private val readerObservationExceptionHandler: CardReaderObservationExceptionHandlerSpi
@@ -119,6 +119,10 @@ class FlowbirdReaderRepositoryImpl @Inject constructor(
         } else {
             null
         }
+    }
+
+    override fun getSamPluginName(): String {
+        return FlowbirdPlugin.PLUGIN_NAME
     }
 
     override fun getContactlessIsoProtocol(): CardReaderProtocol {

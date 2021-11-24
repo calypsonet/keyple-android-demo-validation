@@ -31,6 +31,7 @@ interface IReaderRepository {
 
     suspend fun initSamReaders(): List<Reader>
 
+    fun getSamPluginName(): String?
     fun getSamReader(): Reader?
     fun getContactlessIsoProtocol(): CardReaderProtocol?
     fun getSamReaderProtocol(): String?
