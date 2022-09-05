@@ -18,7 +18,7 @@ import org.calypsonet.keyple.parser.model.EnvironmentHolderStructureDto
 
 class EnvironmentHolderStructureParser : IParser<EnvironmentHolderStructureDto> {
 
-    override fun parse(content: ByteArray): EnvironmentHolderStructureDto {
+    override fun parse(content: ByteArray?): EnvironmentHolderStructureDto {
 
         val bitUtils = BitUtils(content)
         bitUtils.currentBitIndex = 0

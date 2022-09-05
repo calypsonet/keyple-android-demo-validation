@@ -30,10 +30,36 @@ object DateUtils {
     const val DATE_01_01_1997 = "01/01/1997"
     const val DATE_01_01_2010 = "01/01/2010"
     const val DD_MM_YYYY = "dd/MM/yyyy"
+    const val DD_MMMM_YYYY = "dd MMMM yyyy"
+    const val yyyy_MM_dd_HH_mm_ss = "yyyy-MM-dd'T'HH:mm:ss"
     const val DATE_FORMAT_DISPLAY = "dd MMMM yyyy, HH:mm"
 
     const val MILLIS_PER_DAY = 1000 * 60 * 60 * 24
     const val MILLIS_PER_MINUTE = 60 * 24
+
+    fun formatDateDisplayedContract(date: Date): String {
+        val sdf =
+            SimpleDateFormat(DD_MMMM_YYYY, Locale.getDefault())
+
+        return sdf.format(date)
+    }
+
+    fun parseDate(date: String): Date {
+        val sdf =
+            SimpleDateFormat(DD_MM_YYYY, Locale.getDefault())
+
+        return sdf.parse(date)!!
+    }
+
+    fun formatDateToDisplay(date: Date): String {
+        val df: DateFormat = SimpleDateFormat(DD_MM_YYYY, Locale.getDefault())
+        return df.format(date)
+    }
+
+    fun formatDateToDisplayWithHour(date: Date): String {
+        val df: DateFormat = SimpleDateFormat(DATE_FORMAT_DISPLAY, Locale.getDefault())
+        return df.format(date)
+    }
 
     /**
      * Parse a date stamp using the number of days since [startDate] (being date 0).
@@ -103,16 +129,6 @@ object DateUtils {
         val startDate = calendar.time
 
         return getHoursDifference(startDate, date)
-    }
-
-    fun formatDateToDisplay(date: Date): String {
-        val df: DateFormat = SimpleDateFormat(DD_MM_YYYY, Locale.getDefault())
-        return df.format(date)
-    }
-
-    fun formatDateToDisplayWithHour(date: Date): String {
-        val df: DateFormat = SimpleDateFormat(DATE_FORMAT_DISPLAY, Locale.getDefault())
-        return df.format(date)
     }
 
     private fun getHoursDifference(fromDate: Date?, toDate: Date?): Int {

@@ -28,6 +28,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("org.eclipse.keyple.parser.test", appContext.packageName)
+        assertEquals("org.calypsonet.keyple.parser.test", appContext.packageName)
     }
 }

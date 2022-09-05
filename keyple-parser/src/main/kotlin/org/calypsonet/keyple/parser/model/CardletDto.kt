@@ -19,5 +19,6 @@ package org.calypsonet.keyple.parser.model
 data class CardletDto(
     val environmentHolderStructureDto: EnvironmentHolderStructureDto,
     val contractStructureDtos: MutableList<ContractStructureDto>,
-    val eventStructureDtos: MutableList<EventStructureDto>
+    val eventStructureDtos: MutableList<EventStructureDto>,
+    val counterStructureDtos: MutableList<CounterStructureDto>
 )

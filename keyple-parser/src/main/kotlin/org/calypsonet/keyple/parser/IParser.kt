@@ -24,7 +24,7 @@ import java.util.Locale
 
 interface IParser<T> {
 
-    fun parse(content: ByteArray): T
+    fun parse(content: ByteArray?): T
 
     fun generate(content: T): ByteArray
 

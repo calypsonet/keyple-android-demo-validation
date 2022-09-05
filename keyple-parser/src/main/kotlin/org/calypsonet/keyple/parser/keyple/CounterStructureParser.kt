@@ -18,7 +18,7 @@ import org.calypsonet.keyple.parser.model.CounterStructureDto
 
 class CounterStructureParser : IParser<CounterStructureDto> {
 
-    override fun parse(content: ByteArray): CounterStructureDto {
+    override fun parse(content: ByteArray?): CounterStructureDto {
 
         val bitUtils = BitUtils(content)
         bitUtils.currentBitIndex = 0

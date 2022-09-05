@@ -43,10 +43,16 @@ class CardletParser : IParser<CardletDto?> {
             events.add(EventStructureParser().parse(it))
         }
 
+        /*
+         * Parse counter
+         */
+        val counter = CounterStructureParser().parse(cardletDto.counterData)
+
         return CardletDto(
             environmentHolderStructureDto = environment,
             contractStructureDtos = contracts,
-            eventStructureDtos = events
+            eventStructureDtos = events,
+            counterStructureDtos = mutableListOf(counter)
         )
     }
 
@@ -54,5 +60,5 @@ class CardletParser : IParser<CardletDto?> {
         TODO("Not yet implemented")
     }
 
-    override fun parse(content: ByteArray): CardletDto? = null
+    override fun parse(content: ByteArray?): CardletDto? = null
 }

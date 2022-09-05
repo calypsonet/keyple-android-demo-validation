@@ -20,7 +20,7 @@ import org.calypsonet.keyple.parser.model.type.ContractPriorityEnum
 
 class EventStructureParser : IParser<EventStructureDto> {
 
-    override fun parse(content: ByteArray): EventStructureDto {
+    override fun parse(content: ByteArray?): EventStructureDto {
 
         val bitUtils = BitUtils(content)
         bitUtils.currentBitIndex = 0

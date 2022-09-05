@@ -20,7 +20,7 @@ import org.calypsonet.keyple.parser.model.type.VersionNumberEnum
 
 class ContractStructureParser : IParser<ContractStructureDto> {
 
-    override fun parse(content: ByteArray): ContractStructureDto {
+    override fun parse(content: ByteArray?): ContractStructureDto {
 
         val bitUtils = BitUtils(content)
         bitUtils.currentBitIndex = 0
