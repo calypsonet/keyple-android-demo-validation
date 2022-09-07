@@ -1,14 +1,14 @@
-/********************************************************************************
+/* **************************************************************************************
  * Copyright (c) 2021 Calypso Networks Association https://calypsonet.org/
  *
- * See the NOTICE file(s) distributed with this work for additional information regarding copyright
- * ownership.
+ * See the NOTICE file(s) distributed with this work for additional information
+ * regarding copyright ownership.
  *
- * This program and the accompanying materials are made available under the terms of the Eclipse
- * Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
- ********************************************************************************/
+ ************************************************************************************** */
 package org.calypsonet.keyple.demo.validation.data
 
 import android.content.Context
@@ -27,108 +27,93 @@ import org.calypsonet.keyple.demo.validation.models.Location
 import org.calypsonet.keyple.demo.validation.util.FileHelper
 import timber.log.Timber
 
-/**
- *  @author youssefamrani
- */
-
+/** @author youssefamrani */
 class LocationFileManager @Inject constructor(context: Context) {
 
-    var locationList: List<Location>? = null
-    var locationsFromResources: String
+  var locationList: List<Location>? = null
+  var locationsFromResources: String
 
-    init {
-        val sdCardPath = Environment.getExternalStorageDirectory().absolutePath
-        val dirPath = "$sdCardPath$LOCATION_DIRECTORY_PATH"
-        val dirExists = FileHelper.fileExist(dirPath)
-        if (!dirExists) {
-            /*
-             * Create App directory
-             */
-            FileHelper.createDirectory(sdCardPath, LOCATION_DIRECTORY_PATH)
+  init {
+    val sdCardPath = Environment.getExternalStorageDirectory().absolutePath
+    val dirPath = "$sdCardPath$LOCATION_DIRECTORY_PATH"
+    val dirExists = FileHelper.fileExist(dirPath)
+    if (!dirExists) {
+      /*
+       * Create App directory
+       */
+      FileHelper.createDirectory(sdCardPath, LOCATION_DIRECTORY_PATH)
+    }
+
+    val fileExists = FileHelper.fileExist(FILE_PATH)
+    locationsFromResources = getFileFromResources(context = context)
+    if (!fileExists) {
+      /*
+       * Create location JSON file
+       */
+      val fileName = "$LOCATION_FILE_NAME.json"
+      FileHelper.createFile(dirPath = dirPath, name = fileName, content = locationsFromResources)
+    }
+  }
+  fun getLocations(): List<Location> {
+    if (locationList == null) {
+      try {
+        val file = getFileFromSdCard()
+        locationList = getGson().fromJson(file, Array<Location>::class.java).toList()
+      } catch (e: FileNotFoundException) {
+        Timber.e(e)
+        locationList =
+            getGson().fromJson(locationsFromResources, Array<Location>::class.java).toList()
+      }
+    }
+
+    return locationList!!
+  }
+
+  /** Get file from SD Card */
+  private fun getFileFromSdCard(): String {
+    val file = File(FILE_PATH)
+    val inputStream = FileInputStream(file)
+
+    return parseFile(inputStream)
+  }
+
+  /** Get file from raw embedded directory */
+  private fun getFileFromResources(context: Context): String {
+    val resId = context.resources.getIdentifier(LOCATION_FILE_NAME, "raw", context.packageName)
+    val inputStream = context.resources.openRawResource(resId)
+
+    return parseFile(inputStream)
+  }
+
+  private fun parseFile(inputStream: InputStream): String {
+
+    val sb = StringBuilder()
+    var strLine: String?
+    try {
+      BufferedReader(InputStreamReader(inputStream, "UTF-8")).use { reader ->
+        while (reader.readLine().also { strLine = it } != null) {
+          sb.append(strLine)
         }
-
-        val fileExists = FileHelper.fileExist(FILE_PATH)
-        locationsFromResources = getFileFromResources(
-            context = context
-        )
-        if (!fileExists) {
-            /*
-             * Create location JSON file
-             */
-            val fileName = "$LOCATION_FILE_NAME.json"
-            FileHelper.createFile(
-                dirPath = dirPath,
-                name = fileName,
-                content = locationsFromResources
-            )
-        }
+      }
+    } catch (ignore: IOException) { // ignore
     }
-    fun getLocations(): List<Location> {
-        if (locationList == null) {
-            try {
-                val file = getFileFromSdCard()
-                locationList = getGson().fromJson(file, Array<Location>::class.java).toList()
-            } catch (e: FileNotFoundException) {
-                Timber.e(e)
-                locationList = getGson().fromJson(locationsFromResources, Array<Location>::class.java).toList()
-            }
-        }
+    return sb.toString()
+  }
 
-        return locationList!!
-    }
+  private fun getGson(): Gson {
+    val gsonBuilder = GsonBuilder()
 
-    /**
-     * Get file from SD Card
-     */
-    private fun getFileFromSdCard(): String {
-        val file = File(FILE_PATH)
-        val inputStream = FileInputStream(file)
+    gsonBuilder.disableHtmlEscaping()
+    gsonBuilder.setPrettyPrinting()
+    gsonBuilder.setLenient()
 
-        return parseFile(inputStream)
-    }
+    return gsonBuilder.create()
+  }
 
-    /**
-     * Get file from raw embedded directory
-     */
-    private fun getFileFromResources(
-        context: Context
-    ): String {
-        val resId = context.resources.getIdentifier(LOCATION_FILE_NAME, "raw", context.packageName)
-        val inputStream = context.resources.openRawResource(resId)
-
-        return parseFile(inputStream)
-    }
-
-    private fun parseFile(inputStream: InputStream): String {
-
-        val sb = StringBuilder()
-        var strLine: String?
-        try {
-            BufferedReader(InputStreamReader(inputStream, "UTF-8"))
-                .use { reader ->
-                    while (reader.readLine().also { strLine = it } != null) {
-                        sb.append(strLine)
-                    }
-                }
-        } catch (ignore: IOException) { // ignore
-        }
-        return sb.toString()
-    }
-
-    private fun getGson(): Gson {
-        val gsonBuilder = GsonBuilder()
-
-        gsonBuilder.disableHtmlEscaping()
-        gsonBuilder.setPrettyPrinting()
-        gsonBuilder.setLenient()
-
-        return gsonBuilder.create()
-    }
-
-    companion object {
-        const val LOCATION_FILE_NAME = "locations"
-        const val LOCATION_DIRECTORY_PATH = "/Keyple Demo Validation"
-        val FILE_PATH =
-            "${Environment.getExternalStorageDirectory().absolutePath}$LOCATION_DIRECTORY_PATH/$LOCATION_FILE_NAME.json"
-    }
+  companion object {
+    const val LOCATION_FILE_NAME = "locations"
+    const val LOCATION_DIRECTORY_PATH = "/Keyple Demo Validation"
+    val FILE_PATH =
+        "${Environment.getExternalStorageDirectory().absolutePath}$LOCATION_DIRECTORY_PATH/$LOCATION_FILE_NAME.json"
+  }
 }
