@@ -1,5 +1,6 @@
 # Keep demo app classes
--keep class org.calypsonet.keyple.demo.validation.models.Location { *; }
+-keep class org.calypsonet.keyple.demo.validation.service.ticketing.model.Location { *; }
+-keep class org.joda.time.** { *; }
 
 # Keep Keyple library classes
 -keep class org.calypsonet.keyple.plugin.coppernic.ParagonReader { *; }
