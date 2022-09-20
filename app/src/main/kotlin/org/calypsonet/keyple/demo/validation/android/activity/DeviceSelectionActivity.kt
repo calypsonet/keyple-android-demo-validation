@@ -18,7 +18,10 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
 import kotlinx.android.synthetic.main.activity_device_selection.*
+import kotlinx.android.synthetic.main.activity_device_selection.app_version
+import kotlinx.android.synthetic.main.activity_settings.*
 import org.calypsonet.keyple.demo.validation.ApplicationSettings
+import org.calypsonet.keyple.demo.validation.BuildConfig
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.android.dialog.PermissionDeniedDialog
 import org.calypsonet.keyple.demo.validation.android.util.PermissionHelper
@@ -78,6 +81,7 @@ class DeviceSelectionActivity : BaseActivity() {
         finish()
       }
     }
+    app_version.text = getString(R.string.version, BuildConfig.VERSION_NAME)
   }
 
   @SuppressLint("MissingSuperCall")

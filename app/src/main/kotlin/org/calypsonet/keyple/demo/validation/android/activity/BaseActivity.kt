@@ -11,6 +11,7 @@
  ************************************************************************************** */
 package org.calypsonet.keyple.demo.validation.android.activity
 
+import android.widget.Toast
 import dagger.android.support.DaggerAppCompatActivity
 import javax.inject.Inject
 import org.calypsonet.keyple.demo.validation.service.MainService
@@ -20,4 +21,8 @@ abstract class BaseActivity : DaggerAppCompatActivity() {
 
   @Inject lateinit var mainService: MainService
   @Inject lateinit var locationFileService: LocationFileService
+
+  fun showToast(message: String) {
+    runOnUiThread { Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show() }
+  }
 }

@@ -84,7 +84,6 @@ class ReaderActivity : BaseActivity() {
             cardReaderObserver = CardReaderObserver()
             mainService.init(
                 cardReaderObserver, this@ReaderActivity, ApplicationSettings.readerType)
-            ticketingService = mainService.getTicketingSession()!!
             mainService.readersInitialized = true
             handleAppEvents(AppState.WAIT_CARD, null)
             mainService.startNfcDetection()
@@ -163,10 +162,10 @@ class ReaderActivity : BaseActivity() {
                   errorMessage = error))
           return
         }
-        Timber.i("Card AID = ${ticketingService.getCardAid()}")
-        if (CalypsoInfo.AID_1TIC_ICA_1 != ticketingService.getCardAid() &&
-            CalypsoInfo.AID_1TIC_ICA_3 != ticketingService.getCardAid() &&
-            CalypsoInfo.AID_NORMALIZED_IDF != ticketingService.getCardAid()) {
+        Timber.i("Card AID = ${ticketingService.cardAid}")
+        if (CalypsoInfo.AID_1TIC_ICA_1 != ticketingService.cardAid &&
+            CalypsoInfo.AID_1TIC_ICA_3 != ticketingService.cardAid &&
+            CalypsoInfo.AID_NORMALIZED_IDF != ticketingService.cardAid) {
           val error = getString(R.string.card_invalid_aid)
           mainService.displayResultFailed()
           changeDisplay(
@@ -210,12 +209,8 @@ class ReaderActivity : BaseActivity() {
                 withContext(Dispatchers.Main) { progress.show() }
                 val validationResult =
                     withContext(Dispatchers.IO) {
-                      if (ticketingService.checkStartupInfo()) {
-                        ticketingService.launchValidationProcedure(
-                            this@ReaderActivity, locationFileService.getLocations())
-                      } else {
-                        null
-                      }
+                      ticketingService.launchValidationProcedure(
+                          this@ReaderActivity, locationFileService.getLocations())
                     }
                 withContext(Dispatchers.Main) {
                   progress.dismiss()
