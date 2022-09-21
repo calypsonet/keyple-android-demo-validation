@@ -14,15 +14,14 @@ package org.calypsonet.keyple.demo.validation.android.activity
 import android.os.Bundle
 import android.view.View
 import androidx.core.content.ContextCompat
-import java.util.Timer
-import java.util.TimerTask
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlinx.android.synthetic.main.activity_card_summary.animation
 import kotlinx.android.synthetic.main.activity_card_summary.bigText
 import kotlinx.android.synthetic.main.activity_card_summary.location_time
 import kotlinx.android.synthetic.main.activity_card_summary.mainView
 import kotlinx.android.synthetic.main.activity_card_summary.mediumText
 import kotlinx.android.synthetic.main.activity_card_summary.smallDesc
-import org.calypsonet.keyple.demo.common.parser.util.DateUtil
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.service.ticketing.model.CardReaderResponse
 import org.calypsonet.keyple.demo.validation.service.ticketing.model.Status
@@ -44,7 +43,9 @@ class CardSummaryActivity : BaseActivity() {
         animation.setAnimation("tick_white.json")
         mainView.setBackgroundColor(ContextCompat.getColor(this, R.color.green))
         bigText.setText(R.string.valid_main_desc)
-        val eventDate = DateUtil.formatDateToDisplayWithHour(cardReaderResponse.eventDate!!)
+        val eventDate =
+            SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.getDefault())
+                .format(cardReaderResponse.eventDate!!)
         location_time.text =
             getString(
                 R.string.valid_location_time,
@@ -60,7 +61,7 @@ class CardSummaryActivity : BaseActivity() {
               }
         } else {
           val validityEndDate =
-              DateUtil.formatDateToDisplay(cardReaderResponse.passValidityEndDate!!)
+              SimpleDateFormat("dd/MM/yyyy").format(cardReaderResponse.passValidityEndDate!!)
           smallDesc.text = getString(R.string.valid_season_ticket, validityEndDate)
         }
         mediumText.setText(R.string.valid_last_desc)
