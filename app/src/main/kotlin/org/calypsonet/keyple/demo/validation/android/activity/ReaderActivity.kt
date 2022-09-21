@@ -84,6 +84,7 @@ class ReaderActivity : BaseActivity() {
             cardReaderObserver = CardReaderObserver()
             mainService.init(
                 cardReaderObserver, this@ReaderActivity, ApplicationSettings.readerType)
+            ticketingService = mainService.ticketingService!!
             mainService.readersInitialized = true
             handleAppEvents(AppState.WAIT_CARD, null)
             mainService.startNfcDetection()

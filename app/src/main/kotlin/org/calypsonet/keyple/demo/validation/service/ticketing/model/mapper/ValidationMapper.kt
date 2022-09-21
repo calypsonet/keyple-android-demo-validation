@@ -11,15 +11,15 @@
  ************************************************************************************** */
 package org.calypsonet.keyple.demo.validation.service.ticketing.model.mapper
 
-import org.calypsonet.keyple.demo.common.parser.model.CardEvent
+import org.calypsonet.keyple.demo.common.model.EventStructure
 import org.calypsonet.keyple.demo.validation.service.ticketing.model.Location
 import org.calypsonet.keyple.demo.validation.service.ticketing.model.Validation
 
 object ValidationMapper {
-  fun map(event: CardEvent, locations: List<Location>): Validation {
+  fun map(event: EventStructure, locations: List<Location>): Validation {
     return Validation(
         name = "Event name",
-        date = event.getEventDate(),
+        date = event.eventDatetime,
         location = LocationMapper.map(locations, event),
         destination = null,
         provider = null)

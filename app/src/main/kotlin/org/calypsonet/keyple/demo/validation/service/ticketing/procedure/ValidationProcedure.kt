@@ -14,13 +14,14 @@ package org.calypsonet.keyple.demo.validation.service.ticketing.procedure
 import android.content.Context
 import java.util.Calendar
 import java.util.Date
-import org.calypsonet.keyple.demo.common.parser.CardContractParser
-import org.calypsonet.keyple.demo.common.parser.CardEnvironmentHolderParser
-import org.calypsonet.keyple.demo.common.parser.CardEventParser
-import org.calypsonet.keyple.demo.common.parser.model.CardEvent
-import org.calypsonet.keyple.demo.common.parser.model.constant.ContractPriority
-import org.calypsonet.keyple.demo.common.parser.model.constant.VersionNumber
-import org.calypsonet.keyple.demo.common.parser.util.DateUtil
+import org.calypsonet.keyple.demo.common.model.EventStructure
+import org.calypsonet.keyple.demo.common.model.type.DateCompact
+import org.calypsonet.keyple.demo.common.model.type.PriorityCode
+import org.calypsonet.keyple.demo.common.model.type.TimeCompact
+import org.calypsonet.keyple.demo.common.model.type.VersionNumber
+import org.calypsonet.keyple.demo.common.parser.ContractStructureParser
+import org.calypsonet.keyple.demo.common.parser.EnvironmentHolderStructureParser
+import org.calypsonet.keyple.demo.common.parser.EventStructureParser
 import org.calypsonet.keyple.demo.validation.ApplicationSettings
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.service.ticketing.CalypsoInfo.RECORD_NUMBER_1
@@ -97,18 +98,18 @@ class ValidationProcedure {
         // Step 2 - Unpack environment structure from the binary present in the environment record.
         val efEnvironmentHolder = calypsoCard.getFileBySfi(SFI_ENVIRONMENT_AND_HOLDER)
         val environmentContent = efEnvironmentHolder.data.content
-        val environment = CardEnvironmentHolderParser().parse(environmentContent)
+        val environment = EnvironmentHolderStructureParser().parse(environmentContent)
 
         // Step 3 - If EnvVersionNumber of the Environment structure is not the expected one (==1
         // for the current version) reject the card. <Abort Secure Session>
-        if (environment.envVersionNumber != VersionNumber.CURRENT_VERSION.key) {
+        if (environment.envVersionNumber != VersionNumber.CURRENT_VERSION) {
           status = Status.INVALID_CARD
           throw EnvironmentException(EnvironmentExceptionKey.WRONG_VERSION_NUMBER)
         }
 
         // Step 4 - If EnvEndDate points to a date in the past reject the card. <Abort Secure
         // Session>
-        val envEndDate = DateTime(environment.getEnvEndDateAsDate())
+        val envEndDate = DateTime(environment.envEndDate)
         if (envEndDate.isBefore(now)) {
           status = Status.INVALID_CARD
           throw EnvironmentException(EnvironmentExceptionKey.EXPIRED)
@@ -120,14 +121,14 @@ class ValidationProcedure {
 
         val efEventLog = calypsoCard.getFileBySfi(SFI_EVENTS_LOG)
         val eventContent = efEventLog.data.content
-        val event = CardEventParser().parse(eventContent)
+        val event = EventStructureParser().parse(eventContent)
 
         // Step 6 - If EventVersionNumber is not the expected one (==1 for the current version)
         // reject the card. <Abort Secure Session>
         val eventVersionNumber = event.eventVersionNumber
 
-        if (eventVersionNumber != VersionNumber.CURRENT_VERSION.key) {
-          if (eventVersionNumber == VersionNumber.UNDEFINED.key) {
+        if (eventVersionNumber != VersionNumber.CURRENT_VERSION) {
+          if (eventVersionNumber == VersionNumber.UNDEFINED) {
             status = Status.EMPTY_CARD
             throw EventException(EventExceptionKey.CLEAN_CARD)
           } else {
@@ -136,25 +137,25 @@ class ValidationProcedure {
           }
         }
 
-        // Step 7 - Store the ContractPriority fields in a persistent object.
-        val contractPriorities = mutableListOf<Pair<Int, ContractPriority>>()
+        // Step 7 - Store the PriorityCode fields in a persistent object.
+        val contractPriorities = mutableListOf<Pair<Int, PriorityCode>>()
 
         // ***************** Best Contract Search
-        // Step 7 - Create a list of ContractPriority fields that are different from 0 or 31.
-        if (event.contractPriority1 != ContractPriority.FORBIDDEN &&
-            event.contractPriority1 != ContractPriority.EXPIRED) {
+        // Step 7 - Create a list of PriorityCode fields that are different from 0 or 31.
+        if (event.contractPriority1 != PriorityCode.FORBIDDEN &&
+            event.contractPriority1 != PriorityCode.EXPIRED) {
           contractPriorities.add(Pair(1, event.contractPriority1))
         }
-        if (event.contractPriority2 != ContractPriority.FORBIDDEN &&
-            event.contractPriority2 != ContractPriority.EXPIRED) {
+        if (event.contractPriority2 != PriorityCode.FORBIDDEN &&
+            event.contractPriority2 != PriorityCode.EXPIRED) {
           contractPriorities.add(Pair(2, event.contractPriority2))
         }
-        if (event.contractPriority3 != ContractPriority.FORBIDDEN &&
-            event.contractPriority3 != ContractPriority.EXPIRED) {
+        if (event.contractPriority3 != PriorityCode.FORBIDDEN &&
+            event.contractPriority3 != PriorityCode.EXPIRED) {
           contractPriorities.add(Pair(3, event.contractPriority3))
         }
-        if (event.contractPriority4 != ContractPriority.FORBIDDEN &&
-            event.contractPriority4 != ContractPriority.EXPIRED) {
+        if (event.contractPriority4 != PriorityCode.FORBIDDEN &&
+            event.contractPriority4 != PriorityCode.EXPIRED) {
           contractPriorities.add(Pair(4, event.contractPriority4))
         }
 
@@ -186,7 +187,7 @@ class ValidationProcedure {
 
           val efContractParser = calypsoCard.getFileBySfi(SFI_CONTRACTS)
           val contractContent = efContractParser.data.allRecordsContent[record]!!
-          val contract = CardContractParser().parse(contractContent)
+          val contract = ContractStructureParser().parse(contractContent)
 
           // Step 11.2 - If ContractVersionNumber is not the expected one (==1 for the current
           // version) reject the card. <Abort Secure Session>
@@ -208,13 +209,13 @@ class ValidationProcedure {
           // Step 11.4 - If ContractValidityEndDate points to a date in the past update the
           // associated ContractPriorty field present in the persistent object to 31 and move to the
           // next element in the list
-          val contractValidityEndDate = DateTime(contract.getContractValidityEndDateAsDate())
+          val contractValidityEndDate = DateTime(contract.contractValidityEndDate)
           if (contractValidityEndDate.isBefore(now)) {
             when (record) {
-              RECORD_NUMBER_1 -> priority1 = ContractPriority.EXPIRED
-              RECORD_NUMBER_2 -> priority2 = ContractPriority.EXPIRED
-              RECORD_NUMBER_3 -> priority3 = ContractPriority.EXPIRED
-              RECORD_NUMBER_4 -> priority4 = ContractPriority.EXPIRED
+              RECORD_NUMBER_1 -> priority1 = PriorityCode.EXPIRED
+              RECORD_NUMBER_2 -> priority2 = PriorityCode.EXPIRED
+              RECORD_NUMBER_3 -> priority3 = PriorityCode.EXPIRED
+              RECORD_NUMBER_4 -> priority4 = PriorityCode.EXPIRED
             }
             status = Status.EMPTY_CARD
             errorMessage = context.getString(R.string.expired_title)
@@ -223,8 +224,8 @@ class ValidationProcedure {
           }
 
           // Step 11.5 - If the ContractTariff value for the contract read is 2 or 3:
-          if (contractPriority == ContractPriority.MULTI_TRIP ||
-              contractPriority == ContractPriority.STORED_VALUE) {
+          if (contractPriority == PriorityCode.MULTI_TRIP ||
+              contractPriority == PriorityCode.STORED_VALUE) {
 
             // Step 11.5.1 - Read and unpack the counter associated to the contract (1st counter for
             // Contract #1 and so forth).
@@ -238,10 +239,10 @@ class ValidationProcedure {
             // present in the persistent object to 31 and move to the next element in the list
             if (counterValue == 0) {
               when (record) {
-                RECORD_NUMBER_1 -> priority1 = ContractPriority.EXPIRED
-                RECORD_NUMBER_2 -> priority2 = ContractPriority.EXPIRED
-                RECORD_NUMBER_3 -> priority3 = ContractPriority.EXPIRED
-                RECORD_NUMBER_4 -> priority4 = ContractPriority.EXPIRED
+                RECORD_NUMBER_1 -> priority1 = PriorityCode.EXPIRED
+                RECORD_NUMBER_2 -> priority2 = PriorityCode.EXPIRED
+                RECORD_NUMBER_3 -> priority3 = PriorityCode.EXPIRED
+                RECORD_NUMBER_4 -> priority4 = PriorityCode.EXPIRED
               }
               status = Status.EMPTY_CARD
               errorMessage = context.getString(R.string.no_trips_left)
@@ -251,7 +252,7 @@ class ValidationProcedure {
             // Step 11.5.3 - If the counter value is > 0 && ContractTariff == 3 && CounterValue <
             // ValidationAmount move to the next element in the list
             else if (counterValue > 0 &&
-                contractPriority == ContractPriority.STORED_VALUE &&
+                contractPriority == PriorityCode.STORED_VALUE &&
                 counterValue < validationAmount) {
               status = Status.EMPTY_CARD
               errorMessage = context.getString(R.string.no_trips_left)
@@ -263,8 +264,8 @@ class ValidationProcedure {
             else {
               val decrement =
                   when (contractPriority) {
-                    ContractPriority.MULTI_TRIP -> SINGLE_VALIDATION_AMOUNT
-                    ContractPriority.STORED_VALUE -> validationAmount
+                    PriorityCode.MULTI_TRIP -> SINGLE_VALIDATION_AMOUNT
+                    PriorityCode.STORED_VALUE -> validationAmount
                     else -> 0
                   }
               if (decrement > 0) {
@@ -274,8 +275,8 @@ class ValidationProcedure {
                 nbTicketsLeft = counterValue - decrement
               }
             }
-          } else if (contractPriority == ContractPriority.SEASON_PASS) {
-            passValidityEndDate = contract.getContractValidityEndDateAsDate()
+          } else if (contractPriority == PriorityCode.SEASON_PASS) {
+            passValidityEndDate = contract.contractValidityEndDate.date
           }
 
           // We will create a new event for this contract
@@ -286,7 +287,7 @@ class ValidationProcedure {
 
         if (writeEvent) {
 
-          val eventToWrite: CardEvent
+          val eventToWrite: EventStructure
           if (contractUsed > 0) {
             // Create a new validation event
             val calendar = Calendar.getInstance()
@@ -294,10 +295,10 @@ class ValidationProcedure {
             calendar.set(Calendar.MILLISECOND, 0)
             eventDate = calendar.time
             eventToWrite =
-                CardEvent(
-                    eventVersionNumber = VersionNumber.CURRENT_VERSION.key,
-                    eventDateStamp = DateUtil.dateToDateCompact(eventDate),
-                    eventTimeStamp = DateUtil.dateToTimeCompact(eventDate),
+                EventStructure(
+                    eventVersionNumber = VersionNumber.CURRENT_VERSION,
+                    eventDateStamp = DateCompact(eventDate),
+                    eventTimeStamp = TimeCompact(eventDate),
                     eventLocation = ApplicationSettings.location.id,
                     eventContractUsed = contractUsed,
                     contractPriority1 = priority1,
@@ -312,7 +313,7 @@ class ValidationProcedure {
           } else {
             // Update old event's priorities
             eventToWrite =
-                CardEvent(
+                EventStructure(
                     eventVersionNumber = event.eventVersionNumber,
                     eventDateStamp = event.eventDateStamp,
                     eventTimeStamp = event.eventTimeStamp,
@@ -325,7 +326,7 @@ class ValidationProcedure {
           }
 
           // Step 13 - Pack the Event structure and append it to the event file
-          val eventBytesToWrite = CardEventParser().generate(eventToWrite)
+          val eventBytesToWrite = EventStructureParser().generate(eventToWrite)
           cardTransaction.prepareUpdateRecord(SFI_EVENTS_LOG, RECORD_NUMBER_1, eventBytesToWrite)
           cardTransaction.processCommands()
         } else {
