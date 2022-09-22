@@ -1,4 +1,5 @@
-import java.util.Properties
+import java.util.*
+
 ///////////////////////////////////////////////////////////////////////////////
 //  GRADLE CONFIGURATION
 ///////////////////////////////////////////////////////////////////////////////
@@ -15,19 +16,24 @@ plugins {
 ///////////////////////////////////////////////////////////////////////////////
 val kotlinVersion: String by project
 val archivesBaseName: String by project
+val signingPropertiesFile = File("signing.properties")
 android {
     compileSdkVersion(29)
     buildToolsVersion("30.0.3")
 
     signingConfigs {
         create("default") {
-            val properties = Properties().apply {
-                load(File("signing.properties").reader())
+            // If the application has to be signed, the elements necessary for this operation
+            // must be defined in a 'signing.properties' file placed at the root of the project.
+            if (signingPropertiesFile.exists()) {
+                val properties = Properties().apply {
+                    load(signingPropertiesFile.reader())
+                }
+                storeFile = File(properties.getProperty("storeFilePath"))
+                storePassword = properties.getProperty("storePassword")
+                keyPassword = properties.getProperty("keyPassword")
+                keyAlias = properties.getProperty("keyAlias")
             }
-            storeFile = File(properties.getProperty("storeFilePath"))
-            storePassword = properties.getProperty("storePassword")
-            keyPassword = properties.getProperty("keyPassword")
-            keyAlias = properties.getProperty("keyAlias")
         }
     }
 
@@ -37,9 +43,6 @@ android {
         targetSdkVersion(29)
         versionCode(6)
         versionName(project.version.toString())
-
-        testInstrumentationRunner("android.support.test.runner.AndroidJUnitRunner")
-        multiDexEnabled = true
     }
 
     buildTypes {
@@ -49,7 +52,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("default")
+            if (signingPropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("default")
+            }
         }
     }
 
@@ -95,13 +100,11 @@ dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar"))))
 
     // Keyple core
-    implementation("org.calypsonet.terminal:calypsonet-terminal-card-java-api:1.0.+") { isChanging = true }
     implementation("org.calypsonet.terminal:calypsonet-terminal-reader-java-api:1.0.+") { isChanging = true }
     implementation("org.calypsonet.terminal:calypsonet-terminal-calypso-java-api:1.2.+") { isChanging = true }
     implementation("org.eclipse.keyple:keyple-common-java-api:2.0.+") { isChanging = true }
     implementation("org.eclipse.keyple:keyple-util-java-lib:2.+") { isChanging = true }
     implementation("org.eclipse.keyple:keyple-service-java-lib:2.1.0")
-    implementation("org.eclipse.keyple:keyple-service-resource-java-lib:2.0.2")
     implementation("org.eclipse.keyple:keyple-card-calypso-java-lib:2.2.1")
 
     // Keyple reader plugins
