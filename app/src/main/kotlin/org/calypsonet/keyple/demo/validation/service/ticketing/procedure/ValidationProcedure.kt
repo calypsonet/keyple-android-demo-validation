@@ -14,6 +14,7 @@ package org.calypsonet.keyple.demo.validation.service.ticketing.procedure
 import android.content.Context
 import java.util.Calendar
 import java.util.Date
+import org.calypsonet.keyple.demo.common.constant.CardConstant
 import org.calypsonet.keyple.demo.common.model.EventStructure
 import org.calypsonet.keyple.demo.common.model.type.DateCompact
 import org.calypsonet.keyple.demo.common.model.type.PriorityCode
@@ -24,14 +25,6 @@ import org.calypsonet.keyple.demo.common.parser.EnvironmentHolderStructureParser
 import org.calypsonet.keyple.demo.common.parser.EventStructureParser
 import org.calypsonet.keyple.demo.validation.ApplicationSettings
 import org.calypsonet.keyple.demo.validation.R
-import org.calypsonet.keyple.demo.validation.service.ticketing.CalypsoInfo.RECORD_NUMBER_1
-import org.calypsonet.keyple.demo.validation.service.ticketing.CalypsoInfo.RECORD_NUMBER_2
-import org.calypsonet.keyple.demo.validation.service.ticketing.CalypsoInfo.RECORD_NUMBER_3
-import org.calypsonet.keyple.demo.validation.service.ticketing.CalypsoInfo.RECORD_NUMBER_4
-import org.calypsonet.keyple.demo.validation.service.ticketing.CalypsoInfo.SFI_CONTRACTS
-import org.calypsonet.keyple.demo.validation.service.ticketing.CalypsoInfo.SFI_COUNTER
-import org.calypsonet.keyple.demo.validation.service.ticketing.CalypsoInfo.SFI_ENVIRONMENT_AND_HOLDER
-import org.calypsonet.keyple.demo.validation.service.ticketing.CalypsoInfo.SFI_EVENTS_LOG
 import org.calypsonet.keyple.demo.validation.service.ticketing.exception.ContractVersionNumberErrorException
 import org.calypsonet.keyple.demo.validation.service.ticketing.exception.EnvironmentException
 import org.calypsonet.keyple.demo.validation.service.ticketing.exception.EnvironmentExceptionKey
@@ -92,11 +85,11 @@ class ValidationProcedure {
 
         // ***************** Event and Environment Analysis
         // Step 1 - Open a Validation session reading the environment record.
-        cardTransaction.prepareReadRecord(SFI_ENVIRONMENT_AND_HOLDER, RECORD_NUMBER_1)
+        cardTransaction.prepareReadRecord(CardConstant.SFI_ENVIRONMENT_AND_HOLDER, 1)
         cardTransaction.processOpening(WriteAccessLevel.DEBIT)
 
         // Step 2 - Unpack environment structure from the binary present in the environment record.
-        val efEnvironmentHolder = calypsoCard.getFileBySfi(SFI_ENVIRONMENT_AND_HOLDER)
+        val efEnvironmentHolder = calypsoCard.getFileBySfi(CardConstant.SFI_ENVIRONMENT_AND_HOLDER)
         val environmentContent = efEnvironmentHolder.data.content
         val environment = EnvironmentHolderStructureParser().parse(environmentContent)
 
@@ -109,17 +102,17 @@ class ValidationProcedure {
 
         // Step 4 - If EnvEndDate points to a date in the past reject the card. <Abort Secure
         // Session>
-        val envEndDate = DateTime(environment.envEndDate)
+        val envEndDate = DateTime(environment.envEndDate.date)
         if (envEndDate.isBefore(now)) {
           status = Status.INVALID_CARD
           throw EnvironmentException(EnvironmentExceptionKey.EXPIRED)
         }
 
         // Step 5 - Read and unpack the last event record.
-        cardTransaction.prepareReadRecord(SFI_EVENTS_LOG, RECORD_NUMBER_1)
+        cardTransaction.prepareReadRecord(CardConstant.SFI_EVENTS_LOG, 1)
         cardTransaction.processCommands()
 
-        val efEventLog = calypsoCard.getFileBySfi(SFI_EVENTS_LOG)
+        val efEventLog = calypsoCard.getFileBySfi(CardConstant.SFI_EVENTS_LOG)
         val eventContent = efEventLog.data.content
         val event = EventStructureParser().parse(eventContent)
 
@@ -181,11 +174,11 @@ class ValidationProcedure {
           val contractPriority = it.second
 
           // Step 11.1 - Read and unpack the contract record for the index being iterated.
-          cardTransaction.prepareReadRecord(SFI_CONTRACTS, record)
+          cardTransaction.prepareReadRecord(CardConstant.SFI_CONTRACTS, record)
 
           cardTransaction.processCommands()
 
-          val efContractParser = calypsoCard.getFileBySfi(SFI_CONTRACTS)
+          val efContractParser = calypsoCard.getFileBySfi(CardConstant.SFI_CONTRACTS)
           val contractContent = efContractParser.data.allRecordsContent[record]!!
           val contract = ContractStructureParser().parse(contractContent)
 
@@ -209,13 +202,13 @@ class ValidationProcedure {
           // Step 11.4 - If ContractValidityEndDate points to a date in the past update the
           // associated ContractPriorty field present in the persistent object to 31 and move to the
           // next element in the list
-          val contractValidityEndDate = DateTime(contract.contractValidityEndDate)
+          val contractValidityEndDate = DateTime(contract.contractValidityEndDate.date)
           if (contractValidityEndDate.isBefore(now)) {
             when (record) {
-              RECORD_NUMBER_1 -> priority1 = PriorityCode.EXPIRED
-              RECORD_NUMBER_2 -> priority2 = PriorityCode.EXPIRED
-              RECORD_NUMBER_3 -> priority3 = PriorityCode.EXPIRED
-              RECORD_NUMBER_4 -> priority4 = PriorityCode.EXPIRED
+              1 -> priority1 = PriorityCode.EXPIRED
+              2 -> priority2 = PriorityCode.EXPIRED
+              3 -> priority3 = PriorityCode.EXPIRED
+              4 -> priority4 = PriorityCode.EXPIRED
             }
             status = Status.EMPTY_CARD
             errorMessage = context.getString(R.string.expired_title)
@@ -229,20 +222,20 @@ class ValidationProcedure {
 
             // Step 11.5.1 - Read and unpack the counter associated to the contract (1st counter for
             // Contract #1 and so forth).
-            cardTransaction.prepareReadCounter(SFI_COUNTER, COUNTER_RECORDS_NB)
+            cardTransaction.prepareReadCounter(CardConstant.SFI_COUNTER, COUNTER_RECORDS_NB)
             cardTransaction.processCommands()
 
-            val efCounter = calypsoCard.getFileBySfi(SFI_COUNTER)
+            val efCounter = calypsoCard.getFileBySfi(CardConstant.SFI_COUNTER)
             val counterValue = efCounter.data.getContentAsCounterValue(record)
 
             // Step 11.5.2 - If the counter value is 0 update the associated ContractPriorty field
             // present in the persistent object to 31 and move to the next element in the list
             if (counterValue == 0) {
               when (record) {
-                RECORD_NUMBER_1 -> priority1 = PriorityCode.EXPIRED
-                RECORD_NUMBER_2 -> priority2 = PriorityCode.EXPIRED
-                RECORD_NUMBER_3 -> priority3 = PriorityCode.EXPIRED
-                RECORD_NUMBER_4 -> priority4 = PriorityCode.EXPIRED
+                1 -> priority1 = PriorityCode.EXPIRED
+                2 -> priority2 = PriorityCode.EXPIRED
+                3 -> priority3 = PriorityCode.EXPIRED
+                4 -> priority4 = PriorityCode.EXPIRED
               }
               status = Status.EMPTY_CARD
               errorMessage = context.getString(R.string.no_trips_left)
@@ -269,7 +262,7 @@ class ValidationProcedure {
                     else -> 0
                   }
               if (decrement > 0) {
-                cardTransaction.prepareDecreaseCounter(SFI_COUNTER, record, decrement)
+                cardTransaction.prepareDecreaseCounter(CardConstant.SFI_COUNTER, record, decrement)
 
                 cardTransaction.processCommands()
                 nbTicketsLeft = counterValue - decrement
@@ -327,7 +320,7 @@ class ValidationProcedure {
 
           // Step 13 - Pack the Event structure and append it to the event file
           val eventBytesToWrite = EventStructureParser().generate(eventToWrite)
-          cardTransaction.prepareUpdateRecord(SFI_EVENTS_LOG, RECORD_NUMBER_1, eventBytesToWrite)
+          cardTransaction.prepareUpdateRecord(CardConstant.SFI_EVENTS_LOG, 1, eventBytesToWrite)
           cardTransaction.processCommands()
         } else {
           Timber.i("Validation procedure result : Failed - No valid contract found")

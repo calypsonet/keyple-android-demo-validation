@@ -14,15 +14,9 @@ package org.calypsonet.keyple.demo.validation.service.ticketing
 import android.content.Context
 import java.util.EnumMap
 import javax.inject.Inject
+import org.calypsonet.keyple.demo.common.constant.CardConstant
 import org.calypsonet.keyple.demo.validation.android.di.scope.AppScoped
 import org.calypsonet.keyple.demo.validation.service.reader.ReaderService
-import org.calypsonet.keyple.demo.validation.service.ticketing.CalypsoInfo.AID_1TIC_ICA_1
-import org.calypsonet.keyple.demo.validation.service.ticketing.CalypsoInfo.AID_1TIC_ICA_3
-import org.calypsonet.keyple.demo.validation.service.ticketing.CalypsoInfo.AID_NORMALIZED_IDF
-import org.calypsonet.keyple.demo.validation.service.ticketing.CalypsoInfo.AID_OTHER
-import org.calypsonet.keyple.demo.validation.service.ticketing.CalypsoInfo.DEFAULT_KIF_DEBIT
-import org.calypsonet.keyple.demo.validation.service.ticketing.CalypsoInfo.DEFAULT_KIF_LOAD
-import org.calypsonet.keyple.demo.validation.service.ticketing.CalypsoInfo.DEFAULT_KIF_PERSONALIZATION
 import org.calypsonet.keyple.demo.validation.service.ticketing.exception.ValidationException
 import org.calypsonet.keyple.demo.validation.service.ticketing.model.CardReaderResponse
 import org.calypsonet.keyple.demo.validation.service.ticketing.model.FileStructureEnum
@@ -65,10 +59,12 @@ class TicketingService @Inject constructor(private val readerService: ReaderServ
       EnumMap(FileStructureEnum::class.java)
 
   init {
-    allowedFileStructures[FileStructureEnum.FILE_STRUCTURE_02H] = listOf(AID_1TIC_ICA_1)
+    allowedFileStructures[FileStructureEnum.FILE_STRUCTURE_02H] =
+        listOf(CardConstant.AID_1TIC_ICA_1)
     allowedFileStructures[FileStructureEnum.FILE_STRUCTURE_05H] =
-        listOf(AID_1TIC_ICA_1, AID_NORMALIZED_IDF)
-    allowedFileStructures[FileStructureEnum.FILE_STRUCTURE_32H] = listOf(AID_1TIC_ICA_3)
+        listOf(CardConstant.AID_1TIC_ICA_1, CardConstant.AID_NORMALIZED_IDF)
+    allowedFileStructures[FileStructureEnum.FILE_STRUCTURE_32H] =
+        listOf(CardConstant.AID_1TIC_ICA_3)
 
     // attempts to select a SAM if any, sets the isSecureSessionMode flag accordingly
     val samReader = readerService.getSamReader()
@@ -93,7 +89,7 @@ class TicketingService @Inject constructor(private val readerService: ReaderServ
         cardSelectionManager.prepareSelection(
             calypsoExtensionService
                 .createCardSelection()
-                .filterByDfName(AID_1TIC_ICA_1)
+                .filterByDfName(CardConstant.AID_1TIC_ICA_1)
                 .filterByCardProtocol(readerService.getCardReaderProtocolLogicalName()))
 
     // Prepare card selection case #2: 1 TIC ICA 3
@@ -101,7 +97,7 @@ class TicketingService @Inject constructor(private val readerService: ReaderServ
         cardSelectionManager.prepareSelection(
             calypsoExtensionService
                 .createCardSelection()
-                .filterByDfName(AID_1TIC_ICA_3)
+                .filterByDfName(CardConstant.AID_1TIC_ICA_3)
                 .filterByCardProtocol(readerService.getCardReaderProtocolLogicalName()))
 
     // Prepare card selection case #3: Navigo
@@ -109,7 +105,7 @@ class TicketingService @Inject constructor(private val readerService: ReaderServ
         cardSelectionManager.prepareSelection(
             calypsoExtensionService
                 .createCardSelection()
-                .filterByDfName(AID_NORMALIZED_IDF)
+                .filterByDfName(CardConstant.AID_NORMALIZED_IDF)
                 .filterByCardProtocol(readerService.getCardReaderProtocolLogicalName()))
 
     // Schedule the execution of the prepared card selection scenario as soon as a card is presented
@@ -130,19 +126,19 @@ class TicketingService @Inject constructor(private val readerService: ReaderServ
         indexOfCardSelectionAid1TicIca1 -> {
           calypsoCard = cardSelectionResult.activeSmartCard as CalypsoCard
           fileStructure = FileStructureEnum.findEnumByKey(calypsoCard.applicationSubtype.toInt())
-          cardAid = AID_1TIC_ICA_1
+          cardAid = CardConstant.AID_1TIC_ICA_1
         }
         indexOfCardSelectionAid1TicIca3 -> {
           calypsoCard = cardSelectionResult.activeSmartCard as CalypsoCard
-          cardAid = AID_1TIC_ICA_3
+          cardAid = CardConstant.AID_1TIC_ICA_3
           fileStructure = FileStructureEnum.findEnumByKey(calypsoCard.applicationSubtype.toInt())
         }
         indexOfCardSelectionAidIdf -> {
           calypsoCard = cardSelectionResult.activeSmartCard as CalypsoCard
-          cardAid = AID_NORMALIZED_IDF
+          cardAid = CardConstant.AID_NORMALIZED_IDF
           fileStructure = FileStructureEnum.findEnumByKey(calypsoCard.applicationSubtype.toInt())
         }
-        else -> cardAid = AID_OTHER
+        else -> cardAid = CardConstant.AID_OTHER
       }
     }
     Timber.i("Card AID = $cardAid")
@@ -176,9 +172,10 @@ class TicketingService @Inject constructor(private val readerService: ReaderServ
     return calypsoExtensionService
         .createCardSecuritySetting()
         .setControlSamResource(readerService.getSamReader(), calypsoSam)
-        .assignDefaultKif(WriteAccessLevel.PERSONALIZATION, DEFAULT_KIF_PERSONALIZATION)
-        .assignDefaultKif(WriteAccessLevel.LOAD, DEFAULT_KIF_LOAD)
-        .assignDefaultKif(WriteAccessLevel.DEBIT, DEFAULT_KIF_DEBIT)
+        .assignDefaultKif(
+            WriteAccessLevel.PERSONALIZATION, CardConstant.DEFAULT_KIF_PERSONALIZATION)
+        .assignDefaultKif(WriteAccessLevel.LOAD, CardConstant.DEFAULT_KIF_LOAD)
+        .assignDefaultKif(WriteAccessLevel.DEBIT, CardConstant.DEFAULT_KIF_DEBIT)
         .enableRatificationMechanism()
         .enableMultipleSession()
   }

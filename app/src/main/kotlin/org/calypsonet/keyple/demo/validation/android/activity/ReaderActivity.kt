@@ -28,10 +28,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.calypsonet.keyple.demo.common.constant.CardConstant
 import org.calypsonet.keyple.demo.validation.ApplicationSettings
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.android.di.scope.ActivityScoped
-import org.calypsonet.keyple.demo.validation.service.ticketing.CalypsoInfo
 import org.calypsonet.keyple.demo.validation.service.ticketing.TicketingService
 import org.calypsonet.keyple.demo.validation.service.ticketing.model.CardReaderResponse
 import org.calypsonet.keyple.demo.validation.service.ticketing.model.Status
@@ -164,9 +164,9 @@ class ReaderActivity : BaseActivity() {
           return
         }
         Timber.i("Card AID = ${ticketingService.cardAid}")
-        if (CalypsoInfo.AID_1TIC_ICA_1 != ticketingService.cardAid &&
-            CalypsoInfo.AID_1TIC_ICA_3 != ticketingService.cardAid &&
-            CalypsoInfo.AID_NORMALIZED_IDF != ticketingService.cardAid) {
+        if (CardConstant.AID_1TIC_ICA_1 != ticketingService.cardAid &&
+            CardConstant.AID_1TIC_ICA_3 != ticketingService.cardAid &&
+            CardConstant.AID_NORMALIZED_IDF != ticketingService.cardAid) {
           val error = getString(R.string.card_invalid_aid)
           mainService.displayResultFailed()
           changeDisplay(
