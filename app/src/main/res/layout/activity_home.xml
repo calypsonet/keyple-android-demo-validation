@@ -17,7 +17,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.calypsonet.keyple.demo.validation.android.activity.HomeActivity"
+    tools:context="org.calypsonet.keyple.demo.validation.ui.activity.HomeActivity"
     android:background="@drawable/ic_img_bg_valideur">
 
     <include

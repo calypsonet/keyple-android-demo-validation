@@ -14,8 +14,8 @@ package org.calypsonet.keyple.demo.validation
 import android.content.Context
 import androidx.multidex.MultiDex
 import dagger.android.DaggerApplication
-import org.calypsonet.keyple.demo.validation.android.di.AppComponent
-import org.calypsonet.keyple.demo.validation.android.di.DaggerAppComponent
+import org.calypsonet.keyple.demo.validation.ui.di.AppComponent
+import org.calypsonet.keyple.demo.validation.ui.di.DaggerAppComponent
 import timber.log.Timber
 import timber.log.Timber.DebugTree
 

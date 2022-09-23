@@ -202,7 +202,7 @@ This procedure's main steps are as follows:
 
 Below are the classes useful for implementing the ticketing layer:
 - `MainService`
-- `ReaderService`
+- `ReaderRepository`
 - `ReaderActivity.CardReaderObserver`
 - `TicketingService`
 
@@ -220,7 +220,7 @@ It is called on the different steps of the reader activity lifecycle:
 - onDestroy:
   - Clear the Keyple plugin (remove observers and unregister plugin)
 
-### ReaderService
+### ReaderRepository
 
 This service is the interface between the business layer and the reader.
 
