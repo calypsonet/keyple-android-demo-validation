@@ -21,7 +21,7 @@ import org.calypsonet.keyple.demo.validation.ui.deviceselection.DeviceSelectionA
 @Module
 abstract class UIModule {
 
-  @ActivityScoped @ContributesAndroidInjector abstract fun splashScreenActivity(): MainActivity
+  @ActivityScoped @ContributesAndroidInjector abstract fun mainActivity(): MainActivity
 
   @ActivityScoped @ContributesAndroidInjector abstract fun settingsActivity(): SettingsActivity
 
