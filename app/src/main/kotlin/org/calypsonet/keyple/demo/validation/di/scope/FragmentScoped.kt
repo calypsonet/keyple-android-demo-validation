@@ -9,21 +9,18 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ************************************************************************************** */
-package org.calypsonet.keyple.demo.validation.ui.di
+package org.calypsonet.keyple.demo.validation.di.scope
 
-import dagger.Module
-import dagger.Provides
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
-import org.calypsonet.keyple.demo.validation.ui.di.scope.AppScoped
-import org.calypsonet.keyple.demo.validation.ui.rx.SchedulerProvider
+import java.lang.annotation.Retention
+import java.lang.annotation.RetentionPolicy
+import javax.inject.Scope
 
-@Suppress("unused")
-@Module
-class SchedulerModule {
-
-  @Provides
-  @AppScoped
-  fun provideSchedulerProvider(): SchedulerProvider =
-      SchedulerProvider(Schedulers.io(), AndroidSchedulers.mainThread())
-}
+@Scope
+@Retention(RetentionPolicy.RUNTIME)
+@Target(
+    AnnotationTarget.ANNOTATION_CLASS,
+    AnnotationTarget.CLASS,
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.PROPERTY_GETTER,
+    AnnotationTarget.PROPERTY_SETTER)
+annotation class FragmentScoped

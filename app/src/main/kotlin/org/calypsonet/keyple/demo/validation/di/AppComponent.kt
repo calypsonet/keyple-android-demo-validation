@@ -9,14 +9,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ************************************************************************************** */
-package org.calypsonet.keyple.demo.validation.ui.di
+package org.calypsonet.keyple.demo.validation.di
 
 import dagger.BindsInstance
 import dagger.Component
 import dagger.android.AndroidInjector
 import dagger.android.support.AndroidSupportInjectionModule
 import org.calypsonet.keyple.demo.validation.Application
-import org.calypsonet.keyple.demo.validation.ui.di.scope.AppScoped
+import org.calypsonet.keyple.demo.validation.di.scope.AppScoped
 
 @AppScoped
 @Component(
@@ -24,7 +24,6 @@ import org.calypsonet.keyple.demo.validation.ui.di.scope.AppScoped
         [
             AppModule::class,
             UIModule::class,
-            SchedulerModule::class,
             AndroidSupportInjectionModule::class,
             ReaderModule::class,
             LocationModule::class])

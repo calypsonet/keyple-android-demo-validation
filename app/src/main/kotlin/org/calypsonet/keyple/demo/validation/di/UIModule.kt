@@ -9,12 +9,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ************************************************************************************** */
-package org.calypsonet.keyple.demo.validation.ui.di
+package org.calypsonet.keyple.demo.validation.di
 
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
-import org.calypsonet.keyple.demo.validation.ui.activity.*
-import org.calypsonet.keyple.demo.validation.ui.di.scope.ActivityScoped
+import org.calypsonet.keyple.demo.validation.di.scope.ActivityScoped
+import org.calypsonet.keyple.demo.validation.ui.*
+import org.calypsonet.keyple.demo.validation.ui.deviceselection.DeviceSelectionActivity
 
 @Suppress("unused")
 @Module

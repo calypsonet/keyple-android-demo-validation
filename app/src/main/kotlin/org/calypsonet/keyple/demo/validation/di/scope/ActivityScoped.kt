@@ -9,19 +9,16 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ************************************************************************************** */
-package org.calypsonet.keyple.demo.validation.ui.di
+package org.calypsonet.keyple.demo.validation.di.scope
 
-import android.content.Context
-import dagger.Module
-import dagger.Provides
-import org.calypsonet.keyple.demo.validation.data.LocationRepository
-import org.calypsonet.keyple.demo.validation.ui.di.scope.AppScoped
+import java.lang.annotation.Documented
+import java.lang.annotation.Retention
+import java.lang.annotation.RetentionPolicy
+import javax.inject.Scope
 
-@Suppress("unused")
-@Module
-class LocationModule {
-
-  @Provides
-  @AppScoped
-  fun providesLocationRepository(context: Context): LocationRepository = LocationRepository(context)
-}
+/**
+ * In Dagger, an unscoped component cannot depend on a scoped component. As [AppComponent] is a
+ * scoped component @AppScoped, we create a custom scope to be used by all fragment components.
+ * Additionally, a component with a specific scope cannot have a sub component with the same scope.
+ */
+@Documented @Scope @Retention(RetentionPolicy.RUNTIME) annotation class ActivityScoped

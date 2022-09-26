@@ -9,7 +9,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ************************************************************************************** */
-package org.calypsonet.keyple.demo.validation.ui.activity
+package org.calypsonet.keyple.demo.validation.ui
 
 import android.widget.Toast
 import dagger.android.support.DaggerAppCompatActivity

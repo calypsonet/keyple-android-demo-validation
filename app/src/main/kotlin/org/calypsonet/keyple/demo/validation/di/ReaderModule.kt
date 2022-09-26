@@ -9,12 +9,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ************************************************************************************** */
-package org.calypsonet.keyple.demo.validation.ui.di
+package org.calypsonet.keyple.demo.validation.di
 
 import dagger.Module
 import dagger.Provides
 import org.calypsonet.keyple.demo.validation.data.ReaderRepository
-import org.calypsonet.keyple.demo.validation.ui.di.scope.AppScoped
+import org.calypsonet.keyple.demo.validation.di.scope.AppScoped
 import org.calypsonet.terminal.reader.spi.CardReaderObservationExceptionHandlerSpi
 import timber.log.Timber
 

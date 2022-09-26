@@ -21,7 +21,7 @@ import org.calypsonet.keyple.demo.validation.data.ReaderRepository
 import org.calypsonet.keyple.demo.validation.data.model.CardReaderResponse
 import org.calypsonet.keyple.demo.validation.data.model.Location
 import org.calypsonet.keyple.demo.validation.data.model.ReaderType
-import org.calypsonet.keyple.demo.validation.ui.di.scope.AppScoped
+import org.calypsonet.keyple.demo.validation.di.scope.AppScoped
 import org.calypsonet.terminal.calypso.WriteAccessLevel
 import org.calypsonet.terminal.calypso.card.CalypsoCard
 import org.calypsonet.terminal.calypso.sam.CalypsoSam

@@ -9,22 +9,19 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ************************************************************************************** */
-package org.calypsonet.keyple.demo.validation.ui.rx
+package org.calypsonet.keyple.demo.validation.ui
 
-import io.reactivex.Scheduler
-import javax.inject.Inject
+import android.content.Intent
+import android.os.Bundle
+import kotlinx.android.synthetic.main.activity_home.startBtn
+import org.calypsonet.keyple.demo.validation.R
 
-class SchedulerProvider
-@Inject
-constructor(private val backScheduler: Scheduler, private val foreScheduler: Scheduler) {
+class HomeActivity : BaseActivity() {
 
-  /** IO thread pool scheduler */
-  fun io(): Scheduler {
-    return backScheduler
-  }
-
-  /** Main Thread scheduler */
-  fun ui(): Scheduler {
-    return foreScheduler
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.activity_home)
+    setSupportActionBar(findViewById(R.id.toolbar))
+    startBtn.setOnClickListener { startActivity(Intent(this, ReaderActivity::class.java)) }
   }
 }

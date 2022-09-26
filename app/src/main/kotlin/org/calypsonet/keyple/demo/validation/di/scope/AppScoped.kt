@@ -9,7 +9,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ************************************************************************************** */
-package org.calypsonet.keyple.demo.validation.ui.di.scope
+package org.calypsonet.keyple.demo.validation.di.scope
 
 import java.lang.annotation.Documented
 import java.lang.annotation.Retention
