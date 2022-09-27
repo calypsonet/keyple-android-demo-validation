@@ -127,7 +127,8 @@ class CardRepository {
         val contractPriorities = mutableListOf<Pair<Int, PriorityCode>>()
 
         // ***************** Best Contract Search
-        // Step 7 - Create a list of PriorityCode fields that are different from 0 or 31.
+        // Step 7 - Create a list of PriorityCode fields that are different from FORBIDDEN and
+        // EXPIRED.
         if (event.contractPriority1 != PriorityCode.FORBIDDEN &&
             event.contractPriority1 != PriorityCode.EXPIRED) {
           contractPriorities.add(Pair(1, event.contractPriority1))

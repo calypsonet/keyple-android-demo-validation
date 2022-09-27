@@ -13,7 +13,6 @@ package org.calypsonet.keyple.demo.validation.domain
 
 import android.app.Activity
 import android.content.Context
-import java.util.*
 import javax.inject.Inject
 import org.calypsonet.keyple.demo.common.constant.CardConstant
 import org.calypsonet.keyple.demo.validation.data.CardRepository
@@ -35,6 +34,7 @@ import org.calypsonet.terminal.reader.spi.CardReaderObserverSpi
 import org.eclipse.keyple.card.calypso.CalypsoExtensionService
 import org.eclipse.keyple.core.service.KeyplePluginException
 import org.eclipse.keyple.core.service.SmartCardServiceProvider
+import org.eclipse.keyple.core.util.HexUtil
 import org.joda.time.DateTime
 import timber.log.Timber
 
@@ -47,29 +47,8 @@ class TicketingService @Inject constructor(private var readerRepository: ReaderR
   private lateinit var calypsoSam: CalypsoSam
   private lateinit var calypsoCard: CalypsoCard
   private lateinit var cardSelectionManager: CardSelectionManager
-
-  private val allowedFileStructures: EnumMap<FileStructureEnum, List<String>> =
-      EnumMap(FileStructureEnum::class.java)
-
-  private var indexOfCardSelectionAid1TicIca1 = 0
-  private var indexOfCardSelectionAid1TicIca3 = 0
-  private var indexOfCardSelectionAidIdf = 0
-
-  private var fileStructure: FileStructureEnum? = null
-
-  var cardAid: String? = null
-    private set
   var readersInitialized = false
     private set
-
-  init {
-    allowedFileStructures[FileStructureEnum.FILE_STRUCTURE_02H] =
-        listOf(CardConstant.AID_1TIC_ICA_1)
-    allowedFileStructures[FileStructureEnum.FILE_STRUCTURE_05H] =
-        listOf(CardConstant.AID_1TIC_ICA_1, CardConstant.AID_NORMALIZED_IDF)
-    allowedFileStructures[FileStructureEnum.FILE_STRUCTURE_32H] =
-        listOf(CardConstant.AID_1TIC_ICA_3)
-  }
 
   @Throws(KeyplePluginException::class, IllegalStateException::class, Exception::class)
   fun init(observer: CardReaderObserverSpi?, activity: Activity, readerType: ReaderType) {
@@ -96,7 +75,7 @@ class TicketingService @Inject constructor(private var readerRepository: ReaderR
       Timber.e(e)
     }
     if (samReaders.isNullOrEmpty()) {
-      Timber.w("No SAM reader available")
+      throw IllegalStateException("No SAM reader available")
     }
     // Register a card event observer and init the ticketing session
     cardReader?.let { reader ->
@@ -154,28 +133,25 @@ class TicketingService @Inject constructor(private var readerRepository: ReaderR
     cardSelectionManager = smartCardService.createCardSelectionManager()
 
     // Prepare card selection case #1: 1 TIC ICA 1
-    indexOfCardSelectionAid1TicIca1 =
-        cardSelectionManager.prepareSelection(
-            calypsoExtensionService
-                .createCardSelection()
-                .filterByDfName(CardConstant.AID_1TIC_ICA_1)
-                .filterByCardProtocol(readerRepository.getCardReaderProtocolLogicalName()))
+    cardSelectionManager.prepareSelection(
+        calypsoExtensionService
+            .createCardSelection()
+            .filterByDfName(CardConstant.AID_1TIC_ICA_1)
+            .filterByCardProtocol(readerRepository.getCardReaderProtocolLogicalName()))
 
     // Prepare card selection case #2: 1 TIC ICA 3
-    indexOfCardSelectionAid1TicIca3 =
-        cardSelectionManager.prepareSelection(
-            calypsoExtensionService
-                .createCardSelection()
-                .filterByDfName(CardConstant.AID_1TIC_ICA_3)
-                .filterByCardProtocol(readerRepository.getCardReaderProtocolLogicalName()))
+    cardSelectionManager.prepareSelection(
+        calypsoExtensionService
+            .createCardSelection()
+            .filterByDfName(CardConstant.AID_1TIC_ICA_3)
+            .filterByCardProtocol(readerRepository.getCardReaderProtocolLogicalName()))
 
     // Prepare card selection case #3: Navigo
-    indexOfCardSelectionAidIdf =
-        cardSelectionManager.prepareSelection(
-            calypsoExtensionService
-                .createCardSelection()
-                .filterByDfName(CardConstant.AID_NORMALIZED_IDF)
-                .filterByCardProtocol(readerRepository.getCardReaderProtocolLogicalName()))
+    cardSelectionManager.prepareSelection(
+        calypsoExtensionService
+            .createCardSelection()
+            .filterByDfName(CardConstant.AID_NORMALIZED_IDF)
+            .filterByCardProtocol(readerRepository.getCardReaderProtocolLogicalName()))
 
     // Schedule the execution of the prepared card selection scenario as soon as a card is presented
     cardSelectionManager.scheduleCardSelectionScenario(
@@ -184,44 +160,21 @@ class TicketingService @Inject constructor(private var readerRepository: ReaderR
         ObservableCardReader.NotificationMode.ALWAYS)
   }
 
-  fun parseScheduledCardSelectionsResponse(
-      selectionResponse: ScheduledCardSelectionsResponse?
-  ): CardSelectionResult {
-    Timber.i("selectionResponse = $selectionResponse")
+  fun analyseSelectionResult(
+      scheduledCardSelectionsResponse: ScheduledCardSelectionsResponse
+  ): String? {
+    Timber.i("selectionResponse = $scheduledCardSelectionsResponse")
     val cardSelectionResult: CardSelectionResult =
-        cardSelectionManager.parseScheduledCardSelectionsResponse(selectionResponse)
-    if (cardSelectionResult.activeSelectionIndex != -1) {
-      when (cardSelectionResult.smartCards.keys.first()) {
-        indexOfCardSelectionAid1TicIca1 -> {
-          calypsoCard = cardSelectionResult.activeSmartCard as CalypsoCard
-          fileStructure = FileStructureEnum.findEnumByKey(calypsoCard.applicationSubtype.toInt())
-          cardAid = CardConstant.AID_1TIC_ICA_1
-        }
-        indexOfCardSelectionAid1TicIca3 -> {
-          calypsoCard = cardSelectionResult.activeSmartCard as CalypsoCard
-          cardAid = CardConstant.AID_1TIC_ICA_3
-          fileStructure = FileStructureEnum.findEnumByKey(calypsoCard.applicationSubtype.toInt())
-        }
-        indexOfCardSelectionAidIdf -> {
-          calypsoCard = cardSelectionResult.activeSmartCard as CalypsoCard
-          cardAid = CardConstant.AID_NORMALIZED_IDF
-          fileStructure = FileStructureEnum.findEnumByKey(calypsoCard.applicationSubtype.toInt())
-        }
-        else -> cardAid = CardConstant.AID_OTHER
-      }
+        cardSelectionManager.parseScheduledCardSelectionsResponse(scheduledCardSelectionsResponse)
+    if (cardSelectionResult.activeSelectionIndex == -1) {
+      return "No active card"
     }
-    Timber.i("Card AID = $cardAid")
-    return cardSelectionResult
-  }
-
-  fun checkStructure(): Boolean {
-    if (!allowedFileStructures.containsKey(fileStructure)) {
-      return false
+    calypsoCard = cardSelectionResult.activeSmartCard as CalypsoCard
+    if (calypsoCard.applicationSubtype !in CardConstant.ALLOWED_FILE_STRUCTURES) {
+      return "File structure " + HexUtil.toHex(calypsoCard.applicationSubtype) + "h not supported"
     }
-    if (!allowedFileStructures[fileStructure]!!.contains(cardAid)) {
-      return false
-    }
-    return true
+    Timber.i("Card DF Name = %s", HexUtil.toHex(calypsoCard.dfName))
+    return null
   }
 
   fun executeValidationProcedure(context: Context, locations: List<Location>): CardReaderResponse {
@@ -272,22 +225,5 @@ class TicketingService @Inject constructor(private var readerRepository: ReaderR
       Timber.e("An exception occurred while selecting the SAM.  ${e.message}")
     }
     return false
-  }
-
-  private enum class FileStructureEnum(val key: Int) {
-    FILE_STRUCTURE_02H(0x2),
-    FILE_STRUCTURE_05H(0x5),
-    FILE_STRUCTURE_32H(0x32);
-
-    override fun toString(): String {
-      return "Structure ${Integer.toHexString(key)}h"
-    }
-
-    companion object {
-      fun findEnumByKey(key: Int): FileStructureEnum? {
-        val values = values()
-        return values.find { it.key == key }
-      }
-    }
   }
 }

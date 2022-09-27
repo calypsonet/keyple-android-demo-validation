@@ -28,7 +28,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.calypsonet.keyple.demo.common.constant.CardConstant
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.data.model.AppSettings
 import org.calypsonet.keyple.demo.validation.data.model.CardReaderResponse
@@ -141,38 +140,13 @@ class ReaderActivity : BaseActivity() {
         if (newAppState == AppState.WAIT_SYSTEM_READY) {
           return
         }
-        Timber.i("Process default selection...")
-        val seSelectionResult =
-            ticketingService.parseScheduledCardSelectionsResponse(
-                readerEvent.scheduledCardSelectionsResponse)
-        if (seSelectionResult.activeSelectionIndex == -1) {
+        Timber.i("Process the selection result...")
+        val error =
+            ticketingService.analyseSelectionResult(readerEvent.scheduledCardSelectionsResponse)
+        if (error != null) {
           Timber.e("Card Not selected")
           val error = getString(R.string.card_invalid_aid)
           ticketingService.displayResultFailed()
-          changeDisplay(
-              CardReaderResponse(
-                  status = Status.INVALID_CARD,
-                  contract = null,
-                  validation = null,
-                  errorMessage = error))
-          return
-        }
-        Timber.i("Card AID = ${ticketingService.cardAid}")
-        if (CardConstant.AID_1TIC_ICA_1 != ticketingService.cardAid &&
-            CardConstant.AID_1TIC_ICA_3 != ticketingService.cardAid &&
-            CardConstant.AID_NORMALIZED_IDF != ticketingService.cardAid) {
-          val error = getString(R.string.card_invalid_aid)
-          ticketingService.displayResultFailed()
-          changeDisplay(
-              CardReaderResponse(
-                  status = Status.INVALID_CARD,
-                  contract = null,
-                  validation = null,
-                  errorMessage = error))
-          return
-        }
-        if (!ticketingService.checkStructure()) {
-          val error = getString(R.string.card_invalid_structure)
           changeDisplay(
               CardReaderResponse(
                   status = Status.INVALID_CARD,
