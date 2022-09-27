@@ -50,6 +50,11 @@ class TicketingService @Inject constructor(private var readerRepository: ReaderR
   var readersInitialized = false
     private set
 
+  private var indexOfKeypleGenericCardSelection = 0
+  private var indexOfCdLightGtmlCardSelection = 0
+  private var indexOfCalypsoLightCardSelection = 0
+  private var indexOfNavigoIdfCardSelection = 0
+
   @Throws(KeyplePluginException::class, IllegalStateException::class, Exception::class)
   fun init(observer: CardReaderObserverSpi?, activity: Activity, readerType: ReaderType) {
     // Register plugin
@@ -132,26 +137,37 @@ class TicketingService @Inject constructor(private var readerRepository: ReaderR
     // Get a new card selection manager
     cardSelectionManager = smartCardService.createCardSelectionManager()
 
-    // Prepare card selection case #1: 1 TIC ICA 1
-    cardSelectionManager.prepareSelection(
-        calypsoExtensionService
-            .createCardSelection()
-            .filterByDfName(CardConstant.AID_1TIC_ICA_1)
-            .filterByCardProtocol(readerRepository.getCardReaderProtocolLogicalName()))
+    // Prepare card selection case #1: Keyple generic
+    indexOfKeypleGenericCardSelection =
+        cardSelectionManager.prepareSelection(
+            calypsoExtensionService
+                .createCardSelection()
+                .filterByDfName(CardConstant.AID_KEYPLE_GENERIC)
+                .filterByCardProtocol(readerRepository.getCardReaderProtocolLogicalName()))
 
-    // Prepare card selection case #2: 1 TIC ICA 3
-    cardSelectionManager.prepareSelection(
-        calypsoExtensionService
-            .createCardSelection()
-            .filterByDfName(CardConstant.AID_1TIC_ICA_3)
-            .filterByCardProtocol(readerRepository.getCardReaderProtocolLogicalName()))
+    // Prepare card selection case #2: CD LIGHT/GTML
+    indexOfCdLightGtmlCardSelection =
+        cardSelectionManager.prepareSelection(
+            calypsoExtensionService
+                .createCardSelection()
+                .filterByDfName(CardConstant.AID_CD_LIGHT_GTML)
+                .filterByCardProtocol(readerRepository.getCardReaderProtocolLogicalName()))
 
-    // Prepare card selection case #3: Navigo
-    cardSelectionManager.prepareSelection(
-        calypsoExtensionService
-            .createCardSelection()
-            .filterByDfName(CardConstant.AID_NORMALIZED_IDF)
-            .filterByCardProtocol(readerRepository.getCardReaderProtocolLogicalName()))
+    // Prepare card selection case #3: CALYPSO LIGHT
+    indexOfCalypsoLightCardSelection =
+        cardSelectionManager.prepareSelection(
+            calypsoExtensionService
+                .createCardSelection()
+                .filterByDfName(CardConstant.AID_CALYPSO_LIGHT)
+                .filterByCardProtocol(readerRepository.getCardReaderProtocolLogicalName()))
+
+    // Prepare card selection case #4: Navigo IDF
+    indexOfNavigoIdfCardSelection =
+        cardSelectionManager.prepareSelection(
+            calypsoExtensionService
+                .createCardSelection()
+                .filterByDfName(CardConstant.AID_NORMALIZED_IDF)
+                .filterByCardProtocol(readerRepository.getCardReaderProtocolLogicalName()))
 
     // Schedule the execution of the prepared card selection scenario as soon as a card is presented
     cardSelectionManager.scheduleCardSelectionScenario(
@@ -170,6 +186,17 @@ class TicketingService @Inject constructor(private var readerRepository: ReaderR
       return "No active card"
     }
     calypsoCard = cardSelectionResult.activeSmartCard as CalypsoCard
+    // check is the DF name is the expected one (Req. TL-SEL-AIDMATCH.1)
+    if ((cardSelectionResult.activeSelectionIndex == indexOfKeypleGenericCardSelection &&
+        !calypsoCard.dfName.contentEquals(CardConstant.DFNAME_KEYPLE_GENERIC)) ||
+        (cardSelectionResult.activeSelectionIndex == indexOfCdLightGtmlCardSelection &&
+            !calypsoCard.dfName.contentEquals(CardConstant.DFNAME_CD_LIGHT_GTML)) ||
+        (cardSelectionResult.activeSelectionIndex == indexOfCalypsoLightCardSelection &&
+            !calypsoCard.dfName.contentEquals(CardConstant.DFNAME_CALYPSO_LIGHT)) ||
+        (cardSelectionResult.activeSelectionIndex == indexOfNavigoIdfCardSelection &&
+            !calypsoCard.dfName.contentEquals(CardConstant.DFNAME_NORMALIZED_IDF))) {
+      return "Unexpected DF name."
+    }
     if (calypsoCard.applicationSubtype !in CardConstant.ALLOWED_FILE_STRUCTURES) {
       return "File structure " + HexUtil.toHex(calypsoCard.applicationSubtype) + "h not supported"
     }
