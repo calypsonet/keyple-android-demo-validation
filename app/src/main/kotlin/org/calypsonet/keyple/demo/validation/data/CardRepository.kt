@@ -216,10 +216,10 @@ class CardRepository {
 
             // Step 11.5.1 - Read and unpack the counter associated to the contract (1st counter for
             // Contract #1 and so forth).
-            cardTransaction.prepareReadCounter(CardConstant.SFI_COUNTER, COUNTER_RECORDS_NB)
+            cardTransaction.prepareReadCounter(CardConstant.SFI_COUNTERS, COUNTER_RECORDS_NB)
             cardTransaction.processCommands()
 
-            val efCounter = calypsoCard.getFileBySfi(CardConstant.SFI_COUNTER)
+            val efCounter = calypsoCard.getFileBySfi(CardConstant.SFI_COUNTERS)
             val counterValue = efCounter.data.getContentAsCounterValue(record)
 
             // Step 11.5.2 - If the counter value is 0 update the associated ContractPriorty field
@@ -256,7 +256,7 @@ class CardRepository {
                     else -> 0
                   }
               if (decrement > 0) {
-                cardTransaction.prepareDecreaseCounter(CardConstant.SFI_COUNTER, record, decrement)
+                cardTransaction.prepareDecreaseCounter(CardConstant.SFI_COUNTERS, record, decrement)
 
                 cardTransaction.processCommands()
                 nbTicketsLeft = counterValue - decrement
