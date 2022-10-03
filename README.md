@@ -13,7 +13,7 @@ The code can be easily adapted to other cards, terminals and business logic.
 It shows how to check if a card is authorized to enter a controlled area (entering the transport network with
 a Season Pass and/or Multi-trip ticket), a validation event is added in the event log to be checked by the
 [Keyple Demo Control](https://github.com/calypsonet/keyple-android-demo-control)  application.
-The contracts are loaded in the Calypso card with the Android application of the [Keyple Remote Demo package](https://github.com/calypsonet/keyple-java-demo-remote).
+The contracts are loaded in the Calypso card with the Android application of the [Keyple Reload Demo package](https://github.com/calypsonet/keyple-java-demo-remote).
 
 The demo application was tested on the following terminals:
 - `Famoco FX205` via the open source plugins [Famoco](https://github.com/calypsonet/keyple-famoco) (for SAM access) and [Android NFC](https://keyple.org/components-java/plugins/nfc/) (for card access).
@@ -28,12 +28,12 @@ As all the exchanges made with the card are cryptographically secured by a secur
 ## Keyple Demos
 
 This demo is part of a set of three demos:
-* [Keyple Remote Demo](https://github.com/calypsonet/keyple-java-demo-remote)
+* [Keyple Reload Demo](https://github.com/calypsonet/keyple-java-demo-remote)
 * [Keyple Validation Demo](https://github.com/calypsonet/keyple-android-demo-validation)
 * [Keyple Control Demo](https://github.com/calypsonet/keyple-android-demo-control)
 
 These demos are all based on a common library that defines elements such as constants and data structures implemented 
-for the logic of the ticketing application.: [Keyple Demo Common Library](https://github.com/calypsonet/keyple-demo-common-lib).
+for the logic of the ticketing application: [Keyple Demo Common Library](https://github.com/calypsonet/keyple-demo-common-lib).
 
 Please refer to the [README](https://github.com/calypsonet/keyple-demo-common-lib/blob/main/README.md) 
 file of this library to discover these data structures.
