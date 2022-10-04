@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/ic_img_bg_valideur"
-    tools:context="org.calypsonet.keyple.demo.validation.android.activity.DeviceSelectionActivity">
+    tools:context="org.calypsonet.keyple.demo.validation.ui.deviceselection.DeviceSelectionActivity">
 
     <include layout="@layout/logo_toolbar" android:id="@+id/appBarLayout"/>
 
