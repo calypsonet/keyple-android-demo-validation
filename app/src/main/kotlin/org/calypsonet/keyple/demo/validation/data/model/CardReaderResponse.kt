@@ -12,7 +12,8 @@
 package org.calypsonet.keyple.demo.validation.data.model
 
 import android.os.Parcelable
-import java.util.Date
+import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
@@ -21,7 +22,7 @@ data class CardReaderResponse(
     val nbTicketsLeft: Int? = null,
     val contract: String?,
     val validation: Validation?,
-    val eventDate: Date? = null,
-    val passValidityEndDate: Date? = null,
+    val eventDateTime: LocalDateTime? = null,
+    val passValidityEndDate: LocalDate? = null,
     val errorMessage: String? = null
 ) : Parcelable

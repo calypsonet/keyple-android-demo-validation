@@ -12,8 +12,8 @@
 package org.calypsonet.keyple.demo.validation.data
 
 import android.content.Context
-import java.util.Calendar
-import java.util.Date
+import java.time.LocalDate
+import java.time.LocalDateTime
 import org.calypsonet.keyple.demo.common.constant.CardConstant
 import org.calypsonet.keyple.demo.common.model.EventStructure
 import org.calypsonet.keyple.demo.common.model.type.DateCompact
@@ -36,13 +36,12 @@ import org.calypsonet.terminal.calypso.transaction.CardSecuritySetting
 import org.calypsonet.terminal.calypso.transaction.CardTransactionManager
 import org.calypsonet.terminal.reader.CardReader
 import org.eclipse.keyple.card.calypso.CalypsoExtensionService
-import org.joda.time.DateTime
 import timber.log.Timber
 
 class CardRepository {
 
   fun executeValidationProcedure(
-      now: DateTime,
+      validationDateTime: LocalDateTime,
       context: Context,
       validationAmount: Int,
       cardReader: CardReader,
@@ -54,8 +53,7 @@ class CardRepository {
     var status: Status = Status.LOADING
     var errorMessage: String? = null
     val cardTransaction: CardTransactionManager?
-    var eventDate: Date? = null
-    var passValidityEndDate: Date? = null
+    var passValidityEndDate: LocalDate? = null
     var nbTicketsLeft: Int? = null
     var validation: Validation? = null
 
@@ -95,8 +93,7 @@ class CardRepository {
 
         // Step 4 - If EnvEndDate points to a date in the past reject the card. <Abort Secure
         // Session>
-        val envEndDate = DateTime(environment.envEndDate.date)
-        if (envEndDate.isBefore(now)) {
+        if (environment.envEndDate.getDate().isBefore(validationDateTime.toLocalDate())) {
           status = Status.INVALID_CARD
           throw RuntimeException("Environment Error: end date expired")
         }
@@ -196,8 +193,10 @@ class CardRepository {
           // Step 11.4 - If ContractValidityEndDate points to a date in the past update the
           // associated ContractPriorty field present in the persistent object to 31 and move to the
           // next element in the list
-          val contractValidityEndDate = DateTime(contract.contractValidityEndDate.date)
-          if (contractValidityEndDate.isBefore(now)) {
+          if (contract
+              .contractValidityEndDate
+              .getDate()
+              .isBefore(validationDateTime.toLocalDate())) {
             when (record) {
               1 -> priority1 = PriorityCode.EXPIRED
               2 -> priority2 = PriorityCode.EXPIRED
@@ -263,7 +262,7 @@ class CardRepository {
               }
             }
           } else if (contractPriority == PriorityCode.SEASON_PASS) {
-            passValidityEndDate = contract.contractValidityEndDate.date
+            passValidityEndDate = contract.contractValidityEndDate.getDate()
           }
 
           // We will create a new event for this contract
@@ -277,15 +276,11 @@ class CardRepository {
           val eventToWrite: EventStructure
           if (contractUsed > 0) {
             // Create a new validation event
-            val calendar = Calendar.getInstance()
-            calendar.time = now.toDate()
-            calendar.set(Calendar.MILLISECOND, 0)
-            eventDate = calendar.time
             eventToWrite =
                 EventStructure(
                     eventVersionNumber = VersionNumber.CURRENT_VERSION,
-                    eventDateStamp = DateCompact(eventDate),
-                    eventTimeStamp = TimeCompact(eventDate),
+                    eventDateStamp = DateCompact(validationDateTime.toLocalDate()),
+                    eventTimeStamp = TimeCompact(validationDateTime),
                     eventLocation = AppSettings.location.id,
                     eventContractUsed = contractUsed,
                     contractPriority1 = priority1,
@@ -351,7 +346,7 @@ class CardRepository {
         validation = validation,
         errorMessage = errorMessage,
         passValidityEndDate = passValidityEndDate,
-        eventDate = eventDate)
+        eventDateTime = validationDateTime)
   }
 
   companion object {

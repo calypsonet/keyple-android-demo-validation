@@ -14,7 +14,7 @@ package org.calypsonet.keyple.demo.validation.ui
 import android.os.Bundle
 import android.view.View
 import androidx.core.content.ContextCompat
-import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlinx.android.synthetic.main.activity_card_summary.animation
 import kotlinx.android.synthetic.main.activity_card_summary.bigText
@@ -44,8 +44,8 @@ class CardSummaryActivity : BaseActivity() {
         mainView.setBackgroundColor(ContextCompat.getColor(this, R.color.green))
         bigText.setText(R.string.valid_main_desc)
         val eventDate =
-            SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.getDefault())
-                .format(cardReaderResponse.eventDate!!)
+            cardReaderResponse.eventDateTime!!.format(
+                DateTimeFormatter.ofPattern("dd MMMM yyyy, HH:mm", Locale.ENGLISH))
         location_time.text =
             getString(
                 R.string.valid_location_time,
@@ -61,7 +61,8 @@ class CardSummaryActivity : BaseActivity() {
               }
         } else {
           val validityEndDate =
-              SimpleDateFormat("dd/MM/yyyy").format(cardReaderResponse.passValidityEndDate!!)
+              cardReaderResponse.passValidityEndDate!!.format(
+                  DateTimeFormatter.ofPattern("dd/MM/yyyy"))
           smallDesc.text = getString(R.string.valid_season_ticket, validityEndDate)
         }
         mediumText.setText(R.string.valid_last_desc)

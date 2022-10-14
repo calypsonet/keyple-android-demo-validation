@@ -13,6 +13,7 @@ package org.calypsonet.keyple.demo.validation.domain
 
 import android.app.Activity
 import android.content.Context
+import java.time.LocalDateTime
 import javax.inject.Inject
 import org.calypsonet.keyple.demo.common.constant.CardConstant
 import org.calypsonet.keyple.demo.validation.data.CardRepository
@@ -35,7 +36,6 @@ import org.eclipse.keyple.card.calypso.CalypsoExtensionService
 import org.eclipse.keyple.core.service.KeyplePluginException
 import org.eclipse.keyple.core.service.SmartCardServiceProvider
 import org.eclipse.keyple.core.util.HexUtil
-import org.joda.time.DateTime
 import timber.log.Timber
 
 @AppScoped
@@ -213,7 +213,7 @@ class TicketingService @Inject constructor(private var readerRepository: ReaderR
             calypsoCard = calypsoCard,
             cardSecuritySettings = getSecuritySettings()!!,
             locations = locations,
-            now = DateTime.now())
+            validationDateTime = LocalDateTime.now())
   }
 
   private fun getSecuritySettings(): CardSecuritySetting? {
