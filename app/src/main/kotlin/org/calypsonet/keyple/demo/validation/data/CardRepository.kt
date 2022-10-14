@@ -53,7 +53,6 @@ class CardRepository {
     var status: Status = Status.LOADING
     var errorMessage: String? = null
     val cardTransaction: CardTransactionManager?
-    var eventDate: LocalDateTime? = null
     var passValidityEndDate: LocalDate? = null
     var nbTicketsLeft: Int? = null
     var validation: Validation? = null
@@ -347,7 +346,7 @@ class CardRepository {
         validation = validation,
         errorMessage = errorMessage,
         passValidityEndDate = passValidityEndDate,
-        eventDate = eventDate)
+        eventDate = validationDateTime)
   }
 
   companion object {
