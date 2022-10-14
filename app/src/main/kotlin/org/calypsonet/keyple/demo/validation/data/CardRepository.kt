@@ -94,7 +94,7 @@ class CardRepository {
 
         // Step 4 - If EnvEndDate points to a date in the past reject the card. <Abort Secure
         // Session>
-        if (environment.envEndDate.getDate() < now.toLocalDate()) {
+        if (environment.envEndDate.getDate().isBefore(now.toLocalDate())) {
           status = Status.INVALID_CARD
           throw RuntimeException("Environment Error: end date expired")
         }
@@ -194,7 +194,7 @@ class CardRepository {
           // Step 11.4 - If ContractValidityEndDate points to a date in the past update the
           // associated ContractPriorty field present in the persistent object to 31 and move to the
           // next element in the list
-          if (contract.contractValidityEndDate.getDate() < now.toLocalDate()) {
+          if (contract.contractValidityEndDate.getDate().isBefore(now.toLocalDate())) {
             when (record) {
               1 -> priority1 = PriorityCode.EXPIRED
               2 -> priority2 = PriorityCode.EXPIRED
