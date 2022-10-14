@@ -71,9 +71,6 @@ RxAndroid: Reactive Extensions for Android (2.0.2):
 
  * Licence: Apache Software License, 2.0
 
-Joda Time Library (2.8.1):
-
- * Licence: Apache Software License, 2.0
 
 Bit-lib4j (1.4.5):
 
