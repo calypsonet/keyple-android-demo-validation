@@ -45,7 +45,7 @@ class CardSummaryActivity : BaseActivity() {
         bigText.setText(R.string.valid_main_desc)
         val eventDate =
             cardReaderResponse.eventDate!!.format(
-                DateTimeFormatter.ofPattern("dd MMMM yyyy, HH:mm", Locale.getDefault()))
+                DateTimeFormatter.ofPattern("dd MMMM yyyy, HH:mm", Locale.ENGLISH))
         location_time.text =
             getString(
                 R.string.valid_location_time,
@@ -62,7 +62,7 @@ class CardSummaryActivity : BaseActivity() {
         } else {
           val validityEndDate =
               cardReaderResponse.passValidityEndDate!!.format(
-                  DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.getDefault()))
+                  DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.ENGLISH))
           smallDesc.text = getString(R.string.valid_season_ticket, validityEndDate)
         }
         mediumText.setText(R.string.valid_last_desc)
