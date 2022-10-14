@@ -213,7 +213,7 @@ class TicketingService @Inject constructor(private var readerRepository: ReaderR
             calypsoCard = calypsoCard,
             cardSecuritySettings = getSecuritySettings()!!,
             locations = locations,
-            now = LocalDateTime.now())
+            validationDateTime = LocalDateTime.now())
   }
 
   private fun getSecuritySettings(): CardSecuritySetting? {

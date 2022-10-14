@@ -346,7 +346,7 @@ class CardRepository {
         validation = validation,
         errorMessage = errorMessage,
         passValidityEndDate = passValidityEndDate,
-        eventDate = validationDateTime)
+        eventDateTime = validationDateTime)
   }
 
   companion object {

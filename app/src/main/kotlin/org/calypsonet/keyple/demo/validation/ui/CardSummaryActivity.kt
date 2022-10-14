@@ -44,7 +44,7 @@ class CardSummaryActivity : BaseActivity() {
         mainView.setBackgroundColor(ContextCompat.getColor(this, R.color.green))
         bigText.setText(R.string.valid_main_desc)
         val eventDate =
-            cardReaderResponse.eventDate!!.format(
+            cardReaderResponse.eventDateTime!!.format(
                 DateTimeFormatter.ofPattern("dd MMMM yyyy, HH:mm", Locale.ENGLISH))
         location_time.text =
             getString(
@@ -62,7 +62,7 @@ class CardSummaryActivity : BaseActivity() {
         } else {
           val validityEndDate =
               cardReaderResponse.passValidityEndDate!!.format(
-                  DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.ENGLISH))
+                  DateTimeFormatter.ofPattern("dd/MM/yyyy"))
           smallDesc.text = getString(R.string.valid_season_ticket, validityEndDate)
         }
         mediumText.setText(R.string.valid_last_desc)

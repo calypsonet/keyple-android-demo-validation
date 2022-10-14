@@ -22,7 +22,7 @@ data class CardReaderResponse(
     val nbTicketsLeft: Int? = null,
     val contract: String?,
     val validation: Validation?,
-    val eventDate: LocalDateTime? = null,
+    val eventDateTime: LocalDateTime? = null,
     val passValidityEndDate: LocalDate? = null,
     val errorMessage: String? = null
 ) : Parcelable

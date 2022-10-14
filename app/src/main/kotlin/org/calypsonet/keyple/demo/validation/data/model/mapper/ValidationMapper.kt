@@ -19,7 +19,7 @@ object ValidationMapper {
   fun map(event: EventStructure, locations: List<Location>): Validation {
     return Validation(
         name = "Event name",
-        date = event.eventDatetime,
+        dateTime = event.eventDatetime,
         location = LocationMapper.map(locations, event),
         destination = null,
         provider = null)
