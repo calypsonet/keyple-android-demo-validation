@@ -144,8 +144,7 @@ class ReaderActivity : BaseActivity() {
         val error =
             ticketingService.analyseSelectionResult(readerEvent.scheduledCardSelectionsResponse)
         if (error != null) {
-          Timber.e("Card Not selected")
-          val error = getString(R.string.card_invalid_aid)
+          Timber.e("Card not selected: %s", error)
           ticketingService.displayResultFailed()
           changeDisplay(
               CardReaderResponse(
@@ -257,7 +256,7 @@ class ReaderActivity : BaseActivity() {
   private inner class CardReaderObserver : CardReaderObserverSpi {
 
     override fun onReaderEvent(readerEvent: CardReaderEvent?) {
-      Timber.i("New ReaderEvent received :${readerEvent?.type?.name}")
+      Timber.i("New ReaderEvent received:${readerEvent?.type?.name}")
       handleAppEvents(currentAppState, readerEvent)
     }
   }

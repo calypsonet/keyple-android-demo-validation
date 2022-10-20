@@ -88,14 +88,14 @@ class CardRepository {
         // for the current version) reject the card. <Abort Secure Session>
         if (environment.envVersionNumber != VersionNumber.CURRENT_VERSION) {
           status = Status.INVALID_CARD
-          throw RuntimeException("Environment Error: wrong version number")
+          throw RuntimeException("Environment error: wrong version number")
         }
 
         // Step 4 - If EnvEndDate points to a date in the past reject the card. <Abort Secure
         // Session>
         if (environment.envEndDate.getDate().isBefore(validationDateTime.toLocalDate())) {
           status = Status.INVALID_CARD
-          throw RuntimeException("Environment Error: end date expired")
+          throw RuntimeException("Environment error: end date expired")
         }
 
         // Step 5 - Read and unpack the last event record.
@@ -113,10 +113,10 @@ class CardRepository {
         if (eventVersionNumber != VersionNumber.CURRENT_VERSION) {
           if (eventVersionNumber == VersionNumber.UNDEFINED) {
             status = Status.EMPTY_CARD
-            throw RuntimeException("Event - Card is empty")
+            throw RuntimeException("Event error: card is empty")
           } else {
             status = Status.INVALID_CARD
-            throw RuntimeException("Event - Wrong version number")
+            throw RuntimeException("Event error: wrong version number")
           }
         }
 
@@ -289,7 +289,7 @@ class CardRepository {
                     contractPriority4 = priority4)
             validation = ValidationMapper.map(eventToWrite, locations)
 
-            Timber.i("Validation procedure result : SUCCESS")
+            Timber.i("Validation procedure result: SUCCESS")
             status = Status.SUCCESS
             errorMessage = null
           } else {
@@ -312,7 +312,7 @@ class CardRepository {
           cardTransaction.prepareUpdateRecord(CardConstant.SFI_EVENTS_LOG, 1, eventBytesToWrite)
           cardTransaction.processCommands()
         } else {
-          Timber.i("Validation procedure result : Failed - No valid contract found")
+          Timber.i("Validation procedure result: Failed - No valid contract found")
           if (errorMessage.isNullOrEmpty()) {
             errorMessage = context.getString(R.string.no_valid_title_detected)
           }

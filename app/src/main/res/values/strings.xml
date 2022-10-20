@@ -11,8 +11,8 @@
     <string name="version">version %s</string>
 
     <string name="quit">Quitter</string>
-    <string name="reader_plugin">Reader plugin : %s</string>
-    <string name="sam_plugin">Sam plugin : %s</string>
+    <string name="reader_plugin">Reader plugin: %s</string>
+    <string name="sam_plugin">Sam plugin: %s</string>
     <string name="present_card">Please present your contactless support for validation</string>
     <string name="no_trips_left">No trips left</string>
     <string name="expired_title">Expired title</string>
@@ -52,10 +52,10 @@
 
     <!-- Error screen -->
     <string name="card_invalid_title">Card not valid</string>
-    <string name="card_invalid_aid">Selection error : AID not found.</string>
+    <string name="card_invalid_aid">Selection error: AID not found.</string>
     <string name="card_invalid_default">Invalid card</string>
     <string name="card_invalid_main_desc">Invalid on this network</string>
-    <string name="card_invalid_structure">Selection error : Unknown structure.</string>
+    <string name="card_invalid_structure">Selection error: Unknown structure.</string>
     <string name="card_invalid_small_desc">This is a \"%s\" card.</string>
 
     <!--    Dialog-->
