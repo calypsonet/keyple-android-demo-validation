@@ -17,7 +17,7 @@
         <activity
             android:name="org.calypsonet.keyple.demo.validation.ui.MainActivity"
             android:theme="@style/AppTheme.NoActionBar"
-            android:screenOrientation="portrait"
+            android:screenOrientation="fullUser"
             android:launchMode="singleTop"
             android:configChanges="orientation|keyboardHidden">
             <intent-filter>
@@ -32,7 +32,7 @@
             android:name="org.calypsonet.keyple.demo.validation.ui.ReaderActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:launchMode="singleTop"
-            android:screenOrientation="portrait">
+            android:screenOrientation="fullUser">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
             </intent-filter>
@@ -41,25 +41,25 @@
             android:name="org.calypsonet.keyple.demo.validation.ui.CardSummaryActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:launchMode="singleTop"
-            android:screenOrientation="portrait"
+            android:screenOrientation="fullUser"
             android:configChanges="orientation|keyboardHidden"/>
         <activity
             android:name="org.calypsonet.keyple.demo.validation.ui.HomeActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:launchMode="singleTop"
-            android:screenOrientation="portrait"
+            android:screenOrientation="fullUser"
             android:configChanges="orientation|keyboardHidden"/>
         <activity
             android:name="org.calypsonet.keyple.demo.validation.ui.SettingsActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:launchMode="singleTop"
-            android:screenOrientation="portrait"
+            android:screenOrientation="fullUser"
             android:configChanges="orientation|keyboardHidden" />
         <activity
             android:name="org.calypsonet.keyple.demo.validation.ui.deviceselection.DeviceSelectionActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:launchMode="singleTop"
-            android:screenOrientation="portrait"
+            android:screenOrientation="fullUser"
             android:configChanges="orientation|keyboardHidden" />
     </application>
 </manifest>
