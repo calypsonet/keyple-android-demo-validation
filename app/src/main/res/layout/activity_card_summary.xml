@@ -73,7 +73,7 @@
         app:layout_constraintEnd_toEndOf="@id/guidelineRightTxt"
         app:layout_constraintStart_toStartOf="@id/guidelineLeftTxt"
         app:layout_constraintTop_toBottomOf="@id/animation"
-        tools:text="Validation completed !" />
+        tools:text="Validation completed!" />
 
     <TextView
         android:id="@+id/location_time"
@@ -112,6 +112,6 @@
         app:layout_constraintEnd_toEndOf="@id/guidelineRightTxt"
         app:layout_constraintStart_toStartOf="@id/guidelineLeftTxt"
         app:layout_constraintTop_toBottomOf="@id/smallDesc"
-        tools:text="Have a nice trip !" />
+        tools:text="Have a nice trip!" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

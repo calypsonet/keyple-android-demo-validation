@@ -46,6 +46,7 @@ import org.eclipse.keyple.core.service.SmartCardServiceProvider
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcPlugin
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcPluginFactoryProvider
 import org.eclipse.keyple.plugin.android.nfc.AndroidNfcReader
+import org.eclipse.keyple.plugin.android.nfc.AndroidNfcSupportedProtocols
 
 class ReaderRepository
 @Inject
@@ -57,8 +58,7 @@ constructor(
   // Card
   private lateinit var cardPluginName: String
   private lateinit var cardReaderName: String
-  private lateinit var cardReaderProtocolPhysicalName: String
-  private lateinit var cardReaderProtocolLogicalName: String
+  private var cardReaderProtocols = mutableMapOf<String, String>()
   private var cardReader: CardReader? = null
   // SAM
   private lateinit var samPluginName: String
@@ -84,49 +84,50 @@ constructor(
     readerType = ReaderType.BLUEBIRD
     cardPluginName = BluebirdPlugin.PLUGIN_NAME
     cardReaderName = BluebirdContactlessReader.READER_NAME
-    cardReaderProtocolPhysicalName = BluebirdSupportContactlessProtocols.ISO_14443_4_B.name
-    cardReaderProtocolLogicalName = BluebirdSupportContactlessProtocols.ISO_14443_4_B.name
+    cardReaderProtocols.put(
+        BluebirdSupportContactlessProtocols.ISO_14443_4_A.name, CALYPSO_CARD_LOGICAL_PROTOCOL)
+    cardReaderProtocols.put(
+        BluebirdSupportContactlessProtocols.ISO_14443_4_B.name, CALYPSO_CARD_LOGICAL_PROTOCOL)
     samPluginName = BluebirdPlugin.PLUGIN_NAME
     samReaderNameRegex = ".*ContactReader"
     samReaderName = BluebirdContactReader.READER_NAME
-    samReaderProtocolPhysicalName = "ISO_7816_3"
-    samReaderProtocolLogicalName = "ISO_7816_3"
+    samReaderProtocolPhysicalName = ContactCardCommonProtocols.ISO_7816_3.name
+    samReaderProtocolLogicalName = CALYPSO_SAM_LOGICAL_PROTOCOL
   }
 
   private fun initCoppernicReader() {
     readerType = ReaderType.COPPERNIC
     cardPluginName = Cone2Plugin.PLUGIN_NAME
     cardReaderName = Cone2ContactlessReader.READER_NAME
-    cardReaderProtocolPhysicalName = ParagonSupportedContactlessProtocols.ISO_14443.name
-    cardReaderProtocolLogicalName = ParagonSupportedContactlessProtocols.ISO_14443.name
+    cardReaderProtocols.put(
+        ParagonSupportedContactlessProtocols.ISO_14443.name, CALYPSO_CARD_LOGICAL_PROTOCOL)
     samPluginName = Cone2Plugin.PLUGIN_NAME
     samReaderNameRegex = ".*ContactReader_1"
     samReaderName = "${Cone2ContactReader.READER_NAME}_1"
     samReaderProtocolPhysicalName =
         ParagonSupportedContactProtocols.INNOVATRON_HIGH_SPEED_PROTOCOL.name
-    samReaderProtocolLogicalName =
-        ParagonSupportedContactProtocols.INNOVATRON_HIGH_SPEED_PROTOCOL.name
+    samReaderProtocolLogicalName = CALYPSO_SAM_LOGICAL_PROTOCOL
   }
 
   private fun initFamocoReader() {
     readerType = ReaderType.FAMOCO
     cardPluginName = AndroidNfcPlugin.PLUGIN_NAME
     cardReaderName = AndroidNfcReader.READER_NAME
-    cardReaderProtocolPhysicalName = "ISO_14443_4"
-    cardReaderProtocolLogicalName = "ISO_14443_4"
+    cardReaderProtocols.put(
+        AndroidNfcSupportedProtocols.ISO_14443_4.name, CALYPSO_CARD_LOGICAL_PROTOCOL)
     samPluginName = AndroidFamocoPlugin.PLUGIN_NAME
     samReaderNameRegex = ".*FamocoReader"
     samReaderName = AndroidFamocoReader.READER_NAME
     samReaderProtocolPhysicalName = ContactCardCommonProtocols.ISO_7816_3.name
-    samReaderProtocolLogicalName = ContactCardCommonProtocols.ISO_7816_3.name
+    samReaderProtocolLogicalName = CALYPSO_SAM_LOGICAL_PROTOCOL
   }
 
   private fun initFlowbirdReader() {
     readerType = ReaderType.FLOWBIRD
     cardPluginName = FlowbirdPlugin.PLUGIN_NAME
     cardReaderName = FlowbirdContactlessReader.READER_NAME
-    cardReaderProtocolPhysicalName = FlowbirdSupportContactlessProtocols.ALL.key
-    cardReaderProtocolLogicalName = FlowbirdSupportContactlessProtocols.ALL.key
+    cardReaderProtocols.put(
+        FlowbirdSupportContactlessProtocols.ALL.key, CALYPSO_CARD_LOGICAL_PROTOCOL)
     samPluginName = FlowbirdPlugin.PLUGIN_NAME
     samReaderNameRegex = ".*ContactReader_0"
     samReaderName = "${FlowbirdContactReader.READER_NAME}_${(SamSlot.ONE.slotId)}"
@@ -177,8 +178,9 @@ constructor(
     cardReader =
         SmartCardServiceProvider.getService().getPlugin(cardPluginName)?.getReader(cardReaderName)
     cardReader?.let {
-      (it as ConfigurableCardReader).activateProtocol(
-          cardReaderProtocolPhysicalName, cardReaderProtocolLogicalName)
+      cardReaderProtocols.forEach { entry ->
+        (it as ConfigurableCardReader).activateProtocol(entry.key, entry.value)
+      }
       (cardReader as ObservableCardReader).setReaderObservationExceptionHandler(
           readerObservationExceptionHandler)
     }
@@ -190,7 +192,7 @@ constructor(
   }
 
   fun getCardReaderProtocolLogicalName(): String {
-    return cardReaderProtocolLogicalName
+    return CALYPSO_CARD_LOGICAL_PROTOCOL
   }
 
   @Throws(KeyplePluginException::class)
@@ -236,7 +238,9 @@ constructor(
   }
 
   fun clear() {
-    (cardReader as ConfigurableCardReader).deactivateProtocol(cardReaderProtocolPhysicalName)
+    cardReaderProtocols.forEach { entry ->
+      (cardReader as ConfigurableCardReader).deactivateProtocol(entry.key)
+    }
     samReaders.forEach {
       if (it is ConfigurableCardReader) {
         it.deactivateProtocol(samReaderProtocolPhysicalName)
@@ -266,5 +270,10 @@ constructor(
       errorMedia.start()
     }
     return true
+  }
+
+  companion object {
+    private const val CALYPSO_CARD_LOGICAL_PROTOCOL = "CalypsoCardProtocol"
+    private const val CALYPSO_SAM_LOGICAL_PROTOCOL = "CalypsoSamProtocol"
   }
 }

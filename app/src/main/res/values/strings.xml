@@ -13,12 +13,12 @@
     <string name="quit">Quitter</string>
     <string name="reader_plugin">Reader plugin : %s</string>
     <string name="sam_plugin">Sam plugin : %s</string>
-    <string name="present_card">Please present your contactless support</string>
+    <string name="present_card">Please present your contactless support for validation</string>
     <string name="no_trips_left">No trips left</string>
     <string name="expired_title">Expired title</string>
     <string name="no_valid_title_detected">No valid title detected</string>
-    <string name="no_tickets_small_desc">Please recharge your support.</string>
-    <string name="valid_main_desc">Validation completed !</string>
+    <string name="no_tickets_small_desc">Please reload your support.</string>
+    <string name="valid_main_desc">Validation completed!</string>
     <string name="valid_location_time">%s\n%s</string>
     <string name="valid_trips_left_zero">You have no trip left</string>
     <string name="valid_trips_left_single">You have 1 trip left</string>
