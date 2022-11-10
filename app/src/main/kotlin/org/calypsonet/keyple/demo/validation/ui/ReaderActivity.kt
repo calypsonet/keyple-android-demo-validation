@@ -24,6 +24,7 @@ import java.util.TimerTask
 import kotlinx.android.synthetic.main.activity_card_reader.animation
 import kotlinx.android.synthetic.main.activity_card_reader.mainView
 import kotlinx.android.synthetic.main.activity_card_reader.presentCardTv
+import kotlinx.android.synthetic.main.activity_card_summary.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -31,6 +32,7 @@ import kotlinx.coroutines.withContext
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.data.model.AppSettings
 import org.calypsonet.keyple.demo.validation.data.model.CardReaderResponse
+import org.calypsonet.keyple.demo.validation.data.model.ReaderType
 import org.calypsonet.keyple.demo.validation.data.model.Status
 import org.calypsonet.keyple.demo.validation.di.scope.ActivityScoped
 import org.calypsonet.terminal.reader.CardReaderEvent
@@ -72,7 +74,9 @@ class ReaderActivity : BaseActivity() {
 
   override fun onResume() {
     super.onResume()
-    animation.playAnimation()
+    if (AppSettings.readerType != ReaderType.FLOWBIRD) {
+      animation.playAnimation()
+    }
     if (!ticketingService.readersInitialized) {
       GlobalScope.launch {
         withContext(Dispatchers.Main) { showProgress() }
@@ -212,7 +216,9 @@ class ReaderActivity : BaseActivity() {
         presentCardTv.visibility = View.GONE
         mainView.setBackgroundColor(ContextCompat.getColor(this, R.color.turquoise))
         supportActionBar?.show()
-        animation.playAnimation()
+        if (AppSettings.readerType != ReaderType.FLOWBIRD) {
+          animation.playAnimation()
+        }
         animation.repeatCount = LottieDrawable.INFINITE
       } else {
         runOnUiThread { animation.cancelAnimation() }

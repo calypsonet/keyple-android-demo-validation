@@ -23,7 +23,9 @@ import kotlinx.android.synthetic.main.activity_card_summary.mainView
 import kotlinx.android.synthetic.main.activity_card_summary.mediumText
 import kotlinx.android.synthetic.main.activity_card_summary.smallDesc
 import org.calypsonet.keyple.demo.validation.R
+import org.calypsonet.keyple.demo.validation.data.model.AppSettings
 import org.calypsonet.keyple.demo.validation.data.model.CardReaderResponse
+import org.calypsonet.keyple.demo.validation.data.model.ReaderType
 import org.calypsonet.keyple.demo.validation.data.model.Status
 import timber.log.Timber
 
@@ -96,7 +98,9 @@ class CardSummaryActivity : BaseActivity() {
         smallDesc.visibility = View.INVISIBLE
       }
     }
-    animation.playAnimation()
+    if (AppSettings.readerType != ReaderType.FLOWBIRD) {
+      animation.playAnimation()
+    }
     timer.schedule(
         object : TimerTask() {
           override fun run() {
