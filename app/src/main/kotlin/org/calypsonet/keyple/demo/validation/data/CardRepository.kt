@@ -113,7 +113,7 @@ class CardRepository {
         if (eventVersionNumber != VersionNumber.CURRENT_VERSION) {
           if (eventVersionNumber == VersionNumber.UNDEFINED) {
             status = Status.EMPTY_CARD
-            throw RuntimeException("Event error: card is empty")
+            throw RuntimeException("No valid title detected")
           } else {
             status = Status.INVALID_CARD
             throw RuntimeException("Event error: wrong version number")

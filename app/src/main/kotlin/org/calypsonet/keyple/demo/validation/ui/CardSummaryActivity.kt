@@ -16,6 +16,7 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlinx.android.synthetic.main.activity_card_reader.*
 import kotlinx.android.synthetic.main.activity_card_summary.animation
 import kotlinx.android.synthetic.main.activity_card_summary.bigText
 import kotlinx.android.synthetic.main.activity_card_summary.location_time
@@ -98,9 +99,10 @@ class CardSummaryActivity : BaseActivity() {
         smallDesc.visibility = View.INVISIBLE
       }
     }
-    if (AppSettings.readerType != ReaderType.FLOWBIRD) {
-      animation.playAnimation()
+    if (AppSettings.readerType == ReaderType.FLOWBIRD) {
+      animation.repeatCount = 0
     }
+    animation.playAnimation()
     timer.schedule(
         object : TimerTask() {
           override fun run() {

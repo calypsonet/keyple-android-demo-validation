@@ -74,9 +74,11 @@ class ReaderActivity : BaseActivity() {
 
   override fun onResume() {
     super.onResume()
-    if (AppSettings.readerType != ReaderType.FLOWBIRD) {
-      animation.playAnimation()
+    if (AppSettings.readerType == ReaderType.FLOWBIRD) {
+      animation.repeatCount = 0
     }
+    animation.playAnimation()
+
     if (!ticketingService.readersInitialized) {
       GlobalScope.launch {
         withContext(Dispatchers.Main) { showProgress() }
@@ -216,10 +218,12 @@ class ReaderActivity : BaseActivity() {
         presentCardTv.visibility = View.GONE
         mainView.setBackgroundColor(ContextCompat.getColor(this, R.color.turquoise))
         supportActionBar?.show()
-        if (AppSettings.readerType != ReaderType.FLOWBIRD) {
-          animation.playAnimation()
+        if (AppSettings.readerType == ReaderType.FLOWBIRD) {
+          animation.repeatCount = 0
+        } else {
+          animation.repeatCount = LottieDrawable.INFINITE
         }
-        animation.repeatCount = LottieDrawable.INFINITE
+        animation.playAnimation()
       } else {
         runOnUiThread { animation.cancelAnimation() }
         val intent = Intent(this, CardSummaryActivity::class.java)
