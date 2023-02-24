@@ -79,6 +79,7 @@ class CardRepository {
         cardTransaction
             .prepareOpenSecureSession(WriteAccessLevel.DEBIT)
             .prepareReadRecord(CardConstant.SFI_ENVIRONMENT_AND_HOLDER, 1)
+            .processCommands(false)
 
         // Step 2 - Unpack environment structure from the binary present in the environment record.
         val efEnvironmentHolder = calypsoCard.getFileBySfi(CardConstant.SFI_ENVIRONMENT_AND_HOLDER)
