@@ -76,8 +76,10 @@ class CardRepository {
 
         // ***************** Event and Environment Analysis
         // Step 1 - Open a Validation session reading the environment record.
-        cardTransaction.prepareReadRecord(CardConstant.SFI_ENVIRONMENT_AND_HOLDER, 1)
-        cardTransaction.processOpening(WriteAccessLevel.DEBIT)
+        cardTransaction
+            .prepareOpenSecureSession(WriteAccessLevel.DEBIT)
+            .prepareReadRecord(CardConstant.SFI_ENVIRONMENT_AND_HOLDER, 1)
+            .processCommands(false)
 
         // Step 2 - Unpack environment structure from the binary present in the environment record.
         val efEnvironmentHolder = calypsoCard.getFileBySfi(CardConstant.SFI_ENVIRONMENT_AND_HOLDER)
@@ -99,8 +101,7 @@ class CardRepository {
         }
 
         // Step 5 - Read and unpack the last event record.
-        cardTransaction.prepareReadRecord(CardConstant.SFI_EVENTS_LOG, 1)
-        cardTransaction.processCommands()
+        cardTransaction.prepareReadRecord(CardConstant.SFI_EVENTS_LOG, 1).processCommands(false)
 
         val efEventLog = calypsoCard.getFileBySfi(CardConstant.SFI_EVENTS_LOG)
         val eventContent = efEventLog.data.content
@@ -165,9 +166,9 @@ class CardRepository {
           val contractPriority = it.second
 
           // Step 11.1 - Read and unpack the contract record for the index being iterated.
-          cardTransaction.prepareReadRecord(CardConstant.SFI_CONTRACTS, record)
-
-          cardTransaction.processCommands()
+          cardTransaction
+              .prepareReadRecord(CardConstant.SFI_CONTRACTS, record)
+              .processCommands(false)
 
           val efContractParser = calypsoCard.getFileBySfi(CardConstant.SFI_CONTRACTS)
           val contractContent = efContractParser.data.allRecordsContent[record]!!
@@ -215,8 +216,9 @@ class CardRepository {
 
             // Step 11.5.1 - Read and unpack the counter associated to the contract (1st counter for
             // Contract #1 and so forth).
-            cardTransaction.prepareReadCounter(CardConstant.SFI_COUNTERS, COUNTER_RECORDS_NB)
-            cardTransaction.processCommands()
+            cardTransaction
+                .prepareReadCounter(CardConstant.SFI_COUNTERS, COUNTER_RECORDS_NB)
+                .processCommands(false)
 
             val efCounter = calypsoCard.getFileBySfi(CardConstant.SFI_COUNTERS)
             val counterValue = efCounter.data.getContentAsCounterValue(record)
@@ -255,9 +257,9 @@ class CardRepository {
                     else -> 0
                   }
               if (decrement > 0) {
-                cardTransaction.prepareDecreaseCounter(CardConstant.SFI_COUNTERS, record, decrement)
-
-                cardTransaction.processCommands()
+                cardTransaction
+                    .prepareDecreaseCounter(CardConstant.SFI_COUNTERS, record, decrement)
+                    .processCommands(false)
                 nbTicketsLeft = counterValue - decrement
               }
             }
@@ -309,8 +311,9 @@ class CardRepository {
 
           // Step 13 - Pack the Event structure and append it to the event file
           val eventBytesToWrite = EventStructureParser().generate(eventToWrite)
-          cardTransaction.prepareUpdateRecord(CardConstant.SFI_EVENTS_LOG, 1, eventBytesToWrite)
-          cardTransaction.processCommands()
+          cardTransaction
+              .prepareUpdateRecord(CardConstant.SFI_EVENTS_LOG, 1, eventBytesToWrite)
+              .processCommands(false)
         } else {
           Timber.i("Validation procedure result: Failed - No valid contract found")
           if (errorMessage.isNullOrEmpty()) {
@@ -324,9 +327,9 @@ class CardRepository {
         // Step 14 - END: Close the session
         try {
           if (status == Status.SUCCESS) {
-            cardTransaction.processClosing()
+            cardTransaction.prepareCloseSecureSession().processCommands(true)
           } else {
-            cardTransaction.processCancel()
+            cardTransaction.prepareCancelSecureSession().processCommands(true)
           }
           if (status == Status.LOADING) {
             status = Status.ERROR
