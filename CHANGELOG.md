@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [2023.02.24]
+### Upgraded
+- `calypsonet-terminal-reader-java-api:1.2.0`
+- `calypsonet-terminal-calypso-java-api:1.6.0`
+- `keyple-service-java-lib:2.1.3`
+- `keyple-card-calypso-java-lib:2.3.2`
+- `com.google.code.gson:gson:2.10.1`
+
 ## [2022.11.18]
 ### Fixed
 - Various erroneous behaviors and displays.
@@ -28,5 +36,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `keyple-plugin-cna-flowbird-android-java-lib-2.0.2-mock` (mocked library)
 - `keyple-util-java-lib:2.3.0`
     
-[Unreleased]: https://github.com/calypsonet/keyple-android-demo-validation/compare/2022.11.18...HEAD
+[Unreleased]: https://github.com/calypsonet/keyple-android-demo-validation/compare/2023.02.24...HEAD
+[2023.02.24]: https://github.com/calypsonet/keyple-android-demo-validation/compare/2022.11.18...2023.02.24
 [2022.11.18]: https://github.com/calypsonet/keyple-android-demo-validation/compare/v2021.11...2022.11.18
