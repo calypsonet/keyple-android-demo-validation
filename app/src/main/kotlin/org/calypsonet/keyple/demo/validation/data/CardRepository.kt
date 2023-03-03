@@ -214,10 +214,17 @@ class CardRepository {
           if (contractPriority == PriorityCode.MULTI_TRIP ||
               contractPriority == PriorityCode.STORED_VALUE) {
 
+            val nbContractRecords =
+                when (calypsoCard.productType) {
+                  CalypsoCard.ProductType.BASIC -> 1
+                  CalypsoCard.ProductType.LIGHT -> 2
+                  else -> 4
+                }
+
             // Step 11.5.1 - Read and unpack the counter associated to the contract (1st counter for
             // Contract #1 and so forth).
             cardTransaction
-                .prepareReadCounter(CardConstant.SFI_COUNTERS, COUNTER_RECORDS_NB)
+                .prepareReadCounter(CardConstant.SFI_COUNTERS, nbContractRecords)
                 .processCommands(false)
 
             val efCounter = calypsoCard.getFileBySfi(CardConstant.SFI_COUNTERS)
@@ -353,7 +360,6 @@ class CardRepository {
   }
 
   companion object {
-    const val COUNTER_RECORDS_NB = 4
     const val SINGLE_VALIDATION_AMOUNT = 1
   }
 }
