@@ -30,12 +30,13 @@ import org.calypsonet.keyple.demo.validation.data.model.Location
 import org.calypsonet.keyple.demo.validation.data.model.Status
 import org.calypsonet.keyple.demo.validation.data.model.Validation
 import org.calypsonet.keyple.demo.validation.data.model.mapper.ValidationMapper
-import org.calypsonet.terminal.calypso.WriteAccessLevel
-import org.calypsonet.terminal.calypso.card.CalypsoCard
-import org.calypsonet.terminal.calypso.transaction.CardSecuritySetting
-import org.calypsonet.terminal.calypso.transaction.CardTransactionManager
-import org.calypsonet.terminal.reader.CardReader
 import org.eclipse.keyple.card.calypso.CalypsoExtensionService
+import org.eclipse.keypop.calypso.card.WriteAccessLevel
+import org.eclipse.keypop.calypso.card.card.CalypsoCard
+import org.eclipse.keypop.calypso.card.transaction.ChannelControl
+import org.eclipse.keypop.calypso.card.transaction.SecureRegularModeTransactionManager
+import org.eclipse.keypop.calypso.card.transaction.SymmetricCryptoSecuritySetting
+import org.eclipse.keypop.reader.CardReader
 import timber.log.Timber
 
 class CardRepository {
@@ -46,23 +47,23 @@ class CardRepository {
       validationAmount: Int,
       cardReader: CardReader,
       calypsoCard: CalypsoCard,
-      cardSecuritySettings: CardSecuritySetting,
+      cardSecuritySettings: SymmetricCryptoSecuritySetting,
       locations: List<Location>
   ): CardReaderResponse {
 
     var status: Status = Status.LOADING
     var errorMessage: String? = null
-    val cardTransaction: CardTransactionManager?
+    val cardTransaction: SecureRegularModeTransactionManager?
     var passValidityEndDate: LocalDate? = null
     var nbTicketsLeft: Int? = null
     var validation: Validation? = null
 
-    val calypsoCardExtensionProvider = CalypsoExtensionService.getInstance()
+    val calypsoCardApiFactory = CalypsoExtensionService.getInstance().calypsoCardApiFactory
 
     // Create a card transaction for validation.
     cardTransaction =
         try {
-          calypsoCardExtensionProvider.createCardTransaction(
+          calypsoCardApiFactory.createSecureRegularModeTransactionManager(
               cardReader, calypsoCard, cardSecuritySettings)
         } catch (e: Exception) {
           Timber.w(e)
@@ -79,7 +80,7 @@ class CardRepository {
         cardTransaction
             .prepareOpenSecureSession(WriteAccessLevel.DEBIT)
             .prepareReadRecord(CardConstant.SFI_ENVIRONMENT_AND_HOLDER, 1)
-            .processCommands(false)
+            .processCommands(ChannelControl.KEEP_OPEN)
 
         // Step 2 - Unpack environment structure from the binary present in the environment record.
         val efEnvironmentHolder = calypsoCard.getFileBySfi(CardConstant.SFI_ENVIRONMENT_AND_HOLDER)
@@ -101,7 +102,9 @@ class CardRepository {
         }
 
         // Step 5 - Read and unpack the last event record.
-        cardTransaction.prepareReadRecord(CardConstant.SFI_EVENTS_LOG, 1).processCommands(false)
+        cardTransaction
+            .prepareReadRecord(CardConstant.SFI_EVENTS_LOG, 1)
+            .processCommands(ChannelControl.KEEP_OPEN)
 
         val efEventLog = calypsoCard.getFileBySfi(CardConstant.SFI_EVENTS_LOG)
         val eventContent = efEventLog.data.content
@@ -168,7 +171,7 @@ class CardRepository {
           // Step 11.1 - Read and unpack the contract record for the index being iterated.
           cardTransaction
               .prepareReadRecord(CardConstant.SFI_CONTRACTS, record)
-              .processCommands(false)
+              .processCommands(ChannelControl.KEEP_OPEN)
 
           val efContractParser = calypsoCard.getFileBySfi(CardConstant.SFI_CONTRACTS)
           val contractContent = efContractParser.data.allRecordsContent[record]!!
@@ -225,7 +228,7 @@ class CardRepository {
             // Contract #1 and so forth).
             cardTransaction
                 .prepareReadCounter(CardConstant.SFI_COUNTERS, nbContractRecords)
-                .processCommands(false)
+                .processCommands(ChannelControl.KEEP_OPEN)
 
             val efCounter = calypsoCard.getFileBySfi(CardConstant.SFI_COUNTERS)
             val counterValue = efCounter.data.getContentAsCounterValue(record)
@@ -266,7 +269,7 @@ class CardRepository {
               if (decrement > 0) {
                 cardTransaction
                     .prepareDecreaseCounter(CardConstant.SFI_COUNTERS, record, decrement)
-                    .processCommands(false)
+                    .processCommands(ChannelControl.KEEP_OPEN)
                 nbTicketsLeft = counterValue - decrement
               }
             }
@@ -320,7 +323,7 @@ class CardRepository {
           val eventBytesToWrite = EventStructureParser().generate(eventToWrite)
           cardTransaction
               .prepareUpdateRecord(CardConstant.SFI_EVENTS_LOG, 1, eventBytesToWrite)
-              .processCommands(false)
+              .processCommands(ChannelControl.KEEP_OPEN)
         } else {
           Timber.i("Validation procedure result: Failed - No valid contract found")
           if (errorMessage.isNullOrEmpty()) {
@@ -334,9 +337,9 @@ class CardRepository {
         // Step 14 - END: Close the session
         try {
           if (status == Status.SUCCESS) {
-            cardTransaction.prepareCloseSecureSession().processCommands(true)
+            cardTransaction.prepareCloseSecureSession().processCommands(ChannelControl.CLOSE_AFTER)
           } else {
-            cardTransaction.prepareCancelSecureSession().processCommands(true)
+            cardTransaction.prepareCancelSecureSession().processCommands(ChannelControl.CLOSE_AFTER)
           }
           if (status == Status.LOADING) {
             status = Status.ERROR
