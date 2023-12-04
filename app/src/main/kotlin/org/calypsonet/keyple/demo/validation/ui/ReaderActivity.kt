@@ -35,8 +35,8 @@ import org.calypsonet.keyple.demo.validation.data.model.CardReaderResponse
 import org.calypsonet.keyple.demo.validation.data.model.ReaderType
 import org.calypsonet.keyple.demo.validation.data.model.Status
 import org.calypsonet.keyple.demo.validation.di.scope.ActivityScoped
-import org.calypsonet.terminal.reader.CardReaderEvent
-import org.calypsonet.terminal.reader.spi.CardReaderObserverSpi
+import org.eclipse.keypop.reader.CardReaderEvent
+import org.eclipse.keypop.reader.spi.CardReaderObserverSpi
 import timber.log.Timber
 
 @ActivityScoped
