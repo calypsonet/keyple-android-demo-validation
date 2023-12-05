@@ -256,7 +256,7 @@ class TicketingService @Inject constructor(private var readerRepository: ReaderR
     samSelectionManager.prepareSelection(
         readerApiFactory
             .createBasicCardSelector()
-            .filterByCardProtocol(
+            .filterByPowerOnData(
                 LegacySamUtil.buildPowerOnDataFilter(LegacySam.ProductType.SAM_C1, null)),
         LegacySamExtensionService.getInstance()
             .legacySamApiFactory
