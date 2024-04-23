@@ -16,47 +16,45 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlinx.android.synthetic.main.activity_card_reader.*
-import kotlinx.android.synthetic.main.activity_card_summary.animation
-import kotlinx.android.synthetic.main.activity_card_summary.bigText
-import kotlinx.android.synthetic.main.activity_card_summary.location_time
-import kotlinx.android.synthetic.main.activity_card_summary.mainView
-import kotlinx.android.synthetic.main.activity_card_summary.mediumText
-import kotlinx.android.synthetic.main.activity_card_summary.smallDesc
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.data.model.AppSettings
 import org.calypsonet.keyple.demo.validation.data.model.CardReaderResponse
 import org.calypsonet.keyple.demo.validation.data.model.ReaderType
 import org.calypsonet.keyple.demo.validation.data.model.Status
+import org.calypsonet.keyple.demo.validation.databinding.ActivityCardSummaryBinding
 import timber.log.Timber
 
 class CardSummaryActivity : BaseActivity() {
 
   private val timer = Timer()
 
+  private lateinit var activityCardSummaryBinding: ActivityCardSummaryBinding
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_card_summary)
+    activityCardSummaryBinding = ActivityCardSummaryBinding.inflate(layoutInflater)
+    setContentView(activityCardSummaryBinding.root)
     val bundle = intent.getBundleExtra(Bundle::class.java.simpleName)!!
     val cardReaderResponse =
         bundle.getParcelable<CardReaderResponse>(CardReaderResponse::class.simpleName)
     when (cardReaderResponse?.status) {
       Status.SUCCESS -> {
         ticketingService.displayResultSuccess()
-        animation.setAnimation("tick_white.json")
-        mainView.setBackgroundColor(ContextCompat.getColor(this, R.color.green))
-        bigText.setText(R.string.valid_main_desc)
+        activityCardSummaryBinding.animation.setAnimation("tick_white.json")
+        activityCardSummaryBinding.mainView.setBackgroundColor(
+            ContextCompat.getColor(this, R.color.green))
+        activityCardSummaryBinding.bigText.setText(R.string.valid_main_desc)
         val eventDate =
             cardReaderResponse.eventDateTime!!.format(
                 DateTimeFormatter.ofPattern("dd MMMM yyyy, HH:mm", Locale.ENGLISH))
-        location_time.text =
+        activityCardSummaryBinding.locationTime.text =
             getString(
                 R.string.valid_location_time,
                 cardReaderResponse.validation?.location?.name,
                 eventDate)
         val nbTickets = cardReaderResponse.nbTicketsLeft
         if (nbTickets != null) {
-          smallDesc.text =
+          activityCardSummaryBinding.smallDesc.text =
               when (nbTickets) {
                 0 -> getString(R.string.valid_trips_left_zero)
                 1 -> getString(R.string.valid_trips_left_single)
@@ -66,43 +64,47 @@ class CardSummaryActivity : BaseActivity() {
           val validityEndDate =
               cardReaderResponse.passValidityEndDate!!.format(
                   DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-          smallDesc.text = getString(R.string.valid_season_ticket, validityEndDate)
+          activityCardSummaryBinding.smallDesc.text =
+              getString(R.string.valid_season_ticket, validityEndDate)
         }
-        mediumText.setText(R.string.valid_last_desc)
+        activityCardSummaryBinding.mediumText.setText(R.string.valid_last_desc)
       }
       Status.INVALID_CARD -> {
         ticketingService.displayResultFailed()
-        animation.setAnimation("error_white.json")
-        mainView.setBackgroundColor(ContextCompat.getColor(this, R.color.orange))
-        bigText.setText(R.string.card_invalid_main_desc)
-        location_time.text = cardReaderResponse.errorMessage
-        mediumText.visibility = View.INVISIBLE
-        smallDesc.visibility = View.INVISIBLE
+        activityCardSummaryBinding.animation.setAnimation("error_white.json")
+        activityCardSummaryBinding.mainView.setBackgroundColor(
+            ContextCompat.getColor(this, R.color.orange))
+        activityCardSummaryBinding.bigText.setText(R.string.card_invalid_main_desc)
+        activityCardSummaryBinding.locationTime.text = cardReaderResponse.errorMessage
+        activityCardSummaryBinding.mediumText.visibility = View.INVISIBLE
+        activityCardSummaryBinding.smallDesc.visibility = View.INVISIBLE
       }
       Status.EMPTY_CARD -> {
         ticketingService.displayResultFailed()
-        mainView.setBackgroundColor(ContextCompat.getColor(this, R.color.red))
-        animation.setAnimation("error_white.json")
-        bigText.text = cardReaderResponse.errorMessage
-        location_time.setText(R.string.no_tickets_small_desc)
-        mediumText.visibility = View.INVISIBLE
-        smallDesc.visibility = View.INVISIBLE
+        activityCardSummaryBinding.mainView.setBackgroundColor(
+            ContextCompat.getColor(this, R.color.red))
+        activityCardSummaryBinding.animation.setAnimation("error_white.json")
+        activityCardSummaryBinding.bigText.text = cardReaderResponse.errorMessage
+        activityCardSummaryBinding.locationTime.setText(R.string.no_tickets_small_desc)
+        activityCardSummaryBinding.mediumText.visibility = View.INVISIBLE
+        activityCardSummaryBinding.smallDesc.visibility = View.INVISIBLE
       }
       else -> {
         ticketingService.displayResultFailed()
-        mainView.setBackgroundColor(ContextCompat.getColor(this, R.color.red))
-        animation.setAnimation("error_white.json")
-        bigText.setText(R.string.error_main_desc)
-        location_time.text =
+        activityCardSummaryBinding.mainView.setBackgroundColor(
+            ContextCompat.getColor(this, R.color.red))
+        activityCardSummaryBinding.animation.setAnimation("error_white.json")
+        activityCardSummaryBinding.bigText.setText(R.string.error_main_desc)
+        activityCardSummaryBinding.locationTime.text =
             cardReaderResponse?.errorMessage ?: getString(R.string.error_small_desc)
-        mediumText.visibility = View.INVISIBLE
-        smallDesc.visibility = View.INVISIBLE
+        activityCardSummaryBinding.mediumText.visibility = View.INVISIBLE
+        activityCardSummaryBinding.smallDesc.visibility = View.INVISIBLE
       }
     }
     if (AppSettings.readerType == ReaderType.FLOWBIRD) {
-      animation.repeatCount = 0
+      activityCardSummaryBinding.animation.repeatCount = 0
     }
-    animation.playAnimation()
+    activityCardSummaryBinding.animation.playAnimation()
     timer.schedule(
         object : TimerTask() {
           override fun run() {

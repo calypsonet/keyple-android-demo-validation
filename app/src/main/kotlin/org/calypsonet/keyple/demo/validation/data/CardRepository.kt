@@ -197,8 +197,7 @@ class CardRepository {
           // Step 11.4 - If ContractValidityEndDate points to a date in the past update the
           // associated ContractPriorty field present in the persistent object to 31 and move to the
           // next element in the list
-          if (contract
-              .contractValidityEndDate
+          if (contract.contractValidityEndDate
               .getDate()
               .isBefore(validationDateTime.toLocalDate())) {
             when (record) {

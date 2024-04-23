@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.calypsonet.keyple.demo.validation">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -20,7 +19,8 @@
             android:screenOrientation="fullUser"
             android:launchMode="singleTask"
             android:stateNotNeeded="true"
-            android:configChanges="orientation|keyboardHidden">
+            android:configChanges="orientation|keyboardHidden"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.parkeon.app.customer"/>
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -35,7 +35,8 @@
             android:name="org.calypsonet.keyple.demo.validation.ui.ReaderActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:launchMode="singleTop"
-            android:screenOrientation="fullUser">
+            android:screenOrientation="fullUser"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
             </intent-filter>
@@ -45,24 +46,28 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:launchMode="singleTop"
             android:screenOrientation="fullUser"
-            android:configChanges="orientation|keyboardHidden"/>
+            android:configChanges="orientation|keyboardHidden"
+            android:exported="true"/>
         <activity
             android:name="org.calypsonet.keyple.demo.validation.ui.HomeActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:launchMode="singleTop"
             android:screenOrientation="fullUser"
-            android:configChanges="orientation|keyboardHidden"/>
+            android:configChanges="orientation|keyboardHidden"
+            android:exported="true"/>
         <activity
             android:name="org.calypsonet.keyple.demo.validation.ui.SettingsActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:launchMode="singleTop"
             android:screenOrientation="fullUser"
-            android:configChanges="orientation|keyboardHidden" />
+            android:configChanges="orientation|keyboardHidden"
+            android:exported="true"/>
         <activity
             android:name="org.calypsonet.keyple.demo.validation.ui.deviceselection.DeviceSelectionActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:launchMode="singleTop"
             android:screenOrientation="fullUser"
-            android:configChanges="orientation|keyboardHidden" />
+            android:configChanges="orientation|keyboardHidden"
+            android:exported="true"/>
     </application>
 </manifest>

@@ -107,7 +107,7 @@
         app:layout_constraintGuide_percent="0.7" />
 
     <include
-        android:id="@+id/appBarLayout"
+        android:id="@+id/appBarLayoutBottom"
         layout="@layout/logo_toolbar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

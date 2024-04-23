@@ -21,10 +21,6 @@ import androidx.core.content.ContextCompat
 import com.airbnb.lottie.LottieDrawable
 import java.util.Timer
 import java.util.TimerTask
-import kotlinx.android.synthetic.main.activity_card_reader.animation
-import kotlinx.android.synthetic.main.activity_card_reader.mainView
-import kotlinx.android.synthetic.main.activity_card_reader.presentCardTv
-import kotlinx.android.synthetic.main.activity_card_summary.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -34,6 +30,7 @@ import org.calypsonet.keyple.demo.validation.data.model.AppSettings
 import org.calypsonet.keyple.demo.validation.data.model.CardReaderResponse
 import org.calypsonet.keyple.demo.validation.data.model.ReaderType
 import org.calypsonet.keyple.demo.validation.data.model.Status
+import org.calypsonet.keyple.demo.validation.databinding.ActivityCardReaderBinding
 import org.calypsonet.keyple.demo.validation.di.scope.ActivityScoped
 import org.eclipse.keypop.reader.CardReaderEvent
 import org.eclipse.keypop.reader.spi.CardReaderObserverSpi
@@ -41,6 +38,8 @@ import timber.log.Timber
 
 @ActivityScoped
 class ReaderActivity : BaseActivity() {
+
+  private lateinit var activityCardReaderBinding: ActivityCardReaderBinding
 
   @Suppress("DEPRECATION") private lateinit var progress: ProgressDialog
   private var cardReaderObserver: CardReaderObserver? = null
@@ -56,11 +55,11 @@ class ReaderActivity : BaseActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_card_reader)
+    activityCardReaderBinding = ActivityCardReaderBinding.inflate(layoutInflater)
+    setContentView(activityCardReaderBinding.root)
     @Suppress("DEPRECATION")
     progress = ProgressDialog(this)
-    @Suppress("DEPRECATION")
-    progress.setMessage(getString(R.string.please_wait))
+    @Suppress("DEPRECATION") progress.setMessage(getString(R.string.please_wait))
     progress.setCancelable(false)
     supportActionBar?.setDisplayHomeAsUpEnabled(true)
   }
@@ -75,9 +74,9 @@ class ReaderActivity : BaseActivity() {
   override fun onResume() {
     super.onResume()
     if (AppSettings.readerType == ReaderType.FLOWBIRD) {
-      animation.repeatCount = 0
+      activityCardReaderBinding.animation.repeatCount = 0
     }
-    animation.playAnimation()
+    activityCardReaderBinding.animation.playAnimation()
 
     if (!ticketingService.readersInitialized) {
       GlobalScope.launch {
@@ -117,7 +116,7 @@ class ReaderActivity : BaseActivity() {
 
   override fun onPause() {
     super.onPause()
-    animation.cancelAnimation()
+    activityCardReaderBinding.animation.cancelAnimation()
     timer.cancel()
     if (ticketingService.readersInitialized) {
       ticketingService.stopNfcDetection()
@@ -142,7 +141,8 @@ class ReaderActivity : BaseActivity() {
     Timber.i(
         "Current state = $currentAppState, wanted new state = $newAppState, event = ${readerEvent?.type}")
     when (readerEvent?.type) {
-      CardReaderEvent.Type.CARD_INSERTED, CardReaderEvent.Type.CARD_MATCHED -> {
+      CardReaderEvent.Type.CARD_INSERTED,
+      CardReaderEvent.Type.CARD_MATCHED -> {
         if (newAppState == AppState.WAIT_SYSTEM_READY) {
           return
         }
@@ -171,13 +171,15 @@ class ReaderActivity : BaseActivity() {
       }
     }
     when (newAppState) {
-      AppState.WAIT_SYSTEM_READY, AppState.WAIT_CARD -> {
+      AppState.WAIT_SYSTEM_READY,
+      AppState.WAIT_CARD -> {
         currentAppState = newAppState
       }
       AppState.CARD_STATUS -> {
         currentAppState = newAppState
         when (readerEvent?.type) {
-          CardReaderEvent.Type.CARD_INSERTED, CardReaderEvent.Type.CARD_MATCHED -> {
+          CardReaderEvent.Type.CARD_INSERTED,
+          CardReaderEvent.Type.CARD_MATCHED -> {
             GlobalScope.launch {
               try {
                 withContext(Dispatchers.Main) { progress.show() }
@@ -215,17 +217,18 @@ class ReaderActivity : BaseActivity() {
   private fun changeDisplay(cardReaderResponse: CardReaderResponse?) {
     if (cardReaderResponse != null) {
       if (cardReaderResponse.status === Status.LOADING) {
-        presentCardTv.visibility = View.GONE
-        mainView.setBackgroundColor(ContextCompat.getColor(this, R.color.turquoise))
+        activityCardReaderBinding.presentCardTv.visibility = View.GONE
+        activityCardReaderBinding.mainView.setBackgroundColor(
+            ContextCompat.getColor(this, R.color.turquoise))
         supportActionBar?.show()
         if (AppSettings.readerType == ReaderType.FLOWBIRD) {
-          animation.repeatCount = 0
+          activityCardReaderBinding.animation.repeatCount = 0
         } else {
-          animation.repeatCount = LottieDrawable.INFINITE
+          activityCardReaderBinding.animation.repeatCount = LottieDrawable.INFINITE
         }
-        animation.playAnimation()
+        activityCardReaderBinding.animation.playAnimation()
       } else {
-        runOnUiThread { animation.cancelAnimation() }
+        runOnUiThread { activityCardReaderBinding.animation.cancelAnimation() }
         val intent = Intent(this, CardSummaryActivity::class.java)
         val bundle = Bundle()
         bundle.putParcelable(CardReaderResponse::class.simpleName, cardReaderResponse)
@@ -233,7 +236,7 @@ class ReaderActivity : BaseActivity() {
         startActivity(intent)
       }
     } else {
-      presentCardTv.visibility = View.VISIBLE
+      activityCardReaderBinding.presentCardTv.visibility = View.VISIBLE
     }
   }
 
