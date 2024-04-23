@@ -15,31 +15,35 @@ import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.ArrayAdapter
-import kotlinx.android.synthetic.main.activity_settings.app_version
-import kotlinx.android.synthetic.main.activity_settings.batteryPoweredBox
-import kotlinx.android.synthetic.main.activity_settings.spinnerLocationList
-import kotlinx.android.synthetic.main.activity_settings.startBtn
-import kotlinx.android.synthetic.main.activity_settings.timeBtn
 import org.calypsonet.keyple.demo.validation.BuildConfig
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.data.model.AppSettings
 import org.calypsonet.keyple.demo.validation.data.model.Location
+import org.calypsonet.keyple.demo.validation.databinding.ActivitySettingsBinding
+import org.calypsonet.keyple.demo.validation.databinding.LogoToolbarBinding
 
 class SettingsActivity : BaseActivity() {
 
+  private lateinit var activitySettingsBinding: ActivitySettingsBinding
+  private lateinit var logoToolbarBinding: LogoToolbarBinding
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_settings)
-    setSupportActionBar(findViewById(R.id.toolbar))
+    activitySettingsBinding = ActivitySettingsBinding.inflate(layoutInflater)
+    logoToolbarBinding = activitySettingsBinding.appBarLayout
+    setContentView(activitySettingsBinding.root)
+    setSupportActionBar(logoToolbarBinding.toolbar)
     // Init location spinner
     val locations = locationRepository.getLocations()
     val locationsAdapter =
         ArrayAdapter(this, R.layout.spinner_item_location, R.id.spinner_item_text, locations)
-    spinnerLocationList.adapter = locationsAdapter
-    timeBtn.setOnClickListener { startActivityForResult(Intent(Settings.ACTION_DATE_SETTINGS), 0) }
-    startBtn.setOnClickListener {
-      AppSettings.location = spinnerLocationList.selectedItem as Location
-      AppSettings.batteryPowered = batteryPoweredBox.isChecked
+    activitySettingsBinding.spinnerLocationList.adapter = locationsAdapter
+    activitySettingsBinding.timeBtn.setOnClickListener {
+      startActivityForResult(Intent(Settings.ACTION_DATE_SETTINGS), 0)
+    }
+    activitySettingsBinding.startBtn.setOnClickListener {
+      AppSettings.location = activitySettingsBinding.spinnerLocationList.selectedItem as Location
+      AppSettings.batteryPowered = activitySettingsBinding.batteryPoweredBox.isChecked
       if (AppSettings.batteryPowered) {
         startActivity(Intent(this, HomeActivity::class.java))
         finish()
@@ -47,6 +51,6 @@ class SettingsActivity : BaseActivity() {
         startActivity(Intent(this, ReaderActivity::class.java))
       }
     }
-    app_version.text = getString(R.string.version, BuildConfig.VERSION_NAME)
+    activitySettingsBinding.appVersion.text = getString(R.string.version, BuildConfig.VERSION_NAME)
   }
 }

@@ -13,15 +13,22 @@ package org.calypsonet.keyple.demo.validation.ui
 
 import android.content.Intent
 import android.os.Bundle
-import kotlinx.android.synthetic.main.activity_home.startBtn
-import org.calypsonet.keyple.demo.validation.R
+import org.calypsonet.keyple.demo.validation.databinding.ActivityHomeBinding
+import org.calypsonet.keyple.demo.validation.databinding.LogoToolbarBinding
 
 class HomeActivity : BaseActivity() {
 
+  private lateinit var activityHomeBinding: ActivityHomeBinding
+  private lateinit var logoToolbarBinding: LogoToolbarBinding
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_home)
-    setSupportActionBar(findViewById(R.id.toolbar))
-    startBtn.setOnClickListener { startActivity(Intent(this, ReaderActivity::class.java)) }
+    activityHomeBinding = ActivityHomeBinding.inflate(layoutInflater)
+    logoToolbarBinding = activityHomeBinding.appBarLayout
+    setContentView(activityHomeBinding.root)
+    setSupportActionBar(logoToolbarBinding.toolbar)
+    activityHomeBinding.startBtn.setOnClickListener {
+      startActivity(Intent(this, ReaderActivity::class.java))
+    }
   }
 }

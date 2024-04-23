@@ -17,13 +17,11 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
-import kotlinx.android.synthetic.main.activity_device_selection.*
-import kotlinx.android.synthetic.main.activity_device_selection.app_version
-import kotlinx.android.synthetic.main.activity_settings.*
 import org.calypsonet.keyple.demo.validation.BuildConfig
 import org.calypsonet.keyple.demo.validation.R
 import org.calypsonet.keyple.demo.validation.data.model.AppSettings
 import org.calypsonet.keyple.demo.validation.data.model.ReaderType
+import org.calypsonet.keyple.demo.validation.databinding.ActivityDeviceSelectionBinding
 import org.calypsonet.keyple.demo.validation.ui.BaseActivity
 import org.calypsonet.keyple.demo.validation.ui.SettingsActivity
 import org.calypsonet.keyple.plugin.bluebird.BluebirdPlugin
@@ -32,18 +30,19 @@ import org.calypsonet.keyple.plugin.flowbird.FlowbirdPlugin
 class DeviceSelectionActivity : BaseActivity() {
 
   private val mock: String = "Mock"
+  private lateinit var activityDeviceSelectionBinding: ActivityDeviceSelectionBinding
 
   override fun onCreate(savedInstanceState: Bundle?) {
 
     super.onCreate(savedInstanceState)
-
-    setContentView(R.layout.activity_device_selection)
+    activityDeviceSelectionBinding = ActivityDeviceSelectionBinding.inflate(layoutInflater)
+    setContentView(activityDeviceSelectionBinding.root)
 
     // Bluebird
     if (BluebirdPlugin.PLUGIN_NAME.contains(mock)) {
-      bluebirdBtn.setBackgroundColor(Color.GRAY)
+      activityDeviceSelectionBinding.bluebirdBtn.setBackgroundColor(Color.GRAY)
     } else {
-      bluebirdBtn.setOnClickListener {
+      activityDeviceSelectionBinding.bluebirdBtn.setOnClickListener {
         AppSettings.readerType = ReaderType.BLUEBIRD
         val permissions: MutableList<String> =
             mutableListOf(
@@ -58,14 +57,14 @@ class DeviceSelectionActivity : BaseActivity() {
     }
 
     // Coppernic
-    coppernicBtn.setOnClickListener {
+    activityDeviceSelectionBinding.coppernicBtn.setOnClickListener {
       AppSettings.readerType = ReaderType.COPPERNIC
       startActivity(Intent(this, SettingsActivity::class.java))
       finish()
     }
 
     // Famoco
-    famocoBtn.setOnClickListener {
+    activityDeviceSelectionBinding.famocoBtn.setOnClickListener {
       AppSettings.readerType = ReaderType.FAMOCO
       startActivity(Intent(this, SettingsActivity::class.java))
       finish()
@@ -73,15 +72,16 @@ class DeviceSelectionActivity : BaseActivity() {
 
     // Flowbird
     if (FlowbirdPlugin.PLUGIN_NAME.contains(mock)) {
-      flowbirdBtn.setBackgroundColor(Color.GRAY)
+      activityDeviceSelectionBinding.flowbirdBtn.setBackgroundColor(Color.GRAY)
     } else {
-      flowbirdBtn.setOnClickListener {
+      activityDeviceSelectionBinding.flowbirdBtn.setOnClickListener {
         AppSettings.readerType = ReaderType.FLOWBIRD
         startActivity(Intent(this, SettingsActivity::class.java))
         finish()
       }
     }
-    app_version.text = getString(R.string.version, BuildConfig.VERSION_NAME)
+    activityDeviceSelectionBinding.appVersion.text =
+        getString(R.string.version, BuildConfig.VERSION_NAME)
   }
 
   @SuppressLint("MissingSuperCall")
